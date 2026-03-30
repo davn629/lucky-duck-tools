@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Waterfall Distribution Calculator | Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;line-height:1.5}
+a{color:#2563EB;text-decoration:none}a:hover{text-decoration:underline}
+
+/* Header */
+.header{background:#0f172a;border-bottom:1px solid #334155;padding:20px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.5rem;font-weight:700;color:#fff}
+.header h1 span{color:#2563EB}
+.brand{color:#2563EB;font-size:.85rem;font-weight:600;letter-spacing:.03em}
+
+/* Layout */
+.container{max-width:1440px;margin:0 auto;padding:24px 24px 0}
+
+/* Step wizard */
+.step-nav{display:flex;gap:4px;margin-bottom:28px;flex-wrap:wrap}
+.step-btn{background:#0f172a;border:1px solid #334155;color:#94a3b8;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:.85rem;font-weight:600;transition:all .2s}
+.step-btn:hover{border-color:#2563EB;color:#e2e8f0}
+.step-btn.active{background:#2563EB;border-color:#2563EB;color:#fff}
+.step-btn.completed{background:#0f172a;border-color:#22c55e;color:#22c55e}
+
+/* Cards / Sections */
+.section{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:24px}
+.section h2{font-size:1.15rem;margin-bottom:16px;color:#fff;display:flex;align-items:center;gap:8px}
+.section h2 .num{background:#2563EB;color:#fff;width:28px;height:28px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;flex-shrink:0}
+.section-sub{font-size:.8rem;color:#94a3b8;margin-bottom:16px}
+.hidden{display:none!important}
+
+/* Form elements */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group label{font-size:.8rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.form-group input,.form-group select{background:#1E293B;border:1px solid #334155;color:#e2e8f0;padding:10px 14px;border-radius:8px;font-size:.95rem;transition:border-color .2s;width:100%}
+.form-group input:focus,.form-group select:focus{outline:none;border-color:#2563EB}
+.form-group input[type=range]{padding:4px 0;accent-color:#2563EB;cursor:pointer}
+.range-val{color:#2563EB;font-weight:700;font-size:1rem}
+.form-group .hint{font-size:.7rem;color:#64748b;margin-top:2px}
+
+/* Radio cards */
+.radio-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-bottom:8px}
+.radio-card{background:#1E293B;border:2px solid #334155;border-radius:12px;padding:20px;cursor:pointer;transition:all .2s}
+.radio-card:hover{border-color:#475569}
+.radio-card.selected{border-color:#2563EB;background:#1e3a5f}
+.radio-card h3{font-size:1rem;color:#fff;margin-bottom:4px;display:flex;align-items:center;gap:8px}
+.radio-card h3 .dot{width:16px;height:16px;border-radius:50%;border:2px solid #475569;flex-shrink:0;transition:all .2s}
+.radio-card.selected h3 .dot{border-color:#2563EB;background:#2563EB;box-shadow:inset 0 0 0 3px #0f172a}
+.radio-card p{font-size:.8rem;color:#94a3b8;line-height:1.4}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.toggle{width:48px;height:26px;background:#334155;border-radius:13px;cursor:pointer;position:relative;transition:background .2s;flex-shrink:0}
+.toggle.on{background:#2563EB}
+.toggle::after{content:'';width:20px;height:20px;background:#fff;border-radius:50%;position:absolute;top:3px;left:3px;transition:transform .2s}
+.toggle.on::after{transform:translateX(22px)}
+.toggle-label{font-size:.85rem;color:#e2e8f0;font-weight:600}
+
+/* Tier rows */
+.tier-row{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:12px;align-items:end;margin-bottom:12px}
+.tier-label{font-weight:700;color:#2563EB;font-size:.85rem;padding-bottom:10px;white-space:nowrap}
+
+/* Buttons */
+.btn{background:#2563EB;color:#fff;border:none;padding:12px 28px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.95rem;transition:background .2s;display:inline-flex;align-items:center;gap:8px}
+.btn:hover{background:#1d4ed8}
+.btn-lg{padding:14px 36px;font-size:1.05rem}
+.btn-outline{background:transparent;border:2px solid #2563EB;color:#2563EB}
+.btn-outline:hover{background:#2563EB;color:#fff}
+.btn-ghost{background:transparent;border:1px solid #334155;color:#94a3b8;padding:10px 20px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.85rem}
+.btn-ghost:hover{border-color:#2563EB;color:#2563EB}
+.btn-compare{background:#7c3aed;border:none;color:#fff;padding:10px 24px;border-radius:8px;font-weight:600;cursor:pointer;font-size:.9rem;transition:background .2s}
+.btn-compare:hover{background:#6d28d9}
+.btn-compare.active{background:#6d28d9;box-shadow:0 0 0 2px #a78bfa}
+
+/* KPI row */
+.kpi-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px}
+.kpi-card{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:20px;text-align:center}
+.kpi-label{font-size:.7rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:600}
+.kpi-value{font-size:1.6rem;font-weight:700;color:#fff}
+.kpi-value.blue{color:#2563EB}.kpi-value.green{color:#22c55e}.kpi-value.yellow{color:#eab308}.kpi-value.purple{color:#a78bfa}
+
+/* Charts */
+.chart-row{display:grid;grid-template-columns:2fr 1fr;gap:24px;margin-bottom:24px}
+.chart-box{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:20px;min-height:340px}
+.chart-box h3{font-size:.95rem;color:#fff;margin-bottom:12px}
+
+/* Compare layout */
+.compare-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.compare-col{background:#0f172a;border:1px solid #334155;border-radius:12px;padding:20px}
+.compare-col h3{font-size:1rem;color:#fff;margin-bottom:16px;display:flex;align-items:center;gap:8px}
+.compare-col h3 .tag{font-size:.7rem;padding:3px 10px;border-radius:12px;font-weight:700}
+.tag-a{background:#2563EB;color:#fff}.tag-b{background:#7c3aed;color:#fff}
+
+/* Table */
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;padding:10px 12px;border-bottom:2px solid #334155;color:#94a3b8;font-weight:600;font-size:.75rem;text-transform:uppercase;letter-spacing:.04em}
+td{padding:10px 12px;border-bottom:1px solid #1E293B;color:#e2e8f0}
+tr:hover td{background:#1E293B}
+.text-right{text-align:right}
+
+/* Email capture */
+.email-section{background:linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%);border:1px solid #2563EB;border-radius:12px;padding:32px;margin-bottom:24px;text-align:center}
+.email-section h3{font-size:1.2rem;color:#fff;margin-bottom:8px}
+.email-section p{color:#94a3b8;font-size:.9rem;margin-bottom:20px}
+.email-row{display:flex;gap:8px;max-width:480px;margin:0 auto}
+.email-row input{flex:1;background:#1E293B;border:1px solid #334155;color:#e2e8f0;padding:12px 16px;border-radius:8px;font-size:.95rem}
+.email-row input:focus{outline:none;border-color:#2563EB}
+.email-success{color:#22c55e;font-weight:600;display:none;margin-top:12px}
+
+/* CTA */
+.cta-section{background:#0f172a;border:2px solid #2563EB;border-radius:12px;padding:32px;text-align:center;margin-bottom:24px}
+.cta-section h3{font-size:1.3rem;color:#fff;margin-bottom:8px}
+.cta-section p{color:#94a3b8;margin-bottom:20px;font-size:.9rem}
+.cta-price{font-size:2rem;font-weight:800;color:#2563EB;margin-bottom:16px}
+
+/* Footer */
+.footer{text-align:center;padding:24px;color:#475569;font-size:.8rem;border-top:1px solid #334155;margin-top:16px}
+
+/* Responsive */
+@media(max-width:900px){
+  .chart-row,.compare-grid{grid-template-columns:1fr}
+  .kpi-row{grid-template-columns:repeat(2,1fr)}
+  .tier-row{grid-template-columns:1fr;gap:8px}
+  .tier-label{padding-bottom:0}
+  .radio-cards{grid-template-columns:1fr}
+  .header{padding:16px 20px}
+  .container{padding:16px}
+}
+@media(max-width:600px){
+  .kpi-row{grid-template-columns:1fr}
+  .email-row{flex-direction:column}
+  .step-nav{gap:4px}
+  .step-btn{padding:8px 12px;font-size:.75rem}
+}
+
+/* Print */
+@media print{
+  body{background:#fff!important;color:#111!important;-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .header{background:#fff!important;color:#111!important;border-color:#ccc!important}
+  .header h1{color:#111!important}.header h1 span{color:#2563EB!important}
+  .brand{color:#2563EB!important}
+  .section,.chart-box,.kpi-card,.compare-col{background:#fff!important;border-color:#ccc!important;color:#111!important}
+  .kpi-label{color:#555!important}.kpi-value{color:#111!important}
+  .step-nav,.btn,.btn-compare,.toggle-row,.email-section,.cta-section,.footer,.form-group input,.form-group select{display:none!important}
+  .radio-card{border-color:#ccc!important;background:#fff!important}
+  .radio-card p,.section-sub{color:#555!important}
+  th{color:#333!important}td{color:#111!important;border-color:#ccc!important}
+  .hidden{display:block!important}
+  #resultsSection{display:block!important}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>Waterfall</span> Distribution Calculator</h1>
+  <span class="brand">Powered by Lucky Duck Group</span>
+</div>
+
+<div class="container">
+
+  <!-- Step Navigation -->
+  <div class="step-nav">
+    <button class="step-btn active" onclick="showStep(1)">1. Waterfall Type</button>
+    <button class="step-btn" onclick="showStep(2)">2. Deal Setup</button>
+    <button class="step-btn" onclick="showStep(3)">3. Waterfall Terms</button>
+    <button class="step-btn" onclick="showStep(4)">4. Exit Proceeds</button>
+    <button class="step-btn" onclick="showStep(5)">5. LP Breakdown</button>
+  </div>
+
+  <!-- STEP 1: Waterfall Type -->
+  <div class="section step-section" id="step1">
+    <h2><span class="num">1</span> Select Waterfall Structure</h2>
+    <p class="section-sub">Choose how distributions flow between LPs and GP. This determines when the GP receives promote.</p>
+    <div class="radio-cards">
+      <div class="radio-card selected" onclick="selectType('american')">
+        <h3><span class="dot"></span> American (Deal-by-Deal)</h3>
+        <p>GP receives promote on each deal as it is realized. Faster GP compensation but higher LP risk. Common in value-add and opportunistic funds.</p>
+      </div>
+      <div class="radio-card" onclick="selectType('european')">
+        <h3><span class="dot"></span> European (Whole Fund)</h3>
+        <p>ALL investor capital must be returned plus preferred return before GP receives any promote. Lower LP risk, aligns GP incentives with total fund performance.</p>
+      </div>
+      <div class="radio-card" onclick="selectType('hybrid')">
+        <h3><span class="dot"></span> Hybrid (Modified European)</h3>
+        <p>European-style with a clawback reserve. GP receives partial promote but sets aside a reserve percentage to protect LP capital. Balanced approach.</p>
+      </div>
+    </div>
+    <div id="hybridExtra" class="hidden" style="margin-top:16px">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Clawback Reserve %</label>
+          <input type="number" id="clawbackPct" value="20" min="0" max="100" step="1">
+          <span class="hint">% of GP promote held in reserve until fund liquidation</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:flex-end">
+      <button class="btn" onclick="showStep(2)">Next: Deal Setup &rarr;</button>
+    </div>
+  </div>
+
+  <!-- STEP 2: Deal Setup -->
+  <div class="section step-section hidden" id="step2">
+    <h2><span class="num">2</span> Deal Setup</h2>
+    <p class="section-sub">Define the equity structure and investment timeline.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Total Equity Raised ($)</label>
+        <input type="number" id="totalEquity" value="5000000" min="100000" step="100000">
+      </div>
+      <div class="form-group">
+        <label>GP Co-Invest %</label>
+        <input type="number" id="gpCoinvest" value="10" min="0" max="100" step="1">
+        <span class="hint">GP's share of total equity (skin in the game)</span>
+      </div>
+      <div class="form-group">
+        <label>Hold Period (Years)</label>
+        <input type="number" id="holdPeriod" value="5" min="1" max="30" step="1">
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:space-between">
+      <button class="btn-ghost" onclick="showStep(1)">&larr; Back</button>
+      <button class="btn" onclick="showStep(3)">Next: Waterfall Terms &rarr;</button>
+    </div>
+  </div>
+
+  <!-- STEP 3: Waterfall Terms -->
+  <div class="section step-section hidden" id="step3">
+    <h2><span class="num">3</span> Waterfall Terms</h2>
+    <p class="section-sub">Set the preferred return, catch-up, and profit split tiers.</p>
+    <div class="form-grid" style="margin-bottom:20px">
+      <div class="form-group">
+        <label>Preferred Return Rate (%)</label>
+        <input type="number" id="prefRate" value="8" min="0" max="30" step="0.5">
+        <span class="hint">Annual cumulative preferred return to LPs</span>
+      </div>
+    </div>
+
+    <div class="toggle-row">
+      <div class="toggle" id="catchupToggle" onclick="toggleCatchup()"></div>
+      <span class="toggle-label">GP Catch-Up</span>
+    </div>
+    <div id="catchupInputs" class="hidden" style="margin-bottom:20px">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Catch-Up Target (%)</label>
+          <input type="number" id="catchupTarget" value="50" min="0" max="100" step="5">
+          <span class="hint">GP receives 100% of distributions until GP has received this % of total profits</span>
+        </div>
+      </div>
+    </div>
+
+    <h3 style="color:#fff;font-size:.95rem;margin:16px 0 12px">Profit Split Tiers</h3>
+    <div class="tier-row" style="margin-bottom:4px">
+      <div class="tier-label">&nbsp;</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">LP Split %</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">GP Split %</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">IRR Hurdle %</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 1</div>
+      <div class="form-group"><input type="number" id="t1lp" value="80" min="0" max="100" step="5" onchange="syncSplit(1)"></div>
+      <div class="form-group"><input type="number" id="t1gp" value="20" min="0" max="100" step="5" onchange="syncSplitRev(1)"></div>
+      <div class="form-group"><input type="number" id="t1irr" value="12" min="0" max="100" step="1"></div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 2</div>
+      <div class="form-group"><input type="number" id="t2lp" value="70" min="0" max="100" step="5" onchange="syncSplit(2)"></div>
+      <div class="form-group"><input type="number" id="t2gp" value="30" min="0" max="100" step="5" onchange="syncSplitRev(2)"></div>
+      <div class="form-group"><input type="number" id="t2irr" value="18" min="0" max="100" step="1"></div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 3</div>
+      <div class="form-group"><input type="number" id="t3lp" value="50" min="0" max="100" step="5" onchange="syncSplit(3)"></div>
+      <div class="form-group"><input type="number" id="t3gp" value="50" min="0" max="100" step="5" onchange="syncSplitRev(3)"></div>
+      <div class="form-group"><input type="number" id="t3irr" value="25" min="0" max="100" step="1"><span class="hint">No hurdle = all remaining</span></div>
+    </div>
+
+    <div style="margin-top:20px;display:flex;justify-content:space-between">
+      <button class="btn-ghost" onclick="showStep(2)">&larr; Back</button>
+      <button class="btn" onclick="showStep(4)">Next: Exit Proceeds &rarr;</button>
+    </div>
+  </div>
+
+  <!-- STEP 4: Exit Proceeds -->
+  <div class="section step-section hidden" id="step4">
+    <h2><span class="num">4</span> Exit Proceeds</h2>
+    <p class="section-sub">Set the total exit proceeds as an equity multiple or dollar amount.</p>
+    <div class="form-grid">
+      <div class="form-group" style="grid-column:1/-1;max-width:600px">
+        <label>Equity Multiple: <span class="range-val" id="multipleDisplay">2.0x</span></label>
+        <input type="range" id="exitMultiple" min="1.0" max="4.0" step="0.1" value="2.0" oninput="updateMultipleDisplay()">
+        <div style="display:flex;justify-content:space-between;font-size:.7rem;color:#64748b;margin-top:2px">
+          <span>1.0x</span><span>2.0x</span><span>3.0x</span><span>4.0x</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>Or Enter Dollar Amount ($)</label>
+        <input type="number" id="exitDollar" placeholder="Leave blank to use slider" min="0" step="100000" oninput="dollarToMultiple()">
+        <span class="hint">Overrides the slider above</span>
+      </div>
+      <div class="form-group">
+        <label>Calculated Exit Proceeds</label>
+        <input type="text" id="calcProceeds" readonly style="color:#2563EB;font-weight:700;border-color:#1E293B;background:#0f172a">
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <button class="btn-ghost" onclick="showStep(3)">&larr; Back</button>
+      <div style="display:flex;gap:12px;flex-wrap:wrap">
+        <button class="btn-compare" id="compareBtn" onclick="toggleCompare()">Compare Two Structures</button>
+        <button class="btn btn-lg" onclick="calculate()">Calculate Waterfall &rarr;</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- STEP 5: Optional LP Breakdown -->
+  <div class="section step-section hidden" id="step5">
+    <h2><span class="num">5</span> Per-Investor Breakdown <span style="font-size:.75rem;color:#94a3b8;font-weight:400">(Optional)</span></h2>
+    <p class="section-sub">Enter the number of LPs and average check size to see individual investor distributions.</p>
+    <div class="form-grid">
+      <div class="form-group">
+        <label>Number of LPs</label>
+        <input type="number" id="lpCount" value="" placeholder="e.g. 10" min="1" max="200" step="1">
+      </div>
+      <div class="form-group">
+        <label>Individual Check Size ($)</label>
+        <input type="number" id="checkSize" value="" placeholder="Auto-calculated if blank" min="0" step="10000">
+        <span class="hint">Leave blank to split LP equity equally</span>
+      </div>
+    </div>
+    <div style="margin-top:20px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px">
+      <button class="btn-ghost" onclick="showStep(4)">&larr; Back</button>
+      <button class="btn btn-lg" onclick="calculate()">Calculate Waterfall &rarr;</button>
+    </div>
+  </div>
+
+  <!-- COMPARE MODE: Structure B inputs -->
+  <div class="section hidden" id="compareSectionB">
+    <h2 style="color:#a78bfa"><span class="num" style="background:#7c3aed">B</span> Structure B Terms</h2>
+    <p class="section-sub">Configure alternate waterfall terms for side-by-side comparison. Same deal setup and exit proceeds apply.</p>
+    <div class="form-grid" style="margin-bottom:20px">
+      <div class="form-group">
+        <label>Waterfall Type</label>
+        <select id="bType">
+          <option value="american">American (Deal-by-Deal)</option>
+          <option value="european" selected>European (Whole Fund)</option>
+          <option value="hybrid">Hybrid (Modified European)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Preferred Return (%)</label>
+        <input type="number" id="bPrefRate" value="8" min="0" max="30" step="0.5">
+      </div>
+      <div class="form-group">
+        <label>Clawback Reserve % (Hybrid only)</label>
+        <input type="number" id="bClawback" value="20" min="0" max="100" step="1">
+      </div>
+    </div>
+    <div class="toggle-row">
+      <div class="toggle" id="bCatchupToggle" onclick="toggleBCatchup()"></div>
+      <span class="toggle-label">GP Catch-Up</span>
+    </div>
+    <div id="bCatchupInputs" class="hidden" style="margin-bottom:16px">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Catch-Up Target (%)</label>
+          <input type="number" id="bCatchupTarget" value="50" min="0" max="100" step="5">
+        </div>
+      </div>
+    </div>
+    <h3 style="color:#fff;font-size:.95rem;margin:12px 0 8px">Profit Split Tiers</h3>
+    <div class="tier-row" style="margin-bottom:4px">
+      <div class="tier-label">&nbsp;</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">LP %</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">GP %</div>
+      <div style="font-size:.75rem;color:#94a3b8;font-weight:600;text-transform:uppercase">IRR Hurdle</div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 1</div>
+      <div class="form-group"><input type="number" id="bt1lp" value="70" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt1gp" value="30" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt1irr" value="12" min="0" max="100" step="1"></div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 2</div>
+      <div class="form-group"><input type="number" id="bt2lp" value="60" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt2gp" value="40" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt2irr" value="18" min="0" max="100" step="1"></div>
+    </div>
+    <div class="tier-row">
+      <div class="tier-label">Tier 3</div>
+      <div class="form-group"><input type="number" id="bt3lp" value="50" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt3gp" value="50" min="0" max="100" step="5"></div>
+      <div class="form-group"><input type="number" id="bt3irr" value="25" min="0" max="100" step="1"></div>
+    </div>
+    <div style="margin-top:16px;text-align:right">
+      <button class="btn btn-lg" onclick="calculate()">Calculate Both Structures &rarr;</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="resultsSection" class="hidden">
+    <!-- Single mode KPIs -->
+    <div id="singleResults">
+      <div class="kpi-row" id="kpiRow"></div>
+      <div class="chart-row">
+        <div class="chart-box"><h3>Waterfall Distribution Breakdown</h3><div id="waterfallChart"></div></div>
+        <div class="chart-box"><h3>LP / GP Split</h3><div id="donutChart"></div></div>
+      </div>
+    </div>
+
+    <!-- Compare mode -->
+    <div id="compareResults" class="hidden">
+      <div class="kpi-row" id="compareKpiRow"></div>
+      <div class="compare-grid" style="margin-bottom:24px">
+        <div class="compare-col">
+          <h3><span class="tag tag-a">A</span> Structure A</h3>
+          <div id="compareChartA"></div>
+        </div>
+        <div class="compare-col">
+          <h3><span class="tag tag-b">B</span> Structure B</h3>
+          <div id="compareChartB"></div>
+        </div>
+      </div>
+      <div class="chart-row">
+        <div class="chart-box"><h3>Overlay Comparison</h3><div id="overlayChart"></div></div>
+        <div class="chart-box"><h3>LP/GP Split Comparison</h3><div id="compareDonut"></div></div>
+      </div>
+    </div>
+
+    <!-- Per-investor table -->
+    <div class="section hidden" id="investorTableSection">
+      <h2>Per-Investor Breakdown</h2>
+      <div style="overflow-x:auto">
+        <table id="investorTable">
+          <thead>
+            <tr>
+              <th>Investor #</th>
+              <th class="text-right">Investment</th>
+              <th class="text-right">Total Distribution</th>
+              <th class="text-right">Multiple</th>
+              <th class="text-right">Est. IRR</th>
+            </tr>
+          </thead>
+          <tbody id="investorBody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Email capture -->
+    <div class="email-section">
+      <h3>Save This Analysis + Get a Free Syndication Guide</h3>
+      <p>We'll email you a PDF snapshot of this waterfall analysis along with our Syndication Structuring Guide.</p>
+      <div class="email-row">
+        <input type="email" id="emailInput" placeholder="Enter your email address">
+        <button class="btn" onclick="captureEmail()">Send My Guide</button>
+      </div>
+      <div class="email-success" id="emailSuccess">Check your inbox! Your guide is on the way.</div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-section">
+      <h3>Need to Track Your Full Capital Raise?</h3>
+      <p>The Capital Raise Tracker gives you investor management, draw schedules, distribution tracking, and waterfall calculations in one spreadsheet.</p>
+      <div class="cta-price">$69</div>
+      <a href="#" class="btn btn-lg">Get the Capital Raise Tracker</a>
+    </div>
+  </div>
+
+</div><!-- end container -->
+
+<div class="footer">Powered by Lucky Duck Group &mdash; Institutional-grade tools for real estate syndicators</div>
+
+<script>
+/* ============================================================
+   STATE
+============================================================ */
+let waterfallType = 'american';
+let compareMode = false;
+let catchupOn = false;
+let bCatchupOn = false;
+
+/* ============================================================
+   UI HELPERS
+============================================================ */
+function $(id) { return document.getElementById(id); }
+function val(id) { return parseFloat($(id).value) || 0; }
+function fmt(n) { return '$' + n.toLocaleString('en-US', {maximumFractionDigits:0}); }
+function pct(n) { return (n * 100).toFixed(1) + '%'; }
+
+function showStep(n) {
+  document.querySelectorAll('.step-section').forEach(el => el.classList.add('hidden'));
+  $('step' + n).classList.remove('hidden');
+  document.querySelectorAll('.step-btn').forEach((btn, i) => {
+    btn.classList.remove('active');
+    if (i < n - 1) btn.classList.add('completed');
+    if (i === n - 1) { btn.classList.add('active'); btn.classList.remove('completed'); }
+  });
+  updateMultipleDisplay();
+}
+
+function selectType(type) {
+  waterfallType = type;
+  document.querySelectorAll('.radio-card').forEach(c => c.classList.remove('selected'));
+  event.currentTarget.classList.add('selected');
+  $('hybridExtra').classList.toggle('hidden', type !== 'hybrid');
+}
+
+function toggleCatchup() {
+  catchupOn = !catchupOn;
+  $('catchupToggle').classList.toggle('on', catchupOn);
+  $('catchupInputs').classList.toggle('hidden', !catchupOn);
+}
+function toggleBCatchup() {
+  bCatchupOn = !bCatchupOn;
+  $('bCatchupToggle').classList.toggle('on', bCatchupOn);
+  $('bCatchupInputs').classList.toggle('hidden', !bCatchupOn);
+}
+
+function syncSplit(tier) {
+  var lp = val('t' + tier + 'lp');
+  $('t' + tier + 'gp').value = Math.max(0, 100 - lp);
+}
+function syncSplitRev(tier) {
+  var gp = val('t' + tier + 'gp');
+  $('t' + tier + 'lp').value = Math.max(0, 100 - gp);
+}
+
+function updateMultipleDisplay() {
+  var m = parseFloat($('exitMultiple').value);
+  $('multipleDisplay').textContent = m.toFixed(1) + 'x';
+  var eq = val('totalEquity') || 5000000;
+  $('calcProceeds').value = fmt(m * eq);
+  $('exitDollar').value = '';
+}
+function dollarToMultiple() {
+  var d = val('exitDollar');
+  var eq = val('totalEquity') || 5000000;
+  if (d > 0) {
+    var m = d / eq;
+    m = Math.min(4, Math.max(1, m));
+    $('exitMultiple').value = m;
+    $('multipleDisplay').textContent = m.toFixed(1) + 'x';
+    $('calcProceeds').value = fmt(d);
+  }
+}
+
+function toggleCompare() {
+  compareMode = !compareMode;
+  $('compareBtn').classList.toggle('active', compareMode);
+  $('compareSectionB').classList.toggle('hidden', !compareMode);
+  $('compareBtn').textContent = compareMode ? 'Disable Comparison' : 'Compare Two Structures';
+}
+
+/* ============================================================
+   WATERFALL ENGINE
+============================================================ */
+function computeWaterfall(params) {
+  var equity = params.equity;
+  var gpCoinvestPct = params.gpCoinvest / 100;
+  var holdYrs = params.holdYrs;
+  var prefRatePct = params.prefRate / 100;
+  var hasCatchup = params.hasCatchup;
+  var catchupTargetPct = params.catchupTarget / 100;
+  var tiers = params.tiers; // [{lpPct, gpPct, irrHurdle}]
+  var exitProceeds = params.exitProceeds;
+  var wfType = params.wfType;
+  var clawbackPct = (params.clawbackPct || 0) / 100;
+
+  var gpEquity = equity * gpCoinvestPct;
+  var lpEquity = equity - gpEquity;
+
+  // Total distributions available
+  var totalDist = exitProceeds;
+  var remaining = totalDist;
+
+  // Layers
+  var layers = { returnOfCapital: 0, prefReturn: 0, gpCatchup: 0, tier1: { lp: 0, gp: 0 }, tier2: { lp: 0, gp: 0 }, tier3: { lp: 0, gp: 0 } };
+
+  // 1) Return of Capital — LP gets capital back first
+  // For European/Hybrid: ALL capital (LP + GP co-invest) returned first
+  // For American: same structure applies per-deal, but we model it the same way for a single deal
+  var capitalToReturn = equity; // total capital
+  layers.returnOfCapital = Math.min(remaining, capitalToReturn);
+  remaining -= layers.returnOfCapital;
+
+  if (remaining <= 0) {
+    return buildResult(layers, lpEquity, gpEquity, equity, holdYrs, wfType, clawbackPct);
+  }
+
+  // 2) Preferred Return — cumulative annual on LP unreturned capital
+  var prefAmount = lpEquity * prefRatePct * holdYrs;
+  layers.prefReturn = Math.min(remaining, prefAmount);
+  remaining -= layers.prefReturn;
+
+  if (remaining <= 0) {
+    return buildResult(layers, lpEquity, gpEquity, equity, holdYrs, wfType, clawbackPct);
+  }
+
+  // 3) GP Catch-Up
+  if (hasCatchup && catchupTargetPct > 0) {
+    // Total profits so far = prefReturn amount
+    // GP should have catchupTarget% of total profits (pref + catchup combined)
+    // Let catchup = C. Total profit = prefAmount + C. GP gets C = catchupTarget * (prefAmount + C)
+    // C = catchupTarget * prefAmount / (1 - catchupTarget)
+    var catchupAmount = catchupTargetPct * layers.prefReturn / (1 - catchupTargetPct);
+    layers.gpCatchup = Math.min(remaining, catchupAmount);
+    remaining -= layers.gpCatchup;
+  }
+
+  if (remaining <= 0) {
+    return buildResult(layers, lpEquity, gpEquity, equity, holdYrs, wfType, clawbackPct);
+  }
+
+  // 4) Tier splits — based on IRR hurdles
+  // Calculate profit thresholds for each tier based on IRR hurdles
+  // IRR hurdle: total return at that IRR = lpEquity * (1 + IRR)^holdYrs
+  // Profit at that IRR = total return - lpEquity - pref
+  var profitUsed = layers.prefReturn + layers.gpCatchup; // profit distributed so far
+
+  for (var t = 0; t < 3; t++) {
+    if (remaining <= 0) break;
+    var tierKey = 'tier' + (t + 1);
+    var lpSplit = tiers[t].lpPct / 100;
+    var gpSplit = tiers[t].gpPct / 100;
+
+    var tierCap = Infinity;
+    // If there's a next tier, calculate the profit boundary
+    if (t < 2 && tiers[t + 1]) {
+      var nextIrr = tiers[t + 1].irrHurdle / 100;
+      if (nextIrr > 0) {
+        var totalReturnAtNextHurdle = lpEquity * Math.pow(1 + nextIrr, holdYrs);
+        var profitAtNextHurdle = totalReturnAtNextHurdle - lpEquity;
+        tierCap = Math.max(0, profitAtNextHurdle - profitUsed);
+      }
+    }
+
+    var tierAmount = Math.min(remaining, tierCap);
+    layers[tierKey].lp = tierAmount * lpSplit;
+    layers[tierKey].gp = tierAmount * gpSplit;
+    remaining -= tierAmount;
+    profitUsed += tierAmount;
+  }
+
+  return buildResult(layers, lpEquity, gpEquity, equity, holdYrs, wfType, clawbackPct);
+}
+
+function buildResult(layers, lpEquity, gpEquity, totalEquity, holdYrs, wfType, clawbackPct) {
+  // LP gets: return of capital (LP portion) + pref + tier LP splits
+  var lpReturnOfCapital = lpEquity; // LP portion of return of capital
+  var gpReturnOfCapital = Math.min(gpEquity, layers.returnOfCapital - lpEquity);
+  if (gpReturnOfCapital < 0) {
+    // Not enough to return even LP capital
+    lpReturnOfCapital = layers.returnOfCapital;
+    gpReturnOfCapital = 0;
+  }
+
+  var totalLpDist = lpReturnOfCapital + layers.prefReturn + layers.tier1.lp + layers.tier2.lp + layers.tier3.lp;
+  var totalGpDist = gpReturnOfCapital + layers.gpCatchup + layers.tier1.gp + layers.tier2.gp + layers.tier3.gp;
+
+  // GP promote = total GP distributions minus GP co-invest return
+  var gpPromote = totalGpDist - gpReturnOfCapital;
+
+  // For European: verify all capital + pref returned before GP gets promote (already enforced by ordering)
+  // For Hybrid: apply clawback reserve
+  var clawbackReserve = 0;
+  if (wfType === 'hybrid' && clawbackPct > 0) {
+    clawbackReserve = gpPromote * clawbackPct;
+    // GP net promote is reduced; reserve is held
+  }
+
+  var lpMultiple = lpEquity > 0 ? totalLpDist / lpEquity : 0;
+
+  // Estimate LP IRR: solve (1 + irr)^holdYrs = lpMultiple
+  var lpIrr = 0;
+  if (lpMultiple > 0 && holdYrs > 0) {
+    lpIrr = Math.pow(lpMultiple, 1 / holdYrs) - 1;
+  }
+
+  var gpTotalComp = gpPromote + gpReturnOfCapital; // total back to GP
+
+  return {
+    layers: layers,
+    lpEquity: lpEquity,
+    gpEquity: gpEquity,
+    totalEquity: totalEquity,
+    totalLpDist: totalLpDist,
+    totalGpDist: totalGpDist,
+    gpPromote: gpPromote,
+    gpNetPromote: gpPromote - clawbackReserve,
+    clawbackReserve: clawbackReserve,
+    lpMultiple: lpMultiple,
+    lpIrr: lpIrr,
+    gpTotalComp: gpTotalComp,
+    holdYrs: holdYrs,
+    wfType: wfType,
+    layerValues: [
+      layers.returnOfCapital,
+      layers.prefReturn,
+      layers.gpCatchup,
+      layers.tier1.lp + layers.tier1.gp,
+      layers.tier2.lp + layers.tier2.gp,
+      layers.tier3.lp + layers.tier3.gp
+    ],
+    layerLabels: ['Return of Capital', 'Pref Return', 'GP Catch-Up', 'Tier 1 Split', 'Tier 2 Split', 'Tier 3 Split']
+  };
+}
+
+/* ============================================================
+   GATHER PARAMS
+============================================================ */
+function getParamsA() {
+  var equity = val('totalEquity');
+  var exitMult = parseFloat($('exitMultiple').value);
+  var exitDollar = val('exitDollar');
+  var exitProceeds = exitDollar > 0 ? exitDollar : equity * exitMult;
+  return {
+    equity: equity,
+    gpCoinvest: val('gpCoinvest'),
+    holdYrs: val('holdPeriod'),
+    prefRate: val('prefRate'),
+    hasCatchup: catchupOn,
+    catchupTarget: val('catchupTarget'),
+    tiers: [
+      { lpPct: val('t1lp'), gpPct: val('t1gp'), irrHurdle: val('t1irr') },
+      { lpPct: val('t2lp'), gpPct: val('t2gp'), irrHurdle: val('t2irr') },
+      { lpPct: val('t3lp'), gpPct: val('t3gp'), irrHurdle: val('t3irr') }
+    ],
+    exitProceeds: exitProceeds,
+    wfType: waterfallType,
+    clawbackPct: val('clawbackPct')
+  };
+}
+
+function getParamsB() {
+  var equity = val('totalEquity');
+  var exitMult = parseFloat($('exitMultiple').value);
+  var exitDollar = val('exitDollar');
+  var exitProceeds = exitDollar > 0 ? exitDollar : equity * exitMult;
+  return {
+    equity: equity,
+    gpCoinvest: val('gpCoinvest'),
+    holdYrs: val('holdPeriod'),
+    prefRate: val('bPrefRate'),
+    hasCatchup: bCatchupOn,
+    catchupTarget: val('bCatchupTarget'),
+    tiers: [
+      { lpPct: val('bt1lp'), gpPct: val('bt1gp'), irrHurdle: val('bt1irr') },
+      { lpPct: val('bt2lp'), gpPct: val('bt2gp'), irrHurdle: val('bt2irr') },
+      { lpPct: val('bt3lp'), gpPct: val('bt3gp'), irrHurdle: val('bt3irr') }
+    ],
+    exitProceeds: exitProceeds,
+    wfType: $('bType').value,
+    clawbackPct: val('bClawback')
+  };
+}
+
+/* ============================================================
+   CALCULATE + RENDER
+============================================================ */
+function calculate() {
+  var resultA = computeWaterfall(getParamsA());
+  $('resultsSection').classList.remove('hidden');
+
+  if (!compareMode) {
+    $('singleResults').classList.remove('hidden');
+    $('compareResults').classList.add('hidden');
+    renderKPIs(resultA);
+    renderWaterfallChart(resultA, 'waterfallChart');
+    renderDonutChart(resultA, 'donutChart');
+  } else {
+    var resultB = computeWaterfall(getParamsB());
+    $('singleResults').classList.add('hidden');
+    $('compareResults').classList.remove('hidden');
+    renderCompareKPIs(resultA, resultB);
+    renderWaterfallChart(resultA, 'compareChartA', '#2563EB');
+    renderWaterfallChart(resultB, 'compareChartB', '#7c3aed');
+    renderOverlayChart(resultA, resultB);
+    renderCompareDonut(resultA, resultB);
+  }
+
+  renderInvestorTable(resultA);
+
+  // Scroll to results
+  $('resultsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+/* ============================================================
+   CHARTS
+============================================================ */
+var chartColors = ['#334155', '#2563EB', '#f59e0b', '#22c55e', '#06b6d4', '#a78bfa'];
+var plotLayout = {
+  paper_bgcolor: 'rgba(0,0,0,0)',
+  plot_bgcolor: 'rgba(0,0,0,0)',
+  font: { color: '#e2e8f0', family: 'Segoe UI, system-ui, sans-serif' },
+  margin: { t: 20, b: 40, l: 60, r: 20 }
+};
+
+function renderWaterfallChart(result, containerId, accentColor) {
+  var labels = result.layerLabels;
+  var values = result.layerValues;
+  var colors = accentColor ? labels.map(function(_, i) {
+    var alpha = 0.4 + (i * 0.12);
+    return i === 0 ? '#334155' : accentColor;
+  }) : chartColors;
+
+  var traces = [];
+  var cumulative = 0;
+  for (var i = 0; i < labels.length; i++) {
+    if (values[i] <= 0) continue;
+    traces.push({
+      x: [labels[i]],
+      y: [values[i]],
+      type: 'bar',
+      name: labels[i],
+      marker: { color: colors[i], line: { color: '#0f172a', width: 1 } },
+      text: [fmt(values[i])],
+      textposition: 'auto',
+      textfont: { size: 11, color: '#fff' },
+      hovertemplate: labels[i] + ': ' + fmt(values[i]) + '<extra></extra>'
+    });
+  }
+
+  Plotly.newPlot(containerId, traces, Object.assign({}, plotLayout, {
+    barmode: 'stack',
+    showlegend: false,
+    yaxis: { tickprefix: '$', tickformat: ',.0f', gridcolor: '#1E293B', zeroline: false },
+    xaxis: { tickfont: { size: 10 } },
+    height: 300
+  }), { responsive: true, displayModeBar: false });
+}
+
+function renderDonutChart(result, containerId) {
+  var data = [{
+    values: [result.totalLpDist, result.totalGpDist],
+    labels: ['LP Distributions', 'GP Distributions'],
+    type: 'pie',
+    hole: 0.55,
+    marker: { colors: ['#2563EB', '#f59e0b'] },
+    textinfo: 'label+percent',
+    textfont: { size: 12, color: '#fff' },
+    hovertemplate: '%{label}: ' + '%{value:$,.0f}' + '<br>%{percent}<extra></extra>'
+  }];
+  Plotly.newPlot(containerId, data, Object.assign({}, plotLayout, {
+    showlegend: false,
+    height: 300,
+    annotations: [{
+      text: 'LP/GP',
+      showarrow: false,
+      font: { size: 16, color: '#94a3b8', family: 'Segoe UI' },
+      x: 0.5, y: 0.5
+    }]
+  }), { responsive: true, displayModeBar: false });
+}
+
+function renderOverlayChart(rA, rB) {
+  var labels = rA.layerLabels;
+  var tracesA = [{
+    x: labels,
+    y: rA.layerValues,
+    type: 'bar',
+    name: 'Structure A',
+    marker: { color: '#2563EB', opacity: 0.8 },
+    text: rA.layerValues.map(function(v) { return fmt(v); }),
+    textposition: 'auto',
+    textfont: { size: 10, color: '#fff' }
+  }];
+  var tracesB = [{
+    x: labels,
+    y: rB.layerValues,
+    type: 'bar',
+    name: 'Structure B',
+    marker: { color: '#7c3aed', opacity: 0.8 },
+    text: rB.layerValues.map(function(v) { return fmt(v); }),
+    textposition: 'auto',
+    textfont: { size: 10, color: '#fff' }
+  }];
+  Plotly.newPlot('overlayChart', tracesA.concat(tracesB), Object.assign({}, plotLayout, {
+    barmode: 'group',
+    showlegend: true,
+    legend: { orientation: 'h', y: -0.15, font: { size: 11 } },
+    yaxis: { tickprefix: '$', tickformat: ',.0f', gridcolor: '#1E293B', zeroline: false },
+    xaxis: { tickfont: { size: 10 } },
+    height: 320
+  }), { responsive: true, displayModeBar: false });
+}
+
+function renderCompareDonut(rA, rB) {
+  var data = [{
+    values: [rA.totalLpDist, rA.totalGpDist, rB.totalLpDist, rB.totalGpDist],
+    labels: ['A: LP', 'A: GP', 'B: LP', 'B: GP'],
+    type: 'pie',
+    hole: 0.5,
+    marker: { colors: ['#2563EB', '#60a5fa', '#7c3aed', '#c4b5fd'] },
+    textinfo: 'label+percent',
+    textfont: { size: 11, color: '#fff' },
+    domain: { x: [0, 1] }
+  }];
+  Plotly.newPlot('compareDonut', data, Object.assign({}, plotLayout, {
+    showlegend: false,
+    height: 320
+  }), { responsive: true, displayModeBar: false });
+}
+
+/* ============================================================
+   KPIs
+============================================================ */
+function renderKPIs(r) {
+  var typeLabel = { american: 'American', european: 'European', hybrid: 'Hybrid' }[r.wfType];
+  var html = '';
+  html += kpiCard('Waterfall Type', typeLabel, '');
+  html += kpiCard('LP Equity Multiple', r.lpMultiple.toFixed(2) + 'x', 'blue');
+  html += kpiCard('GP Promote', fmt(r.gpPromote), 'yellow');
+  html += kpiCard('LP IRR (Est.)', (r.lpIrr * 100).toFixed(1) + '%', 'green');
+  html += kpiCard('GP Total Comp', fmt(r.gpTotalComp), 'purple');
+  if (r.clawbackReserve > 0) {
+    html += kpiCard('Clawback Reserve', fmt(r.clawbackReserve), 'yellow');
+  }
+  $('kpiRow').innerHTML = html;
+}
+
+function renderCompareKPIs(rA, rB) {
+  var html = '';
+  html += kpiCardCompare('LP Equity Multiple', rA.lpMultiple.toFixed(2) + 'x', rB.lpMultiple.toFixed(2) + 'x');
+  html += kpiCardCompare('GP Promote', fmt(rA.gpPromote), fmt(rB.gpPromote));
+  html += kpiCardCompare('LP IRR (Est.)', (rA.lpIrr * 100).toFixed(1) + '%', (rB.lpIrr * 100).toFixed(1) + '%');
+  html += kpiCardCompare('GP Total Comp', fmt(rA.gpTotalComp), fmt(rB.gpTotalComp));
+  $('compareKpiRow').innerHTML = html;
+}
+
+function kpiCard(label, value, colorClass) {
+  return '<div class="kpi-card"><div class="kpi-label">' + label + '</div><div class="kpi-value ' + colorClass + '">' + value + '</div></div>';
+}
+
+function kpiCardCompare(label, valA, valB) {
+  return '<div class="kpi-card"><div class="kpi-label">' + label + '</div>'
+    + '<div style="display:flex;justify-content:center;gap:16px;align-items:baseline">'
+    + '<div style="text-align:center"><div style="font-size:.65rem;color:#2563EB;font-weight:700;margin-bottom:2px">A</div><div class="kpi-value blue" style="font-size:1.3rem">' + valA + '</div></div>'
+    + '<div style="color:#475569;font-size:1.2rem">vs</div>'
+    + '<div style="text-align:center"><div style="font-size:.65rem;color:#a78bfa;font-weight:700;margin-bottom:2px">B</div><div class="kpi-value purple" style="font-size:1.3rem">' + valB + '</div></div>'
+    + '</div></div>';
+}
+
+/* ============================================================
+   INVESTOR TABLE
+============================================================ */
+function renderInvestorTable(result) {
+  var lpCount = val('lpCount');
+  if (!lpCount || lpCount < 1) {
+    $('investorTableSection').classList.add('hidden');
+    return;
+  }
+  $('investorTableSection').classList.remove('hidden');
+  var checkSize = val('checkSize');
+  var totalLpEquity = result.lpEquity;
+  if (!checkSize || checkSize <= 0) {
+    checkSize = totalLpEquity / lpCount;
+  }
+
+  var tbody = $('investorBody');
+  var rows = '';
+  for (var i = 1; i <= lpCount; i++) {
+    var investorEquity = (i === lpCount) ? Math.max(0, totalLpEquity - checkSize * (lpCount - 1)) : checkSize;
+    if (investorEquity <= 0) continue;
+    var share = investorEquity / totalLpEquity;
+    var dist = result.totalLpDist * share;
+    var mult = dist / investorEquity;
+    var irr = result.holdYrs > 0 ? (Math.pow(mult, 1 / result.holdYrs) - 1) : 0;
+    rows += '<tr><td>LP-' + String(i).padStart(2, '0') + '</td>'
+      + '<td class="text-right">' + fmt(investorEquity) + '</td>'
+      + '<td class="text-right">' + fmt(dist) + '</td>'
+      + '<td class="text-right">' + mult.toFixed(2) + 'x</td>'
+      + '<td class="text-right">' + (irr * 100).toFixed(1) + '%</td></tr>';
+  }
+  tbody.innerHTML = rows;
+}
+
+/* ============================================================
+   EMAIL CAPTURE
+============================================================ */
+function captureEmail() {
+  var email = $('emailInput').value.trim();
+  if (!email || !email.includes('@')) {
+    $('emailInput').style.borderColor = '#ef4444';
+    return;
+  }
+  $('emailInput').style.borderColor = '#22c55e';
+  $('emailSuccess').style.display = 'block';
+  // In production, POST to your email service here
+  console.log('Email captured:', email);
+}
+
+/* ============================================================
+   INIT
+============================================================ */
+updateMultipleDisplay();
+</script>
+</body>
+</html>

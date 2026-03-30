@@ -1,0 +1,2327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Transfer Pricing Guide for Pharma &amp; Biotech CFOs | Lucky Duck Group</title>
+<meta name="description" content="A comprehensive educational guide to transfer pricing for pharmaceutical and biotechnology CFOs. Covers OECD methods, DEMPE analysis, documentation requirements, Pillar Two, and common mistakes.">
+<style>
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg-primary: #1E293B;
+  --bg-secondary: #0F172A;
+  --bg-card: #1E293B;
+  --bg-header: #2D3748;
+  --text-primary: #E2E8F0;
+  --text-secondary: #94A3B8;
+  --text-muted: #64748B;
+  --accent: #38BDF8;
+  --accent-hover: #7DD3FC;
+  --warning: #F59E0B;
+  --warning-bg: rgba(245, 158, 11, 0.08);
+  --danger: #991B1B;
+  --danger-bg: rgba(153, 27, 27, 0.9);
+  --border: #334155;
+  --success: #10B981;
+  --cta-bg: #38BDF8;
+  --cta-text: #0F172A;
+  --font-stack: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+html { scroll-behavior: smooth; scroll-padding-top: 100px; }
+
+body {
+  font-family: var(--font-stack);
+  font-size: 16px;
+  line-height: 1.7;
+  color: var(--text-primary);
+  background: var(--bg-secondary);
+}
+
+/* ===== DISCLAIMER BANNER ===== */
+.disclaimer-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: var(--danger-bg);
+  color: #FCA5A5;
+  font-size: 12px;
+  line-height: 1.4;
+  padding: 6px 16px;
+  text-align: center;
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(239, 68, 68, 0.3);
+}
+.disclaimer-banner strong { color: #FECACA; }
+.disclaimer-banner a { color: #FCA5A5; text-decoration: underline; }
+
+/* ===== NAV BAR ===== */
+.nav-bar {
+  position: sticky;
+  top: 32px;
+  z-index: 999;
+  background: rgba(15, 23, 42, 0.95);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+  padding: 0;
+}
+.nav-inner {
+  max-width: 1000px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.nav-inner::-webkit-scrollbar { display: none; }
+.nav-brand {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--accent);
+  padding: 10px 16px;
+  white-space: nowrap;
+  border-right: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.nav-link {
+  display: block;
+  padding: 10px 12px;
+  font-size: 13px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+}
+.nav-link:hover { color: var(--text-primary); }
+.nav-link.active {
+  color: var(--accent);
+  border-bottom-color: var(--accent);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main-content {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px 80px;
+}
+
+/* ===== TYPOGRAPHY ===== */
+h1 {
+  font-size: 2.2em;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: 48px 0 16px;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 1.6em;
+  font-weight: 700;
+  color: var(--accent);
+  margin: 40px 0 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+h3 {
+  font-size: 1.25em;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin: 28px 0 8px;
+}
+h4 {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--accent);
+  margin: 20px 0 8px;
+}
+p { margin: 0 0 16px; }
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+strong { color: #F1F5F9; }
+em { color: var(--text-secondary); }
+ul, ol { margin: 0 0 16px 24px; }
+li { margin-bottom: 6px; }
+li > ul, li > ol { margin-top: 6px; margin-bottom: 0; }
+blockquote {
+  border-left: 3px solid var(--accent);
+  padding: 12px 20px;
+  margin: 16px 0;
+  background: rgba(56, 189, 248, 0.05);
+  border-radius: 0 6px 6px 0;
+}
+hr {
+  border: none;
+  border-top: 1px solid var(--border);
+  margin: 32px 0;
+}
+code {
+  font-family: 'SF Mono', Monaco, 'Cascadia Code', monospace;
+  background: rgba(56, 189, 248, 0.1);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.9em;
+  color: var(--accent);
+}
+
+/* ===== HERO ===== */
+.hero {
+  text-align: center;
+  padding: 60px 0 40px;
+}
+.hero h1 {
+  font-size: 2.5em;
+  margin: 0 0 12px;
+  background: linear-gradient(135deg, var(--accent), #818CF8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero .subtitle {
+  font-size: 1.15em;
+  color: var(--text-secondary);
+  margin: 0 0 8px;
+}
+.hero .pub-date {
+  font-size: 0.9em;
+  color: var(--text-muted);
+}
+
+/* ===== SECTION HEADERS ===== */
+.section { scroll-margin-top: 100px; }
+.section-number {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--bg-secondary);
+  font-weight: 800;
+  font-size: 0.8em;
+  padding: 2px 10px;
+  border-radius: 12px;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+/* ===== TABLES ===== */
+.table-wrap {
+  overflow-x: auto;
+  margin: 16px 0;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9em;
+}
+thead th {
+  background: var(--bg-header);
+  color: var(--text-primary);
+  font-weight: 600;
+  padding: 10px 14px;
+  text-align: left;
+  border-bottom: 2px solid var(--accent);
+  white-space: nowrap;
+}
+tbody td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+tbody tr:nth-child(odd) { background: var(--bg-primary); }
+tbody tr:nth-child(even) { background: var(--bg-secondary); }
+tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
+
+/* ===== WARNING BOXES ===== */
+.warning-box {
+  border-left: 4px solid var(--warning);
+  background: var(--warning-bg);
+  padding: 16px 20px;
+  margin: 24px 0;
+  border-radius: 0 8px 8px 0;
+}
+.warning-box .warning-title {
+  color: var(--warning);
+  font-weight: 700;
+  font-size: 0.95em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.warning-box p { color: var(--text-secondary); margin-bottom: 0; }
+.warning-box p + p { margin-top: 8px; }
+
+/* ===== DISCLAIMER BLOCKS (inline) ===== */
+.disclaimer-block {
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  background: rgba(153, 27, 27, 0.1);
+  padding: 20px;
+  margin: 24px 0;
+  border-radius: 8px;
+}
+.disclaimer-block .disc-title {
+  color: #FCA5A5;
+  font-weight: 700;
+  margin-bottom: 10px;
+  font-size: 0.95em;
+}
+.disclaimer-block p { color: #FDA4AF; font-size: 0.9em; margin-bottom: 8px; }
+.disclaimer-block p:last-child { margin-bottom: 0; }
+
+/* ===== CTA BUTTONS ===== */
+.cta-block {
+  text-align: center;
+  margin: 32px 0;
+  padding: 24px;
+  background: rgba(56, 189, 248, 0.05);
+  border: 1px solid rgba(56, 189, 248, 0.2);
+  border-radius: 12px;
+}
+.cta-block p {
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+  font-size: 0.95em;
+}
+.cta-btn {
+  display: inline-block;
+  background: var(--cta-bg);
+  color: var(--cta-text);
+  font-weight: 700;
+  padding: 12px 28px;
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 1em;
+  transition: background 0.2s, transform 0.1s;
+}
+.cta-btn:hover {
+  background: var(--accent-hover);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+.cta-btn-secondary {
+  display: inline-block;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 8px 20px;
+  border: 1px solid var(--accent);
+  border-radius: 8px;
+  text-decoration: none;
+  font-size: 0.9em;
+  margin-top: 8px;
+  transition: background 0.2s;
+}
+.cta-btn-secondary:hover {
+  background: rgba(56, 189, 248, 0.1);
+  text-decoration: none;
+}
+
+/* ===== EMAIL CAPTURE ===== */
+.email-capture {
+  background: linear-gradient(135deg, rgba(56, 189, 248, 0.08), rgba(129, 140, 248, 0.08));
+  border: 1px solid rgba(56, 189, 248, 0.25);
+  border-radius: 12px;
+  padding: 32px;
+  margin: 40px 0;
+  text-align: center;
+}
+.email-capture h3 {
+  color: var(--accent);
+  margin-top: 0;
+  margin-bottom: 8px;
+}
+.email-capture p { color: var(--text-secondary); margin-bottom: 16px; }
+.email-form {
+  display: flex;
+  gap: 8px;
+  max-width: 460px;
+  margin: 0 auto;
+}
+.email-form input[type="email"] {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  font-size: 0.95em;
+  outline: none;
+}
+.email-form input[type="email"]:focus { border-color: var(--accent); }
+.email-form button {
+  padding: 10px 20px;
+  background: var(--accent);
+  color: var(--cta-text);
+  font-weight: 700;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.95em;
+  white-space: nowrap;
+  transition: background 0.2s;
+}
+.email-form button:hover { background: var(--accent-hover); }
+.email-note { font-size: 0.8em; color: var(--text-muted); margin-top: 10px; }
+
+/* ===== INTERACTIVE: PHARMA STRUCTURE DIAGRAM ===== */
+.structure-diagram {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  overflow-x: auto;
+}
+.structure-diagram .diagram-title {
+  text-align: center;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 20px;
+  font-size: 1.05em;
+}
+.org-chart {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  min-width: 600px;
+}
+.org-node {
+  background: var(--bg-primary);
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 18px;
+  text-align: center;
+  transition: all 0.3s;
+  cursor: pointer;
+  position: relative;
+}
+.org-node:hover, .org-node.highlighted {
+  border-color: var(--accent);
+  box-shadow: 0 0 20px rgba(56, 189, 248, 0.2);
+  background: rgba(56, 189, 248, 0.08);
+}
+.org-node .entity-name {
+  font-weight: 700;
+  color: var(--text-primary);
+  font-size: 0.95em;
+}
+.org-node .entity-role {
+  font-size: 0.8em;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+.org-parent { border-color: var(--accent); }
+.org-children {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.connector-down {
+  width: 2px;
+  height: 20px;
+  background: var(--border);
+  margin: 0 auto;
+}
+.flow-table { margin-top: 20px; }
+.flow-row {
+  display: flex;
+  align-items: center;
+  padding: 6px 12px;
+  border-radius: 6px;
+  font-size: 0.85em;
+  transition: background 0.2s;
+  cursor: pointer;
+}
+.flow-row:hover { background: rgba(56, 189, 248, 0.08); }
+.flow-arrow {
+  color: var(--accent);
+  margin: 0 8px;
+  font-weight: 700;
+}
+.flow-type { color: var(--text-secondary); margin-left: 8px; }
+.flow-value { color: var(--warning); margin-left: auto; font-weight: 600; white-space: nowrap; }
+
+/* ===== INTERACTIVE: METHOD DECISION TREE ===== */
+.decision-tree {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.dt-question {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 16px;
+  display: none;
+}
+.dt-question.active { display: block; }
+.dt-question .q-number {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 0.85em;
+  margin-bottom: 8px;
+}
+.dt-question .q-text {
+  font-size: 1.05em;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+}
+.dt-options { display: flex; gap: 12px; flex-wrap: wrap; }
+.dt-btn {
+  padding: 10px 24px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: all 0.2s;
+}
+.dt-btn:hover {
+  border-color: var(--accent);
+  background: rgba(56, 189, 248, 0.1);
+}
+.dt-result {
+  display: none;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid var(--success);
+  border-radius: 10px;
+  padding: 20px;
+  margin-top: 16px;
+}
+.dt-result.active { display: block; }
+.dt-result .result-method {
+  color: var(--success);
+  font-weight: 700;
+  font-size: 1.15em;
+  margin-bottom: 8px;
+}
+.dt-result .result-desc {
+  color: var(--text-secondary);
+  font-size: 0.95em;
+}
+.dt-restart {
+  display: inline-block;
+  margin-top: 12px;
+  padding: 8px 20px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--accent);
+  cursor: pointer;
+  font-size: 0.9em;
+}
+.dt-restart:hover { border-color: var(--accent); }
+
+/* ===== INTERACTIVE: DEMPE SELF-ASSESSMENT ===== */
+.dempe-calculator {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.dempe-calculator h4 { margin-top: 0; }
+.dempe-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  flex-wrap: wrap;
+}
+.dempe-row:last-of-type { border-bottom: none; }
+.dempe-label {
+  font-weight: 600;
+  color: var(--accent);
+  min-width: 120px;
+  font-size: 0.95em;
+}
+.dempe-desc {
+  color: var(--text-secondary);
+  font-size: 0.85em;
+  flex: 1;
+  min-width: 150px;
+}
+.dempe-select {
+  padding: 6px 10px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.9em;
+  min-width: 160px;
+}
+.dempe-select:focus { border-color: var(--accent); outline: none; }
+.dempe-results {
+  margin-top: 20px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+}
+.alloc-bar-wrap {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 6px 0;
+}
+.alloc-entity {
+  min-width: 100px;
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  text-align: right;
+}
+.alloc-bar-container {
+  flex: 1;
+  height: 22px;
+  background: var(--bg-secondary);
+  border-radius: 4px;
+  overflow: hidden;
+}
+.alloc-bar {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.4s ease;
+  min-width: 0;
+}
+.alloc-pct {
+  min-width: 45px;
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+/* ===== INTERACTIVE: PENALTY CALCULATOR ===== */
+.penalty-calc {
+  margin: 24px 0;
+  padding: 24px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+}
+.penalty-calc h4 { margin-top: 0; }
+.calc-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+.calc-label {
+  font-size: 0.95em;
+  color: var(--text-secondary);
+  min-width: 180px;
+}
+.calc-input {
+  padding: 8px 12px;
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-primary);
+  font-size: 0.95em;
+  width: 200px;
+}
+.calc-input:focus { border-color: var(--accent); outline: none; }
+.calc-btn {
+  padding: 10px 24px;
+  background: var(--accent);
+  color: var(--cta-text);
+  border: none;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-size: 0.95em;
+  transition: background 0.2s;
+}
+.calc-btn:hover { background: var(--accent-hover); }
+.calc-results {
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--bg-primary);
+  border-radius: 8px;
+  display: none;
+}
+.calc-results.active { display: block; }
+.calc-result-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.95em;
+}
+.calc-result-row:last-child { border-bottom: none; }
+.calc-result-label { color: var(--text-secondary); }
+.calc-result-value { color: var(--warning); font-weight: 700; }
+.calc-result-value.danger-val { color: #EF4444; }
+
+/* ===== CHECKLIST ===== */
+.checklist {
+  list-style: none;
+  margin-left: 0;
+  padding: 0;
+}
+.checklist li {
+  position: relative;
+  padding: 8px 0 8px 28px;
+  border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+}
+.checklist li::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 12px;
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 3px;
+  cursor: pointer;
+}
+.checklist li.checked::before {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.checklist li.checked::after {
+  content: '';
+  position: absolute;
+  left: 3px;
+  top: 14px;
+  width: 10px;
+  height: 6px;
+  border-left: 2px solid var(--bg-secondary);
+  border-bottom: 2px solid var(--bg-secondary);
+  transform: rotate(-45deg);
+}
+
+/* ===== TOC ===== */
+.toc {
+  background: var(--bg-primary);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 24px;
+  margin: 32px 0;
+}
+.toc h3 { margin-top: 0; color: var(--accent); }
+.toc ol {
+  margin: 0;
+  padding-left: 24px;
+}
+.toc li {
+  margin-bottom: 6px;
+}
+.toc a {
+  color: var(--text-secondary);
+  font-size: 0.95em;
+}
+.toc a:hover { color: var(--accent); }
+
+/* ===== FOOTER ===== */
+.site-footer {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 24px;
+  border-top: 1px solid var(--border);
+  text-align: center;
+}
+.site-footer .footer-brand {
+  color: var(--accent);
+  font-weight: 700;
+  font-size: 1.1em;
+  margin-bottom: 8px;
+}
+.site-footer p { color: var(--text-muted); font-size: 0.85em; margin-bottom: 4px; }
+.site-footer a { color: var(--accent); }
+
+/* ===== PRINT STYLES ===== */
+@media print {
+  body { background: #fff; color: #000; font-size: 11pt; }
+  .disclaimer-banner { display: none; }
+  .nav-bar { display: none; }
+  .main-content { padding: 0; max-width: 100%; }
+  h1, h2, h3, h4 { color: #000; }
+  h2 { border-bottom-color: #ccc; }
+  .section-number { background: #333; color: #fff; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  a { color: #333; }
+  strong { color: #000; }
+  table { font-size: 9pt; }
+  thead th { background: #eee; color: #000; border-bottom-color: #999; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  tbody tr:nth-child(odd) { background: #fff; }
+  tbody tr:nth-child(even) { background: #f5f5f5; }
+  tbody td { border-bottom-color: #ddd; }
+  .warning-box {
+    border-left-color: #D97706;
+    background: #FFF7ED;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .warning-box .warning-title { color: #92400E; }
+  .warning-box p { color: #333; }
+  .disclaimer-block {
+    border-color: #DC2626;
+    background: #FFF1F2;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .disclaimer-block .disc-title { color: #991B1B; }
+  .disclaimer-block p { color: #333; }
+  .cta-block, .email-capture { display: none; }
+  .org-node { border-color: #999; background: #fff; }
+  .org-node .entity-name { color: #000; }
+  .org-node .entity-role { color: #555; }
+  .structure-diagram, .decision-tree, .dempe-calculator, .penalty-calc {
+    background: #fff;
+    border-color: #ccc;
+  }
+  .site-footer { border-top-color: #ccc; }
+  .site-footer::after {
+    content: 'DISCLAIMER: This guide is for educational and informational purposes only. It does not constitute tax, legal, or financial advice. Consult qualified transfer pricing advisors before implementing.';
+    display: block;
+    margin-top: 20px;
+    font-size: 8pt;
+    color: #666;
+    border-top: 1px solid #ccc;
+    padding-top: 10px;
+  }
+}
+
+/* ===== MOBILE ===== */
+@media (max-width: 640px) {
+  .hero h1 { font-size: 1.8em; }
+  h1 { font-size: 1.6em; }
+  h2 { font-size: 1.3em; }
+  .email-form { flex-direction: column; }
+  .calc-row { flex-direction: column; align-items: flex-start; }
+  .calc-input { width: 100%; }
+  .dempe-row { flex-direction: column; align-items: flex-start; }
+  .dempe-select { width: 100%; }
+  .org-children { flex-direction: column; align-items: center; }
+}
+</style>
+</head>
+<body>
+
+<!-- FIXED DISCLAIMER BANNER -->
+<div class="disclaimer-banner">
+  <strong>EDUCATIONAL ONLY</strong> &mdash; This guide does not constitute tax, legal, or financial advice. Transfer pricing penalties can reach 20-75% of adjustments. <strong>Always consult qualified transfer pricing advisors.</strong>
+</div>
+
+<!-- STICKY NAV -->
+<nav class="nav-bar">
+  <div class="nav-inner">
+    <span class="nav-brand">Lucky Duck Group</span>
+    <a href="#section-1" class="nav-link" data-section="section-1">1</a>
+    <a href="#section-2" class="nav-link" data-section="section-2">2</a>
+    <a href="#section-3" class="nav-link" data-section="section-3">3</a>
+    <a href="#section-4" class="nav-link" data-section="section-4">4</a>
+    <a href="#section-5" class="nav-link" data-section="section-5">5</a>
+    <a href="#section-6" class="nav-link" data-section="section-6">6</a>
+    <a href="#section-7" class="nav-link" data-section="section-7">7</a>
+    <a href="#section-8" class="nav-link" data-section="section-8">8</a>
+    <a href="#section-9" class="nav-link" data-section="section-9">9</a>
+    <a href="#section-10" class="nav-link" data-section="section-10">10</a>
+  </div>
+</nav>
+
+<div class="main-content">
+
+<!-- HERO -->
+<div class="hero">
+  <h1>Transfer Pricing Guide for Pharma &amp; Biotech CFOs</h1>
+  <p class="subtitle">A Free Educational Guide from Lucky Duck Group</p>
+  <p class="pub-date">Published Q1 2026 | luckyduckgroup.com</p>
+</div>
+
+<!-- TOP DISCLAIMER -->
+<div class="disclaimer-block">
+  <div class="disc-title">IMPORTANT DISCLAIMER</div>
+  <p>This guide is for <strong>educational and informational purposes only</strong>. It does not constitute tax, legal, or financial advice. Transfer pricing is a complex, high-stakes area of international tax law with significant penalties for non-compliance (20-75% of adjustments in many jurisdictions, plus potential double taxation).</p>
+  <p><strong>DO NOT</strong> implement transfer pricing strategies based solely on this guide. <strong>ALWAYS</strong> consult qualified transfer pricing advisors, international tax attorneys, and licensed CPAs with specific transfer pricing expertise before making any decisions.</p>
+  <p>The information in this guide reflects general OECD guidelines and selected jurisdiction rules as of Q1 2026. Tax laws change frequently. Your specific situation requires professional analysis.</p>
+  <p>Published by Lucky Duck Group | luckyduckgroup.com</p>
+</div>
+
+<!-- TABLE OF CONTENTS -->
+<div class="toc">
+  <h3>Table of Contents</h3>
+  <ol>
+    <li><a href="#section-1">What Is Transfer Pricing and Why Should You Care?</a></li>
+    <li><a href="#section-2">The Pharma Transfer Pricing Landscape</a></li>
+    <li><a href="#section-3">The Five Transfer Pricing Methods</a></li>
+    <li><a href="#section-4">DEMPE Analysis &mdash; The Framework That Changed Everything</a></li>
+    <li><a href="#section-5">Documentation Requirements &mdash; Master File, Local File, CbCR</a></li>
+    <li><a href="#section-6">Pillar Two and the Global Minimum Tax (2024-2026 Update)</a></li>
+    <li><a href="#section-7">Common Mistakes and How to Avoid Them</a></li>
+    <li><a href="#section-8">Penalties Quick Reference</a></li>
+    <li><a href="#section-9">Your Transfer Pricing Action Checklist</a></li>
+    <li><a href="#section-10">How the Transfer Pricing Workbook Helps</a></li>
+  </ol>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 1 -->
+<!-- ================================================================ -->
+<div id="section-1" class="section">
+<h1><span class="section-number">1</span> What Is Transfer Pricing and Why Should You Care?</h1>
+
+<h2>The Risk You Cannot Afford to Ignore</h2>
+
+<p>If your pharma company operates in more than one country &mdash; and especially if you have IP, manufacturing, or R&D in different jurisdictions &mdash; transfer pricing is one of the largest financial risks on your balance sheet. Get it wrong and you face penalties of 20-75% of the adjustment, double taxation, and regulatory scrutiny that can persist for years.</p>
+
+<p>This is not an abstract compliance exercise. Transfer pricing disputes have cost pharmaceutical companies hundreds of millions of dollars in additional taxes, penalties, and interest. They have consumed years of management attention, strained relationships with tax authorities in multiple jurisdictions simultaneously, and in some cases forced companies to restate financial results.</p>
+
+<p>Yet many pharma CFOs &mdash; particularly at emerging and mid-size companies &mdash; treat transfer pricing as a back-office tax compliance task. It is not. Transfer pricing is a strategic financial function that sits at the intersection of tax planning, operational structure, and regulatory risk management. And in pharma, the stakes are higher than in virtually any other industry.</p>
+
+<p>This guide is designed to help you understand the landscape, ask the right questions of your advisors, evaluate whether your current structure and documentation are adequate, and identify the most common pitfalls that trigger audits, adjustments, and penalties.</p>
+
+<h2>Transfer Pricing in Plain English</h2>
+
+<p>Transfer pricing is the price one part of your company charges another part for goods, services, or intellectual property. These are intercompany transactions &mdash; deals between related entities within the same multinational group.</p>
+
+<p>Here are a few examples that will be familiar to any pharma CFO:</p>
+
+<ul>
+  <li><strong>Patent licensing.</strong> Your US parent company developed a blockbuster oncology drug. The compound is patented in the US, but your Irish manufacturing subsidiary produces the API and finished dosage form for global distribution. The royalty rate your Irish subsidiary pays the US parent for the right to use that patent is a transfer price. If the royalty is too low, the IRS will argue that profits are being shifted to Ireland. If it is too high, Irish Revenue will argue the same in reverse.</li>
+  <li><strong>Contract manufacturing.</strong> Your German subsidiary manufactures API for the US parent under a toll manufacturing arrangement. The price your US entity pays for that API is a transfer price. Both the IRS and the German tax authority will scrutinize whether that price reflects what an unrelated contract manufacturer would charge.</li>
+  <li><strong>Contract research.</strong> Your Swiss subsidiary operates a clinical development center that runs Phase II and Phase III trials for the US parent. The fee the US parent pays for those clinical services is a transfer price. The question is whether the Swiss entity is simply performing services (earning a routine return) or contributing to the creation of valuable IP (earning a share of residual profits).</li>
+  <li><strong>Management fees.</strong> Your US headquarters provides corporate services &mdash; legal, finance, HR, IT, regulatory affairs &mdash; to subsidiaries worldwide. The fees charged for those services are transfer prices. Tax authorities frequently challenge management fees that appear to be profit-shifting mechanisms disguised as service charges.</li>
+  <li><strong>Distribution margins.</strong> Your Singapore subsidiary distributes finished pharmaceutical products across Asia-Pacific. The price at which it purchases product from the Irish manufacturing entity &mdash; and the margin it earns on resale &mdash; are transfer prices.</li>
+</ul>
+
+<p>Every one of these transactions must be priced as if the two related entities were independent companies dealing with each other at arm's length. That is the foundational principle of transfer pricing worldwide.</p>
+
+<h2>The Arm's Length Principle</h2>
+
+<p>The arm's length principle is the global standard for transfer pricing, codified in the OECD Transfer Pricing Guidelines and adopted by more than 100 countries. The principle is straightforward in concept:</p>
+
+<p><strong>Intercompany transactions must be priced at the same amount that unrelated parties would agree to in comparable circumstances.</strong></p>
+
+<p>If your Irish subsidiary licenses a drug patent from the US parent at a 5% royalty rate, but comparable unrelated licensing deals in the pharmaceutical industry involve royalties of 12-18%, tax authorities will argue that the 5% rate does not reflect arm's length pricing. They will adjust your taxable income as if the royalty had been set at the arm's length rate &mdash; and they will assess penalties on the adjustment.</p>
+
+<p>The arm's length principle sounds simple. In practice, applying it to pharmaceutical transactions is anything but simple. The reason: most pharmaceutical IP is unique. There is no open market for a specific drug patent at a specific stage of development with a specific efficacy profile and competitive landscape. Finding truly "comparable" transactions between unrelated parties is one of the central challenges of pharma transfer pricing.</p>
+
+<h3>The Comparability Challenge in Pharma</h3>
+
+<p>The arm's length principle requires comparing intercompany transactions to comparable transactions between unrelated parties. In pharma, this comparability challenge is particularly acute across all transaction types:</p>
+
+<ul>
+  <li><strong>Drug patent licensing.</strong> Each pharmaceutical patent is unique &mdash; a specific molecule with a specific mechanism of action, specific clinical data, specific regulatory status, and a specific competitive landscape. Comparability factors include therapeutic area, mechanism novelty, development stage, patent remaining life, market size, competitive intensity, and deal structure.</li>
+  <li><strong>Contract R&D services.</strong> Pharma R&D involves highly qualified scientists (PhDs in medicinal chemistry, pharmacology, biostatistics), expensive equipment, regulatory complexity (GLP, GCP compliance), and long project timelines.</li>
+  <li><strong>Contract manufacturing.</strong> Pharmaceutical manufacturing is heavily regulated (GMP compliance, FDA/EMA inspections) and highly specialized (sterile manufacturing, biologics, controlled substances).</li>
+  <li><strong>Distribution.</strong> Pharma distribution involves regulatory requirements (cold chain, serialization), market access functions (formulary negotiations), and medical affairs activities not present in other industries.</li>
+</ul>
+
+<h3>When the Arm's Length Principle Breaks Down</h3>
+
+<p>There are situations in pharma where the arm's length principle is particularly difficult to apply:</p>
+
+<ul>
+  <li><strong>Unique, first-in-class compounds.</strong> No comparable uncontrolled licensing transaction exists because no one has ever licensed a comparable product.</li>
+  <li><strong>Integrated R&D and manufacturing.</strong> Separating the R&D return from the manufacturing return is conceptually difficult when the manufacturing process is itself a form of IP.</li>
+  <li><strong>Multi-entity development programs.</strong> When five entities across three countries contribute to a single drug development program over 12 years, allocating the resulting IP value is inherently complex.</li>
+</ul>
+
+<h2>Why Pharma Is a Lightning Rod for Transfer Pricing Scrutiny</h2>
+
+<p>Pharmaceutical and biotechnology companies attract disproportionate transfer pricing attention from tax authorities worldwide. There are six structural reasons:</p>
+
+<h3>1. Massive Intellectual Property Portfolios</h3>
+<p>Pharma companies hold some of the most valuable intellectual property on earth. A single drug patent can generate billions of dollars in annual revenue over its exclusivity period. The aggregate IP value in a mid-size pharma company can exceed $10 billion. Tax authorities in the US, UK, Germany, and Australia all have specialized pharma audit teams.</p>
+
+<h3>2. High R&D Spending with Long Development Timelines</h3>
+<p>The average cost to bring a new drug to market is estimated at $1.3 to $2.6 billion. Development timelines span 10 to 15 years from discovery through FDA or EMA approval. During that time, R&D activities may be performed by entities in multiple countries, each with a potential claim to IP value.</p>
+
+<h3>3. Complex Multinational Structures</h3>
+<p>A typical mid-size pharma company with $1 billion or more in revenue operates through 15 to 50 legal entities across 10 to 30 countries. Each intercompany link generates transfer prices that must be set, documented, and defended.</p>
+
+<h3>4. Large Intercompany Financial Flows</h3>
+<p>It is not unusual for a mid-size pharma company's intercompany flows to exceed its third-party revenue. Consider a company with $2 billion in external sales: IP royalties alone can reach $200-400 million, contract manufacturing fees $300-600 million, and management fees $30-100 million.</p>
+
+<h3>5. Historical Profit Allocation to Low-Tax Jurisdictions</h3>
+<p>The pharmaceutical industry pioneered many of the IP migration and profit-shifting structures now under global scrutiny. These created a pattern that tax authorities now recognize and target.</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Era</th><th>Common Structure</th><th>Rationale</th><th>Current Status</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1990s - Early 2000s</td><td>Centralized IP ownership in US parent</td><td>US as primary R&D location</td><td>Generally defensible but may be challenged on valuation</td></tr>
+    <tr><td>2000s - 2010</td><td>IP migration to Ireland, Netherlands, Luxembourg, Switzerland</td><td>Tax-efficient IP regimes; patent boxes</td><td>Under active scrutiny; DEMPE substance challenges</td></tr>
+    <tr><td>2010 - 2015</td><td>"Double Irish," Dutch Sandwich, hybrid structures</td><td>Aggressive tax planning exploiting mismatches</td><td>Structures closed by legislation; legacy under audit</td></tr>
+    <tr><td>2015 - 2020</td><td>Post-BEPS substance-enhanced structures</td><td>DEMPE requirements drive substance build-out</td><td>Improved defensibility, still challenged if substance insufficient</td></tr>
+    <tr><td>2020 - Present</td><td>Substance-first structures; DEMPE-aligned IP ownership</td><td>Pillar Two reduces benefit of low-tax structures</td><td>Current best practice; still requires annual documentation</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>6. Tax Authorities Specifically Target Pharma</h3>
+<p>The IRS has dedicated pharmaceutical audit teams within its Large Business and International Division. HMRC has publicly discussed pharma transfer pricing in enforcement guidance. The European Commission's state aid investigations have targeted pharmaceutical company tax rulings in Ireland, the Netherlands, and Luxembourg.</p>
+
+<h2>The Financial Stakes</h2>
+
+<h3>Direct Financial Exposure</h3>
+<ul>
+  <li><strong>Average transfer pricing adjustment for mid-size pharma: $10 million to $50 million per audit cycle.</strong> For large pharma, adjustments of $100 million or more are not uncommon.</li>
+  <li><strong>Penalties: 20% of the adjustment (US standard) to 75%+ (fraud or willful neglect).</strong> If the adjustment exceeds $20 million, the US penalty increases to 40%.</li>
+  <li><strong>Interest on underpayments</strong> from the original due date through payment. For audit cycles spanning 3-7 years, interest can approach or exceed the penalty amount.</li>
+  <li><strong>Double taxation risk:</strong> two countries taxing the same income. MAP proceedings take 2-5 years to resolve and resolution is not guaranteed.</li>
+</ul>
+
+<h3>A Concrete Example</h3>
+<p>Consider a mid-size biotech company with $1.5 billion in global revenue, a US parent performing core R&D, and an Irish manufacturing subsidiary with a 6% royalty rate. The IRS determines an arm's length royalty of 14%:</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Amount</th></tr></thead>
+  <tbody>
+    <tr><td>Increased US taxable income ($1.5B x 8%)</td><td>$120 million</td></tr>
+    <tr><td>US federal tax on adjustment (21%)</td><td>$25.2 million</td></tr>
+    <tr><td>Penalty (20% standard)</td><td>$5.04 million</td></tr>
+    <tr><td>Interest (est. 4 years at ~5%)</td><td>~$5 million</td></tr>
+    <tr><td><strong>Total US exposure</strong></td><td><strong>~$35 million</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>Plus the Irish entity already paid tax on the income attributed to the low royalty. Without MAP relief, the company faces double taxation on $120 million of income. And this is a single audit in a single jurisdiction on a single transaction.</p>
+
+<h3>The Compounding Effect</h3>
+<p>Transfer pricing exposure compounds across <strong>multiple transaction types</strong> (simultaneous challenges to royalties, R&D pricing, management fees), <strong>multiple jurisdictions</strong> (a single pricing issue cascading across 5-10 countries), <strong>multiple years</strong> (3-5 open years per challenge), and <strong>secondary adjustments</strong> (deemed dividends, constructive distributions). For a mid-size pharma company, aggregate exposure can realistically reach $50 million to $200 million.</p>
+
+<h2>Who Should Own Transfer Pricing</h2>
+<ul>
+  <li><strong>CFO-level sponsorship.</strong> Transfer pricing risk belongs on the CFO's dashboard alongside FX risk, credit risk, and interest rate risk. Quarterly updates on compliance status, audit activity, and regulatory developments.</li>
+  <li><strong>Dedicated tax leadership.</strong> A VP of Tax or Tax Director with transfer pricing expertise should own the compliance program.</li>
+  <li><strong>Cross-functional coordination.</strong> Transfer pricing touches R&D, manufacturing, commercial, legal, treasury, and finance. A steering committee ensures decisions are informed by operational reality.</li>
+  <li><strong>External advisors.</strong> Even companies with strong in-house teams benefit from specialized transfer pricing advisors for documentation, benchmarking, DEMPE analysis, APA negotiations, and audit defense.</li>
+</ul>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>The stakes are too high for DIY. This guide helps you understand the landscape, ask the right questions, and evaluate your advisors' work &mdash; but it is not a substitute for professional transfer pricing counsel. If your company has material intercompany transactions and does not currently engage specialized transfer pricing advisors, addressing that gap should be your first priority.</p>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 2 -->
+<!-- ================================================================ -->
+<div id="section-2" class="section">
+<h1><span class="section-number">2</span> The Pharma Transfer Pricing Landscape</h1>
+
+<h2>The Six Core Intercompany Transaction Types</h2>
+
+<h3>1. IP Licensing and Royalties</h3>
+<p>The entity that owns pharmaceutical IP licenses it to related entities. The royalty rate determines how profits are split between the IP-owning entity and operating entities. This is the single most significant transfer pricing issue in pharma. Typical rates range from 2-5% (pre-clinical compounds) to 15-25% (blockbuster drugs with strong patent protection).</p>
+<p><strong>Key risks:</strong> Rates set without reference to comparables or economic analysis. Royalties paid to IP holding companies with no DEMPE substance. "Perpetual" licenses at fixed rates that do not account for patent expiry.</p>
+
+<h3>2. Contract R&D Services</h3>
+<p>One entity performs research and development on behalf of another, typically priced at cost-plus (5-15%). The critical distinction: "contract R&D" (routine service, cost-plus) vs. "entrepreneurial R&D" (value-creating, entitled to IP returns). The characterization determines whether the entity earns cost + 8-12% or a share of residual profits.</p>
+
+<h3>3. Cost Sharing Agreements (CSAs)</h3>
+<p>Multiple entities share R&D costs and risks in proportion to expected benefits. Popular in pharma but among the most scrutinized arrangements. The IRS has challenged numerous pharma CSAs, and landmark cases have shaped the rules around buy-in payments and cost pool completeness. Following <em>Altera</em>, stock-based compensation must be included in the cost pool.</p>
+
+<h3>4. Contract Manufacturing</h3>
+<p>Related entity manufactures pharmaceutical products. Compensation ranges from cost plus 5-8% (routine toll manufacturing) to cost plus 12-20%+ (specialized biologics/sterile manufacturing). Tax authorities in the manufacturing jurisdiction challenge whether the entity is being appropriately compensated.</p>
+
+<h3>5. Management and Shared Services Fees</h3>
+<p>HQ charges subsidiaries for corporate services. Among the most frequently challenged intercompany charges. Must demonstrate actual benefit to the receiving entity, exclude shareholder costs, and use allocation keys reflecting actual benefit. India, Brazil, and China are particularly aggressive in disallowing management fees.</p>
+
+<h3>6. Distribution and Marketing</h3>
+<p>Related entities distribute and market pharmaceutical products. Margins range from 2-5% (limited-risk distributor) to 8-15%+ (full-risk distributor with significant marketing, medical affairs, and market access functions). Tax authorities challenge characterization when the entity performs functions beyond simple distribution.</p>
+
+<h2>Typical Pharma Multinational Structure</h2>
+
+<!-- INTERACTIVE: PHARMA STRUCTURE DIAGRAM -->
+<div class="structure-diagram" id="pharma-diagram">
+  <div class="diagram-title">Interactive Structure Diagram &mdash; Hover to highlight intercompany flows</div>
+  <div class="org-chart">
+    <div class="org-node org-parent" id="node-us" data-entity="us">
+      <div class="entity-name">US Parent Company</div>
+      <div class="entity-role">Strategic R&D, IP Development, Corporate HQ, US Commercial</div>
+    </div>
+    <div class="connector-down"></div>
+    <div class="org-children">
+      <div class="org-node" id="node-ireland" data-entity="ireland">
+        <div class="entity-name">Ireland Mfg Sub</div>
+        <div class="entity-role">API + Finished Product</div>
+      </div>
+      <div class="org-node" id="node-netherlands" data-entity="netherlands">
+        <div class="entity-name">Netherlands IP Co</div>
+        <div class="entity-role">Patent Licenses</div>
+      </div>
+      <div class="org-node" id="node-switzerland" data-entity="switzerland">
+        <div class="entity-name">Switzerland Services</div>
+        <div class="entity-role">Management, Shared Services</div>
+      </div>
+      <div class="org-node" id="node-singapore" data-entity="singapore">
+        <div class="entity-name">Singapore Distribution</div>
+        <div class="entity-role">Asia-Pacific Sales</div>
+      </div>
+      <div class="org-node" id="node-germany" data-entity="germany">
+        <div class="entity-name">Germany R&D Center</div>
+        <div class="entity-role">Clinical Development</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-table" style="margin-top: 24px;">
+    <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 10px;"><strong>Primary Intercompany Flows:</strong></p>
+    <div class="flow-row" data-from="us" data-to="ireland">
+      <span>US Parent</span><span class="flow-arrow">&rarr;</span><span>Ireland Mfg</span>
+      <span class="flow-type">R&D Services / IP License</span>
+      <span class="flow-value">$50M-$100M</span>
+    </div>
+    <div class="flow-row" data-from="netherlands" data-to="all">
+      <span>Netherlands IP Co</span><span class="flow-arrow">&rarr;</span><span>All Entities</span>
+      <span class="flow-type">IP Royalties</span>
+      <span class="flow-value">$100M-$200M</span>
+    </div>
+    <div class="flow-row" data-from="switzerland" data-to="all">
+      <span>Switzerland Services</span><span class="flow-arrow">&rarr;</span><span>All Entities</span>
+      <span class="flow-type">Management Fees</span>
+      <span class="flow-value">$20M-$40M</span>
+    </div>
+    <div class="flow-row" data-from="ireland" data-to="singapore">
+      <span>Ireland Mfg</span><span class="flow-arrow">&rarr;</span><span>Singapore Dist</span>
+      <span class="flow-type">Finished Product Sales</span>
+      <span class="flow-value">$150M-$300M</span>
+    </div>
+    <div class="flow-row" data-from="ireland" data-to="us">
+      <span>Ireland Mfg</span><span class="flow-arrow">&rarr;</span><span>US Parent</span>
+      <span class="flow-type">Finished Product Sales</span>
+      <span class="flow-value">$200M-$400M</span>
+    </div>
+    <div class="flow-row" data-from="germany" data-to="us">
+      <span>Germany R&D</span><span class="flow-arrow">&rarr;</span><span>US Parent</span>
+      <span class="flow-type">Clinical Data / R&D Services</span>
+      <span class="flow-value">$30M-$60M</span>
+    </div>
+    <div class="flow-row" data-from="us" data-to="germany">
+      <span>US Parent</span><span class="flow-arrow">&rarr;</span><span>Germany R&D</span>
+      <span class="flow-type">CSA Cost Sharing Payments</span>
+      <span class="flow-value">$40M-$80M</span>
+    </div>
+  </div>
+</div>
+
+<h2>What Triggers a Transfer Pricing Audit</h2>
+
+<h3>Primary Audit Triggers</h3>
+<ol>
+  <li><strong>Significant intercompany transactions without adequate documentation.</strong> Missing documentation not only triggers audits but also exposes you to documentation-specific penalties.</li>
+  <li><strong>Profit concentrations in low-tax jurisdictions.</strong> CbCR data showing an Irish entity with 100 employees reporting more profit than a US entity with 2,000 employees.</li>
+  <li><strong>Inconsistent transfer pricing positions across jurisdictions.</strong> Tax authorities share information through CbCR exchange, joint audits, and the EU Joint Transfer Pricing Forum.</li>
+  <li><strong>Large royalty payments with weak economic substance.</strong> Post-BEPS, tax authorities treat royalties to entities without DEMPE substance as presumptive profit-shifting.</li>
+  <li><strong>Operating expense patterns inconsistent with reported functions.</strong> A "contract R&D" entity with $50M in personnel costs charged at cost + 10% while its scientists hold decision-making authority.</li>
+  <li><strong>CbCR data showing misalignment between profits and economic activity.</strong> High profit/employee ratios, high profits with low tangible assets, significant related-party revenue.</li>
+</ol>
+
+<h3>Self-Assessment: Your Audit Risk Profile</h3>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Risk Factor</th><th>Low Risk</th><th>Medium Risk</th><th>High Risk</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>Documentation status</td><td>Contemporaneous, current</td><td>Exists but needs updating</td><td>Missing or inadequate</td></tr>
+    <tr><td>IP structure</td><td>IP in entities with DEMPE substance</td><td>Some substance gaps</td><td>IP in shell entities</td></tr>
+    <tr><td>Intercompany value</td><td>&lt;$50M aggregate IC transactions</td><td>$50M-$500M aggregate</td><td>&gt;$500M aggregate</td></tr>
+    <tr><td>Jurisdiction concentration</td><td>Profits aligned with substance</td><td>Some concentration in low-tax</td><td>Significant concentration in low-tax</td></tr>
+    <tr><td>Prior audit history</td><td>No prior TP audits</td><td>Prior audits, no adjustments</td><td>Prior adjustments</td></tr>
+    <tr><td>CSA status</td><td>No CSAs</td><td>CSAs with documented buy-ins</td><td>CSAs with undervalued buy-ins</td></tr>
+    <tr><td>Management fees</td><td>Documented with benefit evidence</td><td>Documentation gaps</td><td>No documentation</td></tr>
+    <tr><td>Benchmarking currency</td><td>Updated within 2 years</td><td>2-3 years old</td><td>3+ years old or none</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>If you have three or more "High Risk" answers, engaging a transfer pricing advisor for an immediate risk assessment should be a top priority.</p>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>The structure diagram above is illustrative only. Your company's structure must be designed by qualified international tax counsel based on your specific business operations, IP portfolio, and growth plans. Structures designed solely for tax benefit without economic substance are increasingly challenged by tax authorities worldwide.</p>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 3 -->
+<!-- ================================================================ -->
+<div id="section-3" class="section">
+<h1><span class="section-number">3</span> The Five Transfer Pricing Methods</h1>
+
+<h2>Choosing the Right Approach</h2>
+
+<p>The OECD prescribes five approved methods for determining arm's length transfer prices. Understanding them is essential because your transfer pricing advisor will apply one or more to each transaction, tax authorities will evaluate whether the method is appropriate, and method selection is itself an audit issue.</p>
+
+<h3>Method 1: Comparable Uncontrolled Price (CUP)</h3>
+<p>Compares the price charged in a controlled transaction to the price in a comparable uncontrolled transaction. The OECD considers CUP the most reliable method when quality comparables exist. However, in pharma, this is the exception &mdash; most pharmaceutical IP is unique.</p>
+<p><strong>Pharma example:</strong> Your US parent licenses an oncology patent to Ireland at 12% royalty. You identify three comparable third-party pharma licensing deals at 11-14%. Your rate falls within the arm's length range.</p>
+<p><strong>When it works:</strong> Quality comparable transactions exist with similar terms and economics.</p>
+<p><strong>When it doesn't:</strong> Most pharma IP transactions (unique compounds, confidential terms, first-in-class drugs).</p>
+
+<h3>Method 2: Resale Price Method (RPM)</h3>
+<p>Starts with the resale price to an independent customer, subtracts an appropriate gross margin for the distributor. Declining in usage compared to TNMM.</p>
+<p><strong>Pharma example:</strong> Singapore buys product at $X, resells at $100. Comparable independent pharma distributors earn 20-28% gross margin. Transfer price should be $72-$80.</p>
+
+<h3>Method 3: Cost Plus Method (C+)</h3>
+<p>Starts with costs, adds an appropriate markup. The workhorse method for contract manufacturing and contract R&D in pharma.</p>
+<p><strong>Pharma example:</strong> German R&D center total costs: $40M. Comparable CROs charge cost plus 8-14%. Arm's length price: $43.2M-$45.6M.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Service Type</th><th>Typical Markup Range</th><th>Key Factors</th></tr></thead>
+  <tbody>
+    <tr><td>Routine analytical testing</td><td>5-8%</td><td>Limited scientific judgment; standardized protocols</td></tr>
+    <tr><td>Quality control/assurance</td><td>5-10%</td><td>GMP compliance; specialized training</td></tr>
+    <tr><td>Clinical trial administration</td><td>6-10%</td><td>Administrative coordination; no scientific decision-making</td></tr>
+    <tr><td>Clinical trial execution (protocol design + management)</td><td>10-15%</td><td>Scientific judgment; regulatory expertise; data analysis</td></tr>
+    <tr><td>Formulation R&D services</td><td>8-15%</td><td>Specialized expertise; some creative contribution</td></tr>
+    <tr><td>Discovery research services</td><td>12-20%</td><td>High scientific complexity; potential for valuable results</td></tr>
+    <tr><td>Toll manufacturing (simple)</td><td>5-8%</td><td>Routine production; limited quality complexity</td></tr>
+    <tr><td>Toll manufacturing (sterile/biologic)</td><td>8-15%</td><td>High regulatory burden; specialized facilities</td></tr>
+    <tr><td>Regulatory affairs services</td><td>8-12%</td><td>Specialized expertise; jurisdiction-specific knowledge</td></tr>
+    <tr><td>Medical affairs services</td><td>8-15%</td><td>Scientific and clinical expertise; KOL management</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Method 4: Transactional Net Margin Method (TNMM/CPM)</h3>
+<p>Compares the net profit margin of the "tested party" to comparable independent companies. <strong>The most widely used method in pharma</strong>, accounting for 60%+ of transfer pricing studies. Works because comparable company data is broadly available through commercial databases.</p>
+<p><strong>Pharma example:</strong> Irish manufacturing sub earns 8.3% operating margin. Comparable independent pharma manufacturers' IQR: 6.7%-9.6%. Position within range supports arm's length pricing.</p>
+
+<h3>Method 5: Profit Split Method</h3>
+<p>Allocates combined profit based on each party's relative contribution. Used when both parties contribute unique, valuable intangibles. Two variants: <strong>Residual Profit Split</strong> (most common in pharma) allocates routine returns first, then splits residual profit; <strong>Contribution Profit Split</strong> allocates based on overall contribution.</p>
+<p><strong>Pharma example:</strong> US parent and German R&D center jointly develop a biologic. Combined profit: $350M. After routine returns ($72M to manufacturing and distribution), residual $278M split based on DEMPE contributions: US 60% ($166.8M), Germany 35% ($97.3M), Other 5%.</p>
+
+<h2>Which Methods Pharma Actually Uses</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Method</th><th>Approx. Usage in Pharma</th><th>Primary Application</th></tr></thead>
+  <tbody>
+    <tr><td><strong>TNMM/CPM</strong></td><td>55-65%</td><td>Manufacturing, distribution, services benchmarking</td></tr>
+    <tr><td><strong>Profit Split</strong></td><td>15-20%</td><td>Complex IP arrangements, joint development</td></tr>
+    <tr><td><strong>Cost Plus</strong></td><td>10-15%</td><td>Contract R&D, contract manufacturing, services</td></tr>
+    <tr><td><strong>CUP</strong></td><td>5-10%</td><td>IP licensing (when comparables exist), financial transactions</td></tr>
+    <tr><td><strong>RPM</strong></td><td>2-5%</td><td>Distribution (declining usage, replaced by TNMM)</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Method Selection Decision Tree</h2>
+
+<!-- INTERACTIVE: METHOD DECISION TREE -->
+<div class="decision-tree" id="method-tree">
+  <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 16px;">Answer the questions below to identify the recommended transfer pricing method for your transaction.</p>
+
+  <div class="dt-question active" id="dtq-1">
+    <div class="q-number">Question 1 of 4</div>
+    <div class="q-text">What type of intercompany transaction are you pricing?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(1, 'ip')">IP Licensing / Royalties</button>
+      <button class="dt-btn" onclick="dtAnswer(1, 'rd')">Contract R&D Services</button>
+      <button class="dt-btn" onclick="dtAnswer(1, 'mfg')">Contract Manufacturing</button>
+      <button class="dt-btn" onclick="dtAnswer(1, 'svc')">Management / Shared Services</button>
+      <button class="dt-btn" onclick="dtAnswer(1, 'dist')">Distribution / Marketing</button>
+    </div>
+  </div>
+
+  <div class="dt-question" id="dtq-2-ip">
+    <div class="q-number">Question 2 of 3</div>
+    <div class="q-text">Are comparable uncontrolled license transactions available?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(2, 'ip-cup')">Yes, quality comparables exist</button>
+      <button class="dt-btn" onclick="dtAnswer(2, 'ip-nocup')">No, unique IP with no comparables</button>
+    </div>
+  </div>
+
+  <div class="dt-question" id="dtq-3-ip">
+    <div class="q-number">Question 3 of 3</div>
+    <div class="q-text">Do both the licensor and licensee contribute unique, valuable intangibles?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(3, 'ip-both')">Yes, both contribute unique IP</button>
+      <button class="dt-btn" onclick="dtAnswer(3, 'ip-one')">No, one party is routine</button>
+    </div>
+  </div>
+
+  <div class="dt-question" id="dtq-2-rd">
+    <div class="q-number">Question 2 of 3</div>
+    <div class="q-text">Is the R&D entity a routine service provider (no IP ownership, limited risk)?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(2, 'rd-routine')">Yes, routine service provider</button>
+      <button class="dt-btn" onclick="dtAnswer(2, 'rd-value')">No, contributes unique IP or bears real risk</button>
+    </div>
+  </div>
+
+  <div class="dt-question" id="dtq-2-dist">
+    <div class="q-number">Question 2 of 3</div>
+    <div class="q-text">Is the distributor limited-risk (buy-sell, minimal marketing)?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(2, 'dist-limited')">Yes, limited-risk distributor</button>
+      <button class="dt-btn" onclick="dtAnswer(2, 'dist-full')">No, performs significant marketing / medical affairs</button>
+    </div>
+  </div>
+
+  <div class="dt-question" id="dtq-3-dist">
+    <div class="q-number">Question 3 of 3</div>
+    <div class="q-text">Does the distributor create local marketing intangibles?</div>
+    <div class="dt-options">
+      <button class="dt-btn" onclick="dtAnswer(3, 'dist-intang')">Yes, creates marketing intangibles</button>
+      <button class="dt-btn" onclick="dtAnswer(3, 'dist-no-intang')">No, standard distribution functions</button>
+    </div>
+  </div>
+
+  <!-- Results -->
+  <div class="dt-result" id="result-cup">
+    <div class="result-method">Recommended: CUP (Comparable Uncontrolled Price)</div>
+    <div class="result-desc">Use comparable uncontrolled license transactions as benchmarks. Ensure comparability in therapeutic area, development stage, market size, deal structure, and remaining patent life. Sources include RoyaltyStat, ktMINE, and internal CUPs.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+  <div class="dt-result" id="result-profit-split">
+    <div class="result-method">Recommended: Profit Split Method</div>
+    <div class="result-desc">Allocate combined profits based on each party's relative contribution of unique intangibles, using DEMPE-based allocation keys. The Residual Profit Split variant is most common in pharma: allocate routine returns first, then split residual profit.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+  <div class="dt-result" id="result-tnmm">
+    <div class="result-method">Recommended: TNMM / CPM</div>
+    <div class="result-desc">Test the simpler party's net operating margin against comparable independent companies. This is the most widely used method in pharma (60%+ of studies), using databases like Bureau van Dijk Orbis and S&P Capital IQ.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+  <div class="dt-result" id="result-cost-plus">
+    <div class="result-method">Recommended: Cost Plus Method</div>
+    <div class="result-desc">Start with total costs (fully loaded, including stock-based compensation per Altera) and apply an appropriate markup based on comparable service providers or manufacturers. Ensure the cost base is complete and consistently defined.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+  <div class="dt-result" id="result-rpm-tnmm">
+    <div class="result-method">Recommended: RPM or TNMM</div>
+    <div class="result-desc">For limited-risk distribution, either Resale Price Method (gross margin) or TNMM (operating margin, preferred) may be used. TNMM is increasingly dominant as it captures the full cost structure of the tested party.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+  <div class="dt-result" id="result-profit-split-dist">
+    <div class="result-method">Recommended: Profit Split or TNMM with Adjustments</div>
+    <div class="result-desc">When the distributor creates local marketing intangibles, standard TNMM may undercompensate. Consider Profit Split to capture the distribution entity's unique contributions, or TNMM with marketing contribution adjustments.</div>
+    <button class="dt-restart" onclick="dtReset()">Start Over</button>
+  </div>
+</div>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>Method selection has significant tax implications. The "right" method depends on your specific facts and circumstances &mdash; functions performed, assets employed, and risks assumed by each entity. Your transfer pricing advisor should document the method selection rationale in your Local File. Using the wrong method is a common audit trigger, and tax authorities may substitute their preferred method if they can demonstrate it produces a more reliable result.</p>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 4 -->
+<!-- ================================================================ -->
+<div id="section-4" class="section">
+<h1><span class="section-number">4</span> DEMPE Analysis &mdash; The Framework That Changed Everything</h1>
+
+<div class="disclaimer-block">
+  <div class="disc-title">IMPORTANT DISCLAIMER</div>
+  <p>This guide is for <strong>educational and informational purposes only</strong>. It does not constitute tax, legal, or financial advice. <strong>DO NOT</strong> implement transfer pricing strategies based solely on this guide. <strong>ALWAYS</strong> consult qualified transfer pricing advisors, international tax attorneys, and licensed CPAs.</p>
+</div>
+
+<h2>Why DEMPE Matters More in Pharma Than Anywhere Else</h2>
+
+<p>If there is a single concept that every pharma CFO needs to understand about transfer pricing, it is DEMPE. Since 2015, the OECD requires that profits from intangible assets be allocated based on which entity actually performs the functions of <strong>D</strong>evelopment, <strong>E</strong>nhancement, <strong>M</strong>aintenance, <strong>P</strong>rotection, and <strong>E</strong>xploitation. Legal ownership alone, without corresponding DEMPE substance, no longer justifies receiving the returns from IP.</p>
+
+<p>This matters more in pharma than virtually any other industry because: a single drug patent can be worth billions; development spans 10-15 years across multiple entities; historical structures created enormous misalignment between IP ownership and DEMPE substance; and the consequences of getting DEMPE wrong are enormous.</p>
+
+<h2>The Five DEMPE Functions Explained for Pharma</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Function</th><th>What It Means</th><th>Pharma Example</th><th>Key Question</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Development</strong></td><td>Creating the intangible</td><td>Target ID, lead optimization, Phase I-III trials, regulatory submission, process development</td><td>Who designed the molecule and ran the trials?</td></tr>
+    <tr><td><strong>Enhancement</strong></td><td>Improving or extending value</td><td>Line extensions, new indications, formulation improvements, pediatric programs, geographic expansion</td><td>Who is doing post-approval R&D?</td></tr>
+    <tr><td><strong>Maintenance</strong></td><td>Keeping the intangible functional</td><td>Patent renewals, pharmacovigilance, regulatory compliance, GMP, label updates</td><td>Who maintains the FDA/EMA filings?</td></tr>
+    <tr><td><strong>Protection</strong></td><td>Legal/commercial safeguarding</td><td>Patent filing, Hatch-Waxman litigation, trade secrets, anti-counterfeiting, data exclusivity</td><td>Who files and defends the patents?</td></tr>
+    <tr><td><strong>Exploitation</strong></td><td>Commercializing the intangible</td><td>Manufacturing, marketing, distribution, market access, KOL management, licensing</td><td>Who takes the product to market?</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>DEMPE Summary by Entity Type</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>DEMPE Function</th><th>Where It Usually Happens</th><th>Misalignment Red Flag</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Development</strong></td><td>US, Germany, UK, Switzerland (where scientists are)</td><td>IP owned by entity with no R&D staff</td></tr>
+    <tr><td><strong>Enhancement</strong></td><td>US, Germany, Japan (where post-approval R&D occurs)</td><td>IP holder receives upside without performing enhancement</td></tr>
+    <tr><td><strong>Maintenance</strong></td><td>US, EU (where regulatory teams are)</td><td>IP holder has no regulatory or quality staff</td></tr>
+    <tr><td><strong>Protection</strong></td><td>US (where IP legal teams are)</td><td>Patents in name of entity with no legal decision-making</td></tr>
+    <tr><td><strong>Exploitation</strong></td><td>Ireland, US, Singapore, Germany (where commercial ops are)</td><td>Royalties paid to entity with no commercial function</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Common DEMPE Mistakes in Pharma</h2>
+<ol>
+  <li><strong>IP holding company with no DEMPE employees.</strong> An entity with no scientists, no regulatory professionals, no patent attorneys, and no commercial staff receiving hundreds of millions in royalties.</li>
+  <li><strong>Misallocating Development credit</strong> to the funder rather than the entity performing the key scientific and strategic work.</li>
+  <li><strong>Ignoring Enhancement and Maintenance</strong> &mdash; ongoing value creation and preservation activities that justify continuing shares of IP returns.</li>
+  <li><strong>No documentation of Protection activities.</strong> Patent strategy and litigation directed by US legal team, but Protection credit given to the entity in whose name patents are registered.</li>
+  <li><strong>Exploitation profits misaligned with commercial functions.</strong> Distribution entities investing heavily in market access and medical affairs but receiving only routine margins.</li>
+</ol>
+
+<h2>DEMPE Self-Assessment Tool</h2>
+
+<!-- INTERACTIVE: DEMPE SELF-ASSESSMENT -->
+<div class="dempe-calculator" id="dempe-tool">
+  <h4>DEMPE Function Allocation Calculator</h4>
+  <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 16px;">Select which entity primarily performs each DEMPE function to see an illustrative allocation. Development is weighted 30%, Enhancement 20%, Maintenance 15%, Protection 15%, Exploitation 20%.</p>
+
+  <div class="dempe-row">
+    <span class="dempe-label">Development</span>
+    <span class="dempe-desc">Who creates the intangible? (Discovery, clinical trials, regulatory filing)</span>
+    <select class="dempe-select" id="dempe-d" onchange="updateDempe()">
+      <option value="us">US Parent (R&D HQ)</option>
+      <option value="ireland">Ireland Manufacturing</option>
+      <option value="netherlands">Netherlands IP Co</option>
+      <option value="germany">Germany R&D Center</option>
+      <option value="singapore">Singapore Distribution</option>
+    </select>
+  </div>
+
+  <div class="dempe-row">
+    <span class="dempe-label">Enhancement</span>
+    <span class="dempe-desc">Who improves or extends value? (New indications, formulations)</span>
+    <select class="dempe-select" id="dempe-e1" onchange="updateDempe()">
+      <option value="germany">Germany R&D Center</option>
+      <option value="us">US Parent (R&D HQ)</option>
+      <option value="ireland">Ireland Manufacturing</option>
+      <option value="netherlands">Netherlands IP Co</option>
+      <option value="singapore">Singapore Distribution</option>
+    </select>
+  </div>
+
+  <div class="dempe-row">
+    <span class="dempe-label">Maintenance</span>
+    <span class="dempe-desc">Who keeps IP functional? (Regulatory compliance, pharmacovigilance)</span>
+    <select class="dempe-select" id="dempe-m" onchange="updateDempe()">
+      <option value="us">US Parent (R&D HQ)</option>
+      <option value="ireland">Ireland Manufacturing</option>
+      <option value="germany">Germany R&D Center</option>
+      <option value="netherlands">Netherlands IP Co</option>
+      <option value="singapore">Singapore Distribution</option>
+    </select>
+  </div>
+
+  <div class="dempe-row">
+    <span class="dempe-label">Protection</span>
+    <span class="dempe-desc">Who files and defends patents? (Litigation, trade secrets)</span>
+    <select class="dempe-select" id="dempe-p" onchange="updateDempe()">
+      <option value="us">US Parent (R&D HQ)</option>
+      <option value="netherlands">Netherlands IP Co</option>
+      <option value="ireland">Ireland Manufacturing</option>
+      <option value="germany">Germany R&D Center</option>
+      <option value="singapore">Singapore Distribution</option>
+    </select>
+  </div>
+
+  <div class="dempe-row">
+    <span class="dempe-label">Exploitation</span>
+    <span class="dempe-desc">Who commercializes? (Manufacturing, marketing, distribution)</span>
+    <select class="dempe-select" id="dempe-e2" onchange="updateDempe()">
+      <option value="ireland">Ireland Manufacturing</option>
+      <option value="us">US Parent (R&D HQ)</option>
+      <option value="singapore">Singapore Distribution</option>
+      <option value="germany">Germany R&D Center</option>
+      <option value="netherlands">Netherlands IP Co</option>
+    </select>
+  </div>
+
+  <div class="dempe-results" id="dempe-results">
+    <p style="font-size: 0.9em; color: var(--text-secondary); margin-bottom: 12px;"><strong>Illustrative DEMPE Allocation:</strong></p>
+    <div id="dempe-bars"></div>
+  </div>
+
+  <div class="disclaimer-block" style="margin-top: 16px;">
+    <div class="disc-title">Illustrative Only</div>
+    <p>This calculator provides a simplified, illustrative DEMPE allocation for educational purposes. Actual DEMPE analysis requires detailed functional interviews, documentation of decision-making processes, and economic modeling by qualified transfer pricing professionals.</p>
+  </div>
+</div>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>DEMPE analysis is the single most scrutinized area in pharma transfer pricing audits. Tax authorities in the US (IRS), EU, and increasingly Asia-Pacific are actively challenging structures where IP ownership does not align with DEMPE substance. This analysis requires detailed functional interviews, documentation of decision-making processes, and often economic modeling. Do not attempt this without specialized transfer pricing counsel.</p>
+</div>
+
+<!-- CTA after Section 4 -->
+<div class="cta-block">
+  <p>See how the DEMPE Analysis tab structures your intangible asset allocation with percentage contributions by entity.</p>
+  <a href="https://luckyduckgroup.gumroad.com" class="cta-btn" target="_blank" rel="noopener">Get the Transfer Pricing Workbook</a>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 5 -->
+<!-- ================================================================ -->
+<div id="section-5" class="section">
+<h1><span class="section-number">5</span> Documentation Requirements &mdash; Master File, Local File, CbCR</h1>
+
+<div class="disclaimer-block">
+  <div class="disc-title">IMPORTANT DISCLAIMER</div>
+  <p>This guide is for <strong>educational and informational purposes only</strong>. It does not constitute tax, legal, or financial advice. <strong>DO NOT</strong> implement transfer pricing strategies based solely on this guide. <strong>ALWAYS</strong> consult qualified transfer pricing advisors.</p>
+</div>
+
+<h2>The Three-Tier Documentation System</h2>
+
+<p>The OECD BEPS Action 13 established a standardized system adopted by most major jurisdictions. Documentation is not optional, quality directly affects penalty exposure, documentation is increasingly shared between jurisdictions, and the cost ($200K-$500K/year) is a fraction of non-compliance cost ($10M-$50M+).</p>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Document</th><th>What It Contains</th><th>Who Files</th><th>When</th><th>Scope</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>Master File</strong></td><td>Group-wide: org structure, business operations, IP ownership, TP policies, financial activities</td><td>Parent company (shared with all entities)</td><td>With local tax return or on request</td><td>Entire MNE group</td></tr>
+    <tr><td><strong>Local File</strong></td><td>Entity-specific: functional analysis, IC transactions, method selection, benchmarking</td><td>Each entity with material IC transactions</td><td>With return or 30-90 days of request</td><td>Single entity</td></tr>
+    <tr><td><strong>CbCR</strong></td><td>Country-level: revenue, profit, tax, employees, assets per jurisdiction</td><td>Ultimate parent (filed in parent jurisdiction)</td><td>Within 12 months of fiscal year end</td><td>All jurisdictions</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Master File Checklist (12 Items)</h2>
+<ol>
+  <li>Organizational structure chart</li>
+  <li>Description of business operations</li>
+  <li>Intangible assets inventory</li>
+  <li>IP ownership and DEMPE mapping</li>
+  <li>Intercompany financial activities</li>
+  <li>Transfer pricing policies</li>
+  <li>Cost sharing arrangements</li>
+  <li>Financial and tax positions</li>
+  <li>Supply chain description</li>
+  <li>Major restructuring history</li>
+  <li>APAs and rulings</li>
+  <li>Financial statements</li>
+</ol>
+
+<h2>Local File Checklist (10 Items)</h2>
+<ol>
+  <li>Entity functional analysis (functions, assets, risks)</li>
+  <li>Description of each IC transaction</li>
+  <li>Transfer pricing method selection rationale</li>
+  <li>Comparability analysis</li>
+  <li>Benchmarking study results</li>
+  <li>IC agreements (executed copies)</li>
+  <li>Financial data supporting positions</li>
+  <li>Industry analysis</li>
+  <li>Entity financial statements</li>
+  <li>Prior year adjustments (if any)</li>
+</ol>
+
+<h2>CbCR Data Points (Per Jurisdiction)</h2>
+<ol>
+  <li>Revenue &mdash; related party</li>
+  <li>Revenue &mdash; unrelated party</li>
+  <li>Profit (loss) before income tax</li>
+  <li>Income tax paid (cash basis)</li>
+  <li>Income tax accrued &mdash; current year</li>
+  <li>Stated capital</li>
+  <li>Accumulated earnings</li>
+  <li>Number of employees (FTE)</li>
+</ol>
+
+<h2>Key Thresholds by Jurisdiction</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Jurisdiction</th><th>Master File Threshold</th><th>Local File Threshold</th><th>CbCR Threshold</th><th>Documentation Deadline</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>United States</strong></td><td>All material IC transactions</td><td>All material IC transactions</td><td>$850M+ revenue</td><td>Contemporaneous with return</td></tr>
+    <tr><td><strong>Germany</strong></td><td>EUR 100M+ consolidated revenue</td><td>All material IC transactions</td><td>EUR 750M+</td><td>60 days of request</td></tr>
+    <tr><td><strong>United Kingdom</strong></td><td>EUR 750M+ (large MNE)</td><td>Material IC transactions</td><td>EUR 750M+</td><td>12 months after FY end</td></tr>
+    <tr><td><strong>France</strong></td><td>EUR 400M+ revenue or assets</td><td>EUR 100K+ transaction value</td><td>EUR 750M+</td><td>With corporate tax return</td></tr>
+    <tr><td><strong>Japan</strong></td><td>All IC transactions</td><td>All IC transactions</td><td>JPY 100B+ (~EUR 750M)</td><td>60 days of request</td></tr>
+    <tr><td><strong>China</strong></td><td>All IC transactions</td><td>All IC transactions</td><td>RMB 5.5B+ (~EUR 750M)</td><td>20 days of request</td></tr>
+    <tr><td><strong>India</strong></td><td>All specified transactions</td><td>INR 1Cr+ transaction value</td><td>EUR 750M+</td><td>Before tax return filing</td></tr>
+    <tr><td><strong>Australia</strong></td><td>All foreign-related IC</td><td>All foreign-related IC</td><td>A$1B+ (~EUR 750M)</td><td>30 days of request</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>Transfer pricing documentation must be prepared contemporaneously &mdash; before or at the time of filing your tax return. Documentation prepared after an audit begins carries significantly less weight. Your tax advisor should establish an annual documentation cycle. The Transfer Pricing Workbook provides a structured framework, but documentation must be reviewed and finalized by qualified professionals.</p>
+</div>
+
+</div>
+
+<!-- EMAIL CAPTURE after Section 5 -->
+<div class="email-capture">
+  <h3>Get the Full Guide as PDF + Quarterly Updates</h3>
+  <p>Receive the complete Transfer Pricing Guide as a downloadable PDF, plus quarterly regulatory updates covering Pillar Two changes, enforcement actions, and new jurisdiction requirements.</p>
+  <div class="email-form" id="email-form">
+    <input type="email" id="email-input" placeholder="your@email.com" aria-label="Email address">
+    <button type="button" onclick="handleEmailSubmit()">Subscribe</button>
+  </div>
+  <p class="email-note" id="email-note">No spam. Quarterly updates only. Tagged as "tp-guide" for relevant content.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 6 -->
+<!-- ================================================================ -->
+<div id="section-6" class="section">
+<h1><span class="section-number">6</span> Pillar Two and the Global Minimum Tax (2024-2026 Update)</h1>
+
+<h2>The Largest Change to International Tax in a Generation</h2>
+
+<p>Pillar Two establishes a <strong>global minimum effective tax rate (ETR) of 15%</strong> for MNE groups with consolidated revenue of EUR 750 million or more. If any jurisdiction's ETR falls below 15%, a "top-up tax" is applied through one of three mechanisms: QDMTT (jurisdiction itself imposes top-up), IIR (parent jurisdiction imposes), or UTPR (backstop mechanism).</p>
+
+<h3>Effective Dates</h3>
+<ul>
+  <li><strong>January 1, 2024:</strong> IIR effective in EU, UK, Japan, South Korea, Canada, Australia.</li>
+  <li><strong>January 1, 2025:</strong> UTPR effective. Additional countries implementing IIR.</li>
+  <li><strong>January 1, 2026:</strong> US Side-by-Side (SbS) system effective. QDMTTs enacted in Ireland, Switzerland, Singapore.</li>
+</ul>
+
+<h2>How Pillar Two Affects Transfer Pricing</h2>
+
+<h3>Transfer Pricing Determines Jurisdictional Profit Allocation</h3>
+<p>Your transfer pricing policies determine where profits are reported, which determines ETR by jurisdiction, which determines top-up tax. Transfer pricing now serves a dual purpose: arm's length compliance AND ETR management.</p>
+
+<h3>The Diminished Value of Low-Tax IP Structures</h3>
+<ul>
+  <li>A 0% tax jurisdiction now has a 15% effective minimum &mdash; the tax benefit is eliminated.</li>
+  <li>Low-tax patent boxes (5-10% ETR) provide smaller marginal benefit.</li>
+  <li>The SBIE rewards genuine substance over shell structures.</li>
+</ul>
+
+<h3>The Side-by-Side (SbS) System (January 2026)</h3>
+<ul>
+  <li><strong>US-parented MNEs:</strong> generally exempted from GloBE IIR/UTPR. GILTI serves as the US equivalent. However, QDMTTs in Ireland, Switzerland, Singapore still apply.</li>
+  <li><strong>Non-US MNEs:</strong> full Pillar Two GloBE rules apply in parent jurisdiction.</li>
+</ul>
+
+<h2>Practical Impact on Common Pharma Structures</h2>
+
+<h3>Irish Manufacturing with Patent Box</h3>
+<p>Pre-Pillar Two: ~8% ETR with KDB. Post-Pillar Two: 15% minimum via QDMTT. The tax benefit of allocating profit to Ireland is reduced from a 13pp differential to just 6pp.</p>
+
+<h3>Singapore Distribution Hub</h3>
+<p>Pre-Pillar Two: ~6% ETR with DEI. Post-Pillar Two: 15% minimum via QDMTT. The SBIE carve-out rewards entities with significant payroll and tangible assets.</p>
+
+<h3>Swiss Principal Company</h3>
+<p>Pre-Pillar Two: ~10% ETR with cantonal incentives. Post-Pillar Two: Swiss QDMTT brings rate to 15%. The key question remains whether the Swiss entity has sufficient DEMPE substance to justify its profit allocation.</p>
+
+<h2>Substance-Based Income Exclusion (SBIE)</h2>
+
+<p>The SBIE excludes a portion of GloBE income from top-up tax based on payroll and tangible assets, directly rewarding genuine economic substance.</p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Year</th><th>Payroll Carve-Out</th><th>Tangible Asset Carve-Out</th></tr></thead>
+  <tbody>
+    <tr><td>2024</td><td>10.0%</td><td>8.0%</td></tr>
+    <tr><td>2025</td><td>9.8%</td><td>7.8%</td></tr>
+    <tr><td>2026</td><td>9.6%</td><td>7.6%</td></tr>
+    <tr><td>2027</td><td>9.4%</td><td>7.4%</td></tr>
+    <tr><td>2028</td><td>9.2%</td><td>7.2%</td></tr>
+    <tr><td>2029</td><td>9.0%</td><td>7.0%</td></tr>
+    <tr><td>2030</td><td>8.2%</td><td>6.6%</td></tr>
+    <tr><td>2033+ (long-term)</td><td>5.0%</td><td>5.0%</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>US Tax Rule Interactions</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>US Rule</th><th>What It Does</th><th>Transfer Pricing Interaction</th><th>Pillar Two Interaction</th></tr></thead>
+  <tbody>
+    <tr><td><strong>GILTI</strong></td><td>Minimum tax on low-taxed foreign income (~10.5%)</td><td>TP determines foreign income subject to GILTI</td><td>GILTI is blended (worldwide); Pillar Two is per-jurisdiction</td></tr>
+    <tr><td><strong>FDII</strong></td><td>Reduced US rate (~13.125%) on IP export income</td><td>Keeping IP income in US as FDII-eligible can be favorable</td><td>FDII can reduce US ETR below 15% for specific streams</td></tr>
+    <tr><td><strong>BEAT</strong></td><td>Minimum tax (~10%) on large deductible foreign payments</td><td>Increasing royalties/fees to foreign affiliates may trigger BEAT</td><td>BEAT and Pillar Two can create conflicting incentives</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>Pillar Two is the largest change to international tax in a generation. Its interaction with transfer pricing, existing tax treaties, and domestic tax laws (including US GILTI, BEAT, and FDII) is extraordinarily complex. The SbS framework adds another layer for US-parented companies. Do not make Pillar Two planning decisions without professional guidance.</p>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 7 -->
+<!-- ================================================================ -->
+<div id="section-7" class="section">
+<h1><span class="section-number">7</span> Common Mistakes and How to Avoid Them</h1>
+
+<h2>Ten Transfer Pricing Pitfalls That Cost Pharma Companies Millions</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>#</th><th>Mistake</th><th>Why It Is Dangerous</th><th>How to Avoid</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>1</strong></td><td>No documentation until audit</td><td>Contemporaneous requirement in most jurisdictions; late docs carry less weight; US penalty protection requires docs at time of filing</td><td>Establish annual documentation cycle; complete before tax return filing deadline</td></tr>
+    <tr><td><strong>2</strong></td><td>IP in a shell company without DEMPE substance</td><td>Highest-risk structure in pharma; EU state aid cases; IRS "control of risk" challenges</td><td>Ensure IP entities have 20-30+ professionals making substantive decisions; consider IP migration</td></tr>
+    <tr><td><strong>3</strong></td><td>One method for all transaction types</td><td>Different transactions need different methods; signals lack of rigor; tax authorities may substitute preferred method</td><td>Match method to transaction; document selection rationale for each type</td></tr>
+    <tr><td><strong>4</strong></td><td>Stale benchmarking studies (3+ years)</td><td>Does not reflect current conditions; rejected by Germany, Japan; IRS challenges outdated data</td><td>Refresh financial data annually; new comparable search every 3 years</td></tr>
+    <tr><td><strong>5</strong></td><td>Ignoring cost sharing buy-in payments</td><td>IRS requires buy-in for pre-existing IP; basis for largest pharma adjustments; hundreds of millions at stake</td><td>Document buy-in using income/market method; engage valuation experts; update for significant events</td></tr>
+    <tr><td><strong>6</strong></td><td>Management fees without substance</td><td>Most frequently disallowed charge; India, Brazil, China especially aggressive; "strategic benefit" insufficient</td><td>Maintain service catalogs, time records, deliverables; apply benefit test; exclude shareholder costs</td></tr>
+    <tr><td><strong>7</strong></td><td>Inconsistent positions across jurisdictions</td><td>CbCR exchange, joint audits, and information sharing make inconsistencies visible; credibility problems</td><td>Central coordination; single benchmarking methodology globally; consistent functional analyses</td></tr>
+    <tr><td><strong>8</strong></td><td>No executed intercompany agreements</td><td>No contractual basis = indefensible; must be in place BEFORE transactions begin</td><td>Execute all agreements before transactions; review annually; amend for scope/pricing changes</td></tr>
+    <tr><td><strong>9</strong></td><td>Assuming OECD guidelines apply everywhere</td><td>Brazil uses fixed margins; India uses narrow tolerance; Japan uses secret comparables; China requires specific forms</td><td>Engage local advisors; address jurisdiction-specific rules in each Local File</td></tr>
+    <tr><td><strong>10</strong></td><td>DIY transfer pricing without specialist input</td><td>Advisory cost ($200K-$500K/yr) is a fraction of penalty risk ($10M-$50M+); frequent costly mistakes without expertise</td><td>Engage qualified TP advisors; use the Workbook to organize data and reduce advisory costs</td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>These ten mistakes are not independent &mdash; they often occur together. A company with no documentation typically also has no executed agreements, stale benchmarking, and no DEMPE analysis. Companies that invest in structured compliance avoid most of these pitfalls.</p>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 8 -->
+<!-- ================================================================ -->
+<div id="section-8" class="section">
+<h1><span class="section-number">8</span> Penalties Quick Reference</h1>
+
+<div class="disclaimer-block">
+  <div class="disc-title">IMPORTANT DISCLAIMER</div>
+  <p>Penalty rates shown are approximate and subject to change. Actual penalties depend on specific facts, taxpayer conduct, and jurisdiction-specific rules. <strong>ALWAYS</strong> consult qualified transfer pricing advisors for jurisdiction-specific penalty analysis.</p>
+</div>
+
+<h2>Penalty Reference: Nine Major Jurisdictions</h2>
+
+<div class="table-wrap">
+<table>
+  <thead>
+    <tr><th>Jurisdiction</th><th>Standard Penalty</th><th>Aggravated Penalty</th><th>Documentation Penalty</th><th>Double Tax Risk</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>United States</strong></td><td>20% of underpayment</td><td>40% (&gt;$20M adjustment or gross valuation)</td><td>Strict liability for missing docs</td><td>MAP available (2-5 years)</td></tr>
+    <tr><td><strong>Germany</strong></td><td>5-10% of adjustment</td><td>Higher for negligence</td><td>EUR 5K-25K per missing doc; burden of proof reversal</td><td>EU Arbitration Convention</td></tr>
+    <tr><td><strong>United Kingdom</strong></td><td>30% of additional tax (careless)</td><td>70-100% (deliberate/concealed)</td><td>Tax-geared penalties</td><td>MAP available</td></tr>
+    <tr><td><strong>France</strong></td><td>40% of additional tax</td><td>80% for fraud</td><td>EUR 10K-50K per missing doc</td><td>EU MAP + Arbitration</td></tr>
+    <tr><td><strong>Japan</strong></td><td>10-15% additional tax</td><td>Up to 35%; criminal possible</td><td>Forced "secret comparables"; estimation taxation</td><td>MAP (slow, 3-5 years)</td></tr>
+    <tr><td><strong>China</strong></td><td>0.05% per day (late payment interest)</td><td>Adjustment + compounding interest</td><td>Cascading with VAT/customs adjustments</td><td>MAP increasingly available</td></tr>
+    <tr><td><strong>India</strong></td><td>100-300% of tax on adjustment</td><td>Criminal prosecution possible (up to 7 years)</td><td>2% of IC transaction value</td><td>MAP available</td></tr>
+    <tr><td><strong>Brazil</strong></td><td>75% of additional tax</td><td>150% for fraud</td><td>Automatic adjustment methodology (legacy)</td><td>Limited MAP</td></tr>
+    <tr><td><strong>Australia</strong></td><td>25-50% of shortfall</td><td>75% for intentional disregard</td><td>Administrative penalties; RAP protection available</td><td>MAP available</td></tr>
+  </tbody>
+</table>
+</div>
+
+<h2>Penalty Exposure Calculator</h2>
+
+<!-- INTERACTIVE: PENALTY CALCULATOR -->
+<div class="penalty-calc" id="penalty-tool">
+  <h4>Estimated Penalty Exposure Calculator</h4>
+  <p style="color: var(--text-secondary); font-size: 0.9em; margin-bottom: 16px;">Enter your estimated intercompany transaction volume and select a jurisdiction to see the potential penalty range.</p>
+
+  <div class="calc-row">
+    <span class="calc-label">IC Transaction Volume ($)</span>
+    <input type="text" class="calc-input" id="calc-volume" placeholder="e.g. 100000000" oninput="formatCalcInput(this)">
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Jurisdiction</span>
+    <select class="calc-input" id="calc-jurisdiction">
+      <option value="us">United States</option>
+      <option value="de">Germany</option>
+      <option value="uk">United Kingdom</option>
+      <option value="fr">France</option>
+      <option value="jp">Japan</option>
+      <option value="cn">China</option>
+      <option value="in">India</option>
+      <option value="br">Brazil</option>
+      <option value="au">Australia</option>
+    </select>
+  </div>
+  <div class="calc-row">
+    <span class="calc-label">Assumed Adjustment %</span>
+    <select class="calc-input" id="calc-adj-pct">
+      <option value="5">5% of IC volume (conservative)</option>
+      <option value="10" selected>10% of IC volume (moderate)</option>
+      <option value="20">20% of IC volume (aggressive)</option>
+      <option value="30">30% of IC volume (severe)</option>
+    </select>
+  </div>
+  <button class="calc-btn" onclick="calcPenalty()">Calculate Exposure</button>
+
+  <div class="calc-results" id="calc-results">
+    <div class="calc-result-row">
+      <span class="calc-result-label">Estimated Adjustment</span>
+      <span class="calc-result-value" id="cr-adjustment">-</span>
+    </div>
+    <div class="calc-result-row">
+      <span class="calc-result-label">Estimated Tax on Adjustment</span>
+      <span class="calc-result-value" id="cr-tax">-</span>
+    </div>
+    <div class="calc-result-row">
+      <span class="calc-result-label">Penalty Range (Low)</span>
+      <span class="calc-result-value" id="cr-penalty-low">-</span>
+    </div>
+    <div class="calc-result-row">
+      <span class="calc-result-label">Penalty Range (High)</span>
+      <span class="calc-result-value danger-val" id="cr-penalty-high">-</span>
+    </div>
+    <div class="calc-result-row">
+      <span class="calc-result-label">Interest (est. 4 years)</span>
+      <span class="calc-result-value" id="cr-interest">-</span>
+    </div>
+    <div class="calc-result-row" style="border-top: 2px solid var(--accent); padding-top: 12px;">
+      <span class="calc-result-label"><strong>Total Estimated Exposure Range</strong></span>
+      <span class="calc-result-value danger-val" id="cr-total">-</span>
+    </div>
+  </div>
+
+  <div class="disclaimer-block" style="margin-top: 16px;">
+    <div class="disc-title">Important</div>
+    <p>This calculator provides rough estimates for illustration only. Actual penalties depend on specific facts, taxpayer conduct, jurisdiction-specific rules, and whether contemporaneous documentation exists. <strong>Consult your tax advisors for accurate penalty exposure analysis.</strong></p>
+  </div>
+</div>
+
+<h2>The Bottom Line on Penalties</h2>
+
+<p><strong>In virtually every major jurisdiction, the penalty for getting transfer pricing wrong exceeds the cost of getting professional help to get it right.</strong></p>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Item</th><th>Annual Cost</th></tr></thead>
+  <tbody>
+    <tr><td>TP advisory (documentation, benchmarking, DEMPE analysis)</td><td>$200,000 - $500,000</td></tr>
+    <tr><td>TP adjustment (single jurisdiction, single transaction)</td><td>$10,000,000 - $50,000,000</td></tr>
+    <tr><td>Penalty on adjustment (20-75% depending on jurisdiction)</td><td>$2,000,000 - $37,500,000</td></tr>
+    <tr><td>Interest (3-7 years of compounding)</td><td>$1,500,000 - $15,000,000</td></tr>
+    <tr><td>Double taxation (if MAP does not resolve)</td><td>$2,100,000 - $10,500,000</td></tr>
+    <tr><td><strong>Total potential exposure</strong></td><td><strong>$15,600,000 - $113,000,000</strong></td></tr>
+  </tbody>
+</table>
+</div>
+
+<p>The annual cost of compliance is 0.2% to 3.2% of the potential single-jurisdiction exposure. Transfer pricing compliance is insurance against catastrophic financial risk.</p>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>Penalty rates shown are approximate and subject to change. Many jurisdictions offer penalty protection for taxpayers who maintain contemporaneous, good-faith documentation. Your tax advisor should assess penalty exposure on a jurisdiction-by-jurisdiction basis. Do not rely on this table for compliance planning.</p>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 9 -->
+<!-- ================================================================ -->
+<div id="section-9" class="section">
+<h1><span class="section-number">9</span> Your Transfer Pricing Action Checklist</h1>
+
+<h2>Immediate Actions (This Quarter)</h2>
+<ul class="checklist" onclick="toggleCheck(event)">
+  <li><strong>Inventory all intercompany transactions by type and value.</strong> Create a complete list: IP licenses, contract R&D, cost-sharing, manufacturing, management fees, distribution, loans, guarantees. Use the IC Transaction Log tab in the Transfer Pricing Workbook.</li>
+  <li><strong>Identify which entities own intangible assets</strong> (legal ownership vs. economic ownership). Flag gaps between legal ownership and DEMPE substance as high-risk.</li>
+  <li><strong>Review existing intercompany agreements.</strong> Are they signed, dated before transactions began, and reflecting current scope, pricing, and terms?</li>
+  <li><strong>Check contemporaneous documentation status.</strong> Does a Local File exist for current and prior year? Is it contemporaneous? Does it include functional analysis, benchmarking, and method selection?</li>
+  <li><strong>Determine CbCR threshold status</strong> (EUR 750M+ consolidated revenue). If close to threshold, monitor growth trajectory.</li>
+  <li><strong>Identify your top 3 transfer pricing risk areas.</strong> Common: IP royalty rates, IP structures without DEMPE substance, CSAs with undervalued buy-ins, management fees without documentation.</li>
+</ul>
+
+<h2>Near-Term Actions (Next 6 Months)</h2>
+<ul class="checklist" onclick="toggleCheck(event)">
+  <li><strong>Engage qualified transfer pricing advisor</strong> for documentation review &mdash; completeness, benchmarking currency, DEMPE adequacy, cross-jurisdiction consistency.</li>
+  <li><strong>Perform or update DEMPE functional analysis</strong> for key intangibles through detailed interviews with R&D leaders, patent counsel, regulatory affairs, commercial leadership.</li>
+  <li><strong>Update benchmarking studies</strong> &mdash; refresh financial data annually, new comparable search every 3 years.</li>
+  <li><strong>Assess Pillar Two exposure.</strong> Model ETR by jurisdiction; identify top-up tax exposure; evaluate SbS/GILTI/FDII/BEAT interactions.</li>
+  <li><strong>Review management fee documentation</strong> for substance: service catalogs, time records, deliverables, benefit test, shareholder cost exclusion.</li>
+  <li><strong>Evaluate APA opportunities</strong> for highest-risk transactions (IP royalties, CSA buy-ins, complex manufacturing).</li>
+</ul>
+
+<h2>Ongoing Actions (Annual Cycle)</h2>
+<ul class="checklist" onclick="toggleCheck(event)">
+  <li>Update Master File and Local Files annually</li>
+  <li>File CbCR within 12 months of fiscal year end (if applicable)</li>
+  <li>Refresh benchmarking comparables</li>
+  <li>Review and update intercompany agreements for structural changes</li>
+  <li>Monitor regulatory changes in key jurisdictions</li>
+  <li>Coordinate transfer pricing with indirect tax (VAT/customs)</li>
+  <li>Conduct annual transfer pricing risk assessment</li>
+  <li>Review Pillar Two safe harbour eligibility</li>
+  <li>Maintain intercompany agreement register</li>
+  <li>Train functional leaders on TP documentation requirements</li>
+  <li>Archive supporting documentation systematically (retain for statute of limitations period)</li>
+</ul>
+
+<h2>Annual Documentation Calendar</h2>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Month</th><th>Activity</th><th>Responsible</th></tr></thead>
+  <tbody>
+    <tr><td>Jan-Feb</td><td>Gather prior-year financial data; begin updating Master/Local Files</td><td>Tax Dept + Advisors</td></tr>
+    <tr><td>March</td><td>Finalize prior-year data; update benchmarking financials</td><td>Tax Dept + Advisors</td></tr>
+    <tr><td>Apr-May</td><td>Complete draft Master File and Local Files; conduct functional interviews</td><td>Tax + Advisors + Functional Leaders</td></tr>
+    <tr><td>June</td><td>Review and finalize documentation before filing deadlines</td><td>Tax Dept + Advisors</td></tr>
+    <tr><td>July</td><td>Mid-year review of current-year IC transactions; identify new transactions</td><td>Tax Department</td></tr>
+    <tr><td>August</td><td>File CbCR for prior year (if applicable, 12-month deadline)</td><td>Tax Department</td></tr>
+    <tr><td>September</td><td>Update intercompany agreements for mid-year changes</td><td>Tax + Legal</td></tr>
+    <tr><td>October</td><td>Annual risk assessment; prioritize next cycle</td><td>Tax Dept + Advisors</td></tr>
+    <tr><td>November</td><td>Commission new benchmarking studies (if 3-year cycle)</td><td>Tax Dept + Advisors</td></tr>
+    <tr><td>December</td><td>Year-end data collection; prepare for next cycle</td><td>Tax Department</td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="warning-box">
+  <div class="warning-title">Expert Warning</div>
+  <p>This checklist is a starting point &mdash; not a compliance program. Your transfer pricing compliance framework should be designed by qualified professionals based on your company's specific structure, transactions, and jurisdictions. Professional oversight is essential.</p>
+</div>
+
+<!-- CTA after Section 9 -->
+<div class="cta-block">
+  <p>Start documenting with the structured Transfer Pricing Workbook &mdash; Entity Register, IC Transaction Log, DEMPE Analysis, and Benchmarking tabs ready to customize.</p>
+  <a href="https://luckyduckgroup.gumroad.com" class="cta-btn" target="_blank" rel="noopener">Get the Transfer Pricing Workbook</a>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- SECTION 10 -->
+<!-- ================================================================ -->
+<div id="section-10" class="section">
+<h1><span class="section-number">10</span> How the Transfer Pricing Workbook Helps</h1>
+
+<h2>From Guide to Action: A Structured Framework</h2>
+
+<p>This guide has covered the essential concepts, methods, and requirements. The critical next step is organizing your company's transfer pricing data in a structured format that supports compliance, reduces advisory costs, and provides audit readiness. That is the purpose of the Transfer Pricing Workbook.</p>
+
+<h2>What the Workbook Provides</h2>
+
+<h3>Entity Register Tab</h3>
+<p><strong>Maps to: Master File organizational structure, functional analysis.</strong> Captures each legal entity with fields for jurisdiction, principal activities, key personnel, functions performed, assets employed, risks assumed, and intercompany relationships.</p>
+
+<h3>IC Transaction Log Tab</h3>
+<p><strong>Maps to: Local File transaction inventory.</strong> Records every material intercompany transaction with type, annual value, pricing mechanism, TP method, agreement reference, benchmarking status, and risk flags. Supports global consistency checks.</p>
+
+<h3>DEMPE Analysis Tab</h3>
+<p><strong>Maps to: Master File IP ownership, Local File functional analysis.</strong> Maps each intangible asset to entities performing DEMPE functions with percentage contributions. Makes misalignments between legal ownership and DEMPE substance immediately visible.</p>
+
+<h3>Benchmarking Tab</h3>
+<p><strong>Maps to: Local File comparability analysis.</strong> Framework for recording comparable company data, IQR calculations, tested party positioning, and pass/fail assessment. Monitor margins against benchmarks throughout the year.</p>
+
+<h3>Interactive Dashboard</h3>
+<p><strong>Maps to: Risk monitoring, compliance tracking.</strong> Visualizes intercompany flows, DEMPE allocations, benchmarking status, documentation completeness, and compliance calendar. CFO-level view of compliance across the group.</p>
+
+<h2>How It Fits Into Your Compliance Program</h2>
+
+<p><strong>Without the workbook:</strong> Your advisor spends weeks gathering data from different departments, reconciling inconsistent spreadsheets, and building the framework from scratch. You pay for data collection at advisory rates.</p>
+
+<p><strong>With the workbook:</strong> Your team maintains structured data throughout the year. Your advisor begins with organized, consistent data and focuses on value-added analysis. You save advisory hours and get better documentation.</p>
+
+<blockquote>
+  <p>"Think of the workbook as your transfer pricing filing cabinet &mdash; organized, structured, and ready for your tax advisor to review. It does not replace professional advice, but it gives your advisors a clean starting point and saves them (and you) billable hours."</p>
+</blockquote>
+
+<h2>What the Workbook Does Not Do</h2>
+<ul>
+  <li><strong>Provide transfer pricing advice.</strong> The workbook captures data; it does not analyze it.</li>
+  <li><strong>Replace benchmarking studies.</strong> Benchmarking must be prepared using professional databases (Bureau van Dijk Orbis, S&P Capital IQ).</li>
+  <li><strong>Substitute for legal agreements.</strong> IC agreements must be drafted by qualified counsel.</li>
+  <li><strong>File tax returns or CbCR reports.</strong></li>
+  <li><strong>Guarantee audit outcomes.</strong> The workbook increases the probability of favorable outcomes by ensuring organized, comprehensive documentation.</li>
+</ul>
+
+<!-- CTA after Section 10 -->
+<div class="cta-block">
+  <p><strong>The Transfer Pricing Workbook for Pharma and Biotech</strong> includes the Excel workbook, Google Sheets version, and interactive dashboard &mdash; everything described above, ready to customize for your company.</p>
+  <a href="https://luckyduckgroup.gumroad.com" class="cta-btn" target="_blank" rel="noopener">Get the Transfer Pricing Workbook</a>
+  <br>
+  <a href="https://luckyduckgroup.com" class="cta-btn-secondary" target="_blank" rel="noopener">Explore Lucky Duck Group Financial Models for Pharma</a>
+</div>
+
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- FAQ -->
+<!-- ================================================================ -->
+<div id="faq" class="section">
+<h1>Frequently Asked Questions</h1>
+
+<h3>How much should my company spend on transfer pricing compliance?</h3>
+<p>For a mid-size pharma ($500M-$5B revenue, 5-15 countries): $200,000-$500,000 annually in advisory fees, plus internal staff time. Companies with complex IP structures may spend $500K-$1M+. Compare to potential exposure of $10M-$100M+. Spending 0.5-1.0% of intercompany transaction volume on compliance is a reasonable benchmark.</p>
+
+<h3>How often should we update documentation?</h3>
+<p>Master Files and Local Files: annually. Benchmarking financial data: annually. Comparable search: every 3 years. DEMPE analyses: whenever material changes occur. CbCR: annually.</p>
+
+<h3>What is the biggest transfer pricing risk for pharma right now?</h3>
+<p>DEMPE misalignment remains the single largest risk. Companies with IP legally owned by entities lacking DEMPE substance face the most significant audit exposure. The second-largest risk is inadequate documentation.</p>
+
+<h3>Should we get an APA?</h3>
+<p>APAs are worth considering if you have high-value IC transactions (&gt;$50M annually), inherently subjective transactions (IP royalties, CSA buy-ins), or a history of disputes. Bilateral APAs are preferred because they eliminate double taxation risk. Investment of $500K-$2M over 2-3 years is justified when potential exposure exceeds $10M.</p>
+
+<h3>We are a pre-revenue biotech. Do we need TP documentation?</h3>
+<p>Yes. Common pre-revenue IC transactions include contract R&D services, CSA payments, management fees, and intercompany loans. Establishing proper documentation from the beginning is significantly less expensive than retroactive compliance.</p>
+
+<h3>How do digital health and AI-driven drug discovery affect transfer pricing?</h3>
+<p>AI/ML algorithms, real-world evidence databases, and digital health platforms are intangible assets subject to DEMPE analysis. Intercompany data transfers, algorithm licensing, and platform access fees are all transfer pricing transactions requiring arm's length pricing. Ensure your TP advisor has experience with technology-related transactions.</p>
+
+<h3>What is the difference between GILTI and Pillar Two?</h3>
+<p>GILTI is US-only, blended worldwide, with a ~10.5% effective rate and QBAI substance carve-out. Pillar Two applies to all MNEs with EUR 750M+ revenue, calculated per-jurisdiction at 15%, with SBIE substance carve-out. For US-parented pharma, both regimes apply and must be modeled together.</p>
+</div>
+
+<hr>
+
+<!-- ================================================================ -->
+<!-- GLOSSARY -->
+<!-- ================================================================ -->
+<div id="glossary" class="section">
+<h1>Glossary of Key Terms</h1>
+
+<div class="table-wrap">
+<table>
+  <thead><tr><th>Term</th><th>Definition</th></tr></thead>
+  <tbody>
+    <tr><td><strong>APA</strong></td><td>Advance Pricing Agreement &mdash; binding agreement between taxpayer and tax authority(ies) establishing TP methodology for 3-5 years.</td></tr>
+    <tr><td><strong>Arm's Length Principle</strong></td><td>Intercompany transactions must be priced as if the parties were independent, unrelated entities. The global standard adopted by 100+ countries.</td></tr>
+    <tr><td><strong>BEPS</strong></td><td>Base Erosion and Profit Shifting &mdash; the OECD/G20 project addressing tax planning that shifts profits to low-tax jurisdictions. Actions 8-10 cover transfer pricing for intangibles (DEMPE); Action 13 covers documentation.</td></tr>
+    <tr><td><strong>CbCR</strong></td><td>Country-by-Country Report &mdash; jurisdiction-level data on revenue, profit, tax, employees, assets. Required for EUR 750M+ groups; exchanged automatically between tax authorities.</td></tr>
+    <tr><td><strong>CUP</strong></td><td>Comparable Uncontrolled Price &mdash; method comparing controlled transaction price to comparable uncontrolled transaction price.</td></tr>
+    <tr><td><strong>DEMPE</strong></td><td>Development, Enhancement, Maintenance, Protection, Exploitation &mdash; the five functions determining IP profit allocation post-BEPS.</td></tr>
+    <tr><td><strong>GloBE Rules</strong></td><td>Global Anti-Base Erosion rules under Pillar Two, establishing 15% global minimum ETR. Include IIR, UTPR, and QDMTT.</td></tr>
+    <tr><td><strong>IQR</strong></td><td>Interquartile Range &mdash; the 25th to 75th percentile of benchmark data. Results within the IQR are generally considered arm's length.</td></tr>
+    <tr><td><strong>MAP</strong></td><td>Mutual Agreement Procedure &mdash; mechanism under bilateral treaties for resolving TP disputes and eliminating double taxation.</td></tr>
+    <tr><td><strong>Pillar Two</strong></td><td>OECD/G20 initiative establishing 15% global minimum ETR for MNE groups with EUR 750M+ revenue. Effective from January 2024.</td></tr>
+    <tr><td><strong>QDMTT</strong></td><td>Qualified Domestic Minimum Top-Up Tax &mdash; low-tax jurisdiction itself imposes top-up tax to retain revenue.</td></tr>
+    <tr><td><strong>SBIE</strong></td><td>Substance-Based Income Exclusion &mdash; Pillar Two carve-out based on payroll and tangible assets, rewarding genuine economic substance.</td></tr>
+    <tr><td><strong>SbS</strong></td><td>Side-by-Side Framework &mdash; US approach (effective 2026) exempting US-parented MNEs from GloBE IIR/UTPR, recognizing GILTI/BEAT/FDII as equivalent.</td></tr>
+    <tr><td><strong>TNMM</strong></td><td>Transactional Net Margin Method &mdash; compares tested party's net margin to comparable independent companies. Most widely used method in pharma (60%+ of studies).</td></tr>
+  </tbody>
+</table>
+</div>
+</div>
+
+<hr>
+
+<!-- BOTTOM DISCLAIMER -->
+<div class="disclaimer-block">
+  <div class="disc-title">IMPORTANT DISCLAIMER</div>
+  <p>This guide is for <strong>educational and informational purposes only</strong>. It does not constitute tax, legal, or financial advice. Transfer pricing is a complex, high-stakes area of international tax law with significant penalties for non-compliance (20-75% of adjustments in many jurisdictions, plus potential double taxation).</p>
+  <p><strong>DO NOT</strong> implement transfer pricing strategies based solely on this guide. <strong>ALWAYS</strong> consult qualified transfer pricing advisors, international tax attorneys, and licensed CPAs with specific transfer pricing expertise before making any decisions.</p>
+  <p>The information in this guide reflects general OECD guidelines and selected jurisdiction rules as of Q1 2026. Tax laws change frequently. Your specific situation requires professional analysis.</p>
+  <p>Published by Lucky Duck Group | luckyduckgroup.com</p>
+</div>
+
+</div><!-- end main-content -->
+
+<!-- FOOTER -->
+<footer class="site-footer">
+  <div class="footer-brand">Lucky Duck Group</div>
+  <p>Financial models, templates, and tools for pharma and biotech finance teams.</p>
+  <p><a href="https://luckyduckgroup.com" target="_blank" rel="noopener">luckyduckgroup.com</a> &middot; <a href="mailto:info@luckyduckgroup.com">info@luckyduckgroup.com</a></p>
+  <p style="margin-top: 12px;">Transfer Pricing Guide for Pharma &amp; Biotech CFOs &middot; Version 1.0 &middot; Q1 2026</p>
+  <p>Copyright 2026 Lucky Duck Group. All rights reserved.</p>
+</footer>
+
+<!-- ================================================================ -->
+<!-- JAVASCRIPT -->
+<!-- ================================================================ -->
+<script>
+// ===== SCROLLSPY =====
+(function() {
+  var navLinks = document.querySelectorAll('.nav-link');
+  var sections = [];
+  navLinks.forEach(function(link) {
+    var id = link.getAttribute('data-section');
+    var el = document.getElementById(id);
+    if (el) sections.push({ id: id, el: el, link: link });
+  });
+
+  function updateScrollspy() {
+    var scrollY = window.scrollY + 120;
+    var current = null;
+    for (var i = sections.length - 1; i >= 0; i--) {
+      if (sections[i].el.offsetTop <= scrollY) {
+        current = sections[i];
+        break;
+      }
+    }
+    navLinks.forEach(function(l) { l.classList.remove('active'); });
+    if (current) current.link.classList.add('active');
+  }
+
+  var ticking = false;
+  window.addEventListener('scroll', function() {
+    if (!ticking) {
+      window.requestAnimationFrame(function() {
+        updateScrollspy();
+        ticking = false;
+      });
+      ticking = true;
+    }
+  });
+  updateScrollspy();
+})();
+
+// ===== PHARMA STRUCTURE DIAGRAM HOVER =====
+(function() {
+  var flows = document.querySelectorAll('.flow-row');
+  var nodes = document.querySelectorAll('.org-node');
+
+  flows.forEach(function(row) {
+    row.addEventListener('mouseenter', function() {
+      var from = this.dataset.from;
+      var to = this.dataset.to;
+      nodes.forEach(function(n) {
+        var entity = n.dataset.entity;
+        if (entity === from || entity === to || to === 'all') {
+          n.classList.add('highlighted');
+        }
+      });
+    });
+    row.addEventListener('mouseleave', function() {
+      nodes.forEach(function(n) { n.classList.remove('highlighted'); });
+    });
+  });
+
+  nodes.forEach(function(node) {
+    node.addEventListener('mouseenter', function() {
+      var entity = this.dataset.entity;
+      this.classList.add('highlighted');
+      flows.forEach(function(row) {
+        if (row.dataset.from === entity || row.dataset.to === entity || row.dataset.to === 'all') {
+          row.style.background = 'rgba(56, 189, 248, 0.08)';
+        }
+      });
+    });
+    node.addEventListener('mouseleave', function() {
+      this.classList.remove('highlighted');
+      flows.forEach(function(row) { row.style.background = ''; });
+    });
+  });
+})();
+
+// ===== METHOD DECISION TREE =====
+function dtAnswer(step, value) {
+  document.querySelectorAll('.dt-question').forEach(function(q) { q.classList.remove('active'); });
+  document.querySelectorAll('.dt-result').forEach(function(r) { r.classList.remove('active'); });
+
+  if (step === 1) {
+    if (value === 'ip') document.getElementById('dtq-2-ip').classList.add('active');
+    else if (value === 'rd') document.getElementById('dtq-2-rd').classList.add('active');
+    else if (value === 'mfg') showResult('result-cost-plus');
+    else if (value === 'svc') showResult('result-cost-plus');
+    else if (value === 'dist') document.getElementById('dtq-2-dist').classList.add('active');
+  } else if (step === 2) {
+    if (value === 'ip-cup') showResult('result-cup');
+    else if (value === 'ip-nocup') document.getElementById('dtq-3-ip').classList.add('active');
+    else if (value === 'rd-routine') showResult('result-cost-plus');
+    else if (value === 'rd-value') showResult('result-profit-split');
+    else if (value === 'dist-limited') showResult('result-rpm-tnmm');
+    else if (value === 'dist-full') document.getElementById('dtq-3-dist').classList.add('active');
+  } else if (step === 3) {
+    if (value === 'ip-both') showResult('result-profit-split');
+    else if (value === 'ip-one') showResult('result-tnmm');
+    else if (value === 'dist-intang') showResult('result-profit-split-dist');
+    else if (value === 'dist-no-intang') showResult('result-tnmm');
+  }
+}
+
+function showResult(id) {
+  document.getElementById(id).classList.add('active');
+}
+
+function dtReset() {
+  document.querySelectorAll('.dt-question').forEach(function(q) { q.classList.remove('active'); });
+  document.querySelectorAll('.dt-result').forEach(function(r) { r.classList.remove('active'); });
+  document.getElementById('dtq-1').classList.add('active');
+}
+
+// ===== DEMPE SELF-ASSESSMENT =====
+var dempeWeights = {
+  Development: 30,
+  Enhancement: 20,
+  Maintenance: 15,
+  Protection: 15,
+  Exploitation: 20
+};
+
+var entityColors = {
+  us: '#38BDF8',
+  ireland: '#10B981',
+  netherlands: '#F59E0B',
+  germany: '#818CF8',
+  singapore: '#F472B6'
+};
+
+var entityNames = {
+  us: 'US Parent',
+  ireland: 'Ireland Mfg',
+  netherlands: 'Netherlands IP',
+  germany: 'Germany R&D',
+  singapore: 'Singapore Dist'
+};
+
+function updateDempe() {
+  var selections = {
+    Development: document.getElementById('dempe-d').value,
+    Enhancement: document.getElementById('dempe-e1').value,
+    Maintenance: document.getElementById('dempe-m').value,
+    Protection: document.getElementById('dempe-p').value,
+    Exploitation: document.getElementById('dempe-e2').value
+  };
+
+  var alloc = {};
+  for (var func in selections) {
+    var entity = selections[func];
+    if (!alloc[entity]) alloc[entity] = 0;
+    alloc[entity] += dempeWeights[func];
+  }
+
+  var barsDiv = document.getElementById('dempe-bars');
+  barsDiv.innerHTML = '';
+
+  // Sort by allocation descending
+  var sorted = Object.entries(alloc).sort(function(a, b) { return b[1] - a[1]; });
+  sorted.forEach(function(entry) {
+    var entity = entry[0], pct = entry[1];
+    var row = document.createElement('div');
+    row.className = 'alloc-bar-wrap';
+    row.innerHTML = '<span class="alloc-entity">' + entityNames[entity] + '</span>' +
+      '<div class="alloc-bar-container"><div class="alloc-bar" style="width:' + pct + '%;background:' + entityColors[entity] + '"></div></div>' +
+      '<span class="alloc-pct">' + pct + '%</span>';
+    barsDiv.appendChild(row);
+  });
+
+  // Show entities with 0%
+  for (var key in entityNames) {
+    if (!alloc[key]) {
+      var row = document.createElement('div');
+      row.className = 'alloc-bar-wrap';
+      row.innerHTML = '<span class="alloc-entity">' + entityNames[key] + '</span>' +
+        '<div class="alloc-bar-container"><div class="alloc-bar" style="width:0%;background:' + entityColors[key] + '"></div></div>' +
+        '<span class="alloc-pct">0%</span>';
+      barsDiv.appendChild(row);
+    }
+  }
+
+  document.getElementById('dempe-results').style.display = 'block';
+}
+
+// Initialize DEMPE on load
+updateDempe();
+
+// ===== PENALTY CALCULATOR =====
+var jurisdictionData = {
+  us:  { taxRate: 0.21, penLow: 0.20, penHigh: 0.40, interestRate: 0.05, name: 'United States' },
+  de:  { taxRate: 0.30, penLow: 0.05, penHigh: 0.10, interestRate: 0.06, name: 'Germany' },
+  uk:  { taxRate: 0.25, penLow: 0.30, penHigh: 1.00, interestRate: 0.04, name: 'United Kingdom' },
+  fr:  { taxRate: 0.25, penLow: 0.40, penHigh: 0.80, interestRate: 0.024, name: 'France' },
+  jp:  { taxRate: 0.30, penLow: 0.10, penHigh: 0.35, interestRate: 0.04, name: 'Japan' },
+  cn:  { taxRate: 0.25, penLow: 0.05, penHigh: 0.15, interestRate: 0.05, name: 'China' },
+  'in':{ taxRate: 0.25, penLow: 1.00, penHigh: 3.00, interestRate: 0.06, name: 'India' },
+  br:  { taxRate: 0.34, penLow: 0.75, penHigh: 1.50, interestRate: 0.06, name: 'Brazil' },
+  au:  { taxRate: 0.30, penLow: 0.25, penHigh: 0.75, interestRate: 0.05, name: 'Australia' }
+};
+
+function formatCalcInput(el) {
+  el.value = el.value.replace(/[^0-9]/g, '');
+}
+
+function formatUSD(num) {
+  return '$' + num.toLocaleString('en-US', { maximumFractionDigits: 0 });
+}
+
+function calcPenalty() {
+  var volumeStr = document.getElementById('calc-volume').value.replace(/[^0-9]/g, '');
+  var volume = parseFloat(volumeStr);
+  if (!volume || volume <= 0) return;
+
+  var jur = document.getElementById('calc-jurisdiction').value;
+  var adjPct = parseFloat(document.getElementById('calc-adj-pct').value) / 100;
+  var data = jurisdictionData[jur];
+
+  var adjustment = volume * adjPct;
+  var tax = adjustment * data.taxRate;
+  var penLow = tax * data.penLow;
+  var penHigh = tax * data.penHigh;
+  var interest = tax * data.interestRate * 4;
+  var totalLow = tax + penLow + interest;
+  var totalHigh = tax + penHigh + interest;
+
+  document.getElementById('cr-adjustment').textContent = formatUSD(adjustment);
+  document.getElementById('cr-tax').textContent = formatUSD(tax);
+  document.getElementById('cr-penalty-low').textContent = formatUSD(penLow);
+  document.getElementById('cr-penalty-high').textContent = formatUSD(penHigh);
+  document.getElementById('cr-interest').textContent = formatUSD(interest);
+  document.getElementById('cr-total').textContent = formatUSD(totalLow) + ' - ' + formatUSD(totalHigh);
+
+  document.getElementById('calc-results').classList.add('active');
+}
+
+// ===== CHECKLIST TOGGLE =====
+function toggleCheck(e) {
+  var li = e.target.closest('li');
+  if (li && li.parentElement.classList.contains('checklist')) {
+    li.classList.toggle('checked');
+  }
+}
+
+// ===== EMAIL FORM =====
+function handleEmailSubmit() {
+  var input = document.getElementById('email-input');
+  var note = document.getElementById('email-note');
+  var email = input.value.trim();
+  if (!email || email.indexOf('@') === -1) {
+    note.textContent = 'Please enter a valid email address.';
+    note.style.color = '#EF4444';
+    return;
+  }
+  // Placeholder: In production, this would POST to Loops with tag "tp-guide"
+  input.value = '';
+  input.disabled = true;
+  document.querySelector('.email-form button').disabled = true;
+  document.querySelector('.email-form button').textContent = 'Subscribed';
+  note.textContent = 'Thank you! You will receive the PDF guide and quarterly regulatory updates. Tagged: tp-guide.';
+  note.style.color = '#10B981';
+}
+</script>
+
+</body>
+</html>

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Local Market Cost Calculator | Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"><\/script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh}
+.header{background:#0F172A;border-bottom:1px solid #334155;padding:20px 32px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.4rem;font-weight:700;color:#fff}.brand{color:#2563EB;font-size:.85rem;font-weight:600}
+.container{max-width:1000px;margin:0 auto;padding:24px 32px}
+.section{background:#0F172A;border:1px solid #334155;border-radius:12px;padding:24px;margin-bottom:24px}
+.section h2{font-size:1.1rem;margin-bottom:16px;color:#fff}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.control-group label{display:block;font-size:.8rem;color:#94a3b8;margin-bottom:6px}
+.control-group select,.control-group input{width:100%;padding:10px 12px;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:.95rem}
+.control-group select:focus,.control-group input:focus{outline:none;border-color:#2563EB}
+.class-btns{display:flex;gap:8px}
+.class-btn{flex:1;padding:10px;border:1px solid #334155;border-radius:8px;background:#1E293B;color:#94a3b8;cursor:pointer;text-align:center;font-weight:600;font-size:.9rem}
+.class-btn.active{border-color:#2563EB;color:#2563EB;background:#1E293B}
+.kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px}
+.kpi-card{background:#0F172A;border:1px solid #334155;border-radius:12px;padding:20px;text-align:center}
+.kpi-label{font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.kpi-value{font-size:1.5rem;font-weight:700;color:#fff}
+.kpi-value.blue{color:#2563EB}.kpi-value.green{color:#4ade80}.kpi-value.amber{color:#f59e0b}.kpi-value.red{color:#f87171}
+.hero-number{text-align:center;padding:24px;margin-bottom:16px}
+.hero-number .big{font-size:2.5rem;font-weight:800;color:#2563EB}
+.hero-number .sub{font-size:.9rem;color:#94a3b8;margin-top:4px}
+table{width:100%;border-collapse:collapse;font-size:.85rem}
+th{text-align:left;padding:10px 12px;border-bottom:1px solid #334155;color:#94a3b8;font-weight:600}
+td{padding:10px 12px;border-bottom:1px solid #334155}
+.warning-box{background:#450a0a;border:2px solid #f87171;border-radius:12px;padding:20px;margin:24px 0;text-align:center}
+.warning-box p{color:#fca5a5;font-size:.95rem;line-height:1.5}
+.warning-box strong{color:#f87171}
+.cta{background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:12px;padding:32px;text-align:center;margin:32px 0}
+.cta h3{font-size:1.3rem;color:#fff;margin-bottom:8px}
+.cta p{color:#BFDBFE;margin-bottom:16px;font-size:.9rem}
+.cta a{display:inline-block;background:#fff;color:#1D4ED8;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700}
+.modal-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.7);z-index:100;align-items:center;justify-content:center}
+.modal{background:#0F172A;border:1px solid #334155;border-radius:16px;padding:40px;max-width:480px;width:90%;text-align:center}
+.modal h3{color:#fff;margin-bottom:12px}
+.modal input{width:100%;padding:12px;margin:8px 0;background:#1E293B;border:1px solid #334155;border-radius:8px;color:#e2e8f0;font-size:1rem}
+.modal button{width:100%;padding:12px;background:#2563EB;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;margin-top:8px}
+.footer{text-align:center;padding:24px;color:#475569;font-size:.75rem;border-top:1px solid #334155;margin-top:32px}
+@media(max-width:768px){.kpi-row{grid-template-columns:1fr 1fr}.controls{grid-template-columns:1fr}}
+@media print{body{background:#fff!important;color:#111!important}.header{background:#fff!important;color:#111!important}.section,.kpi-card{background:#fff!important;border-color:#ccc!important;color:#111!important}.controls,.cta,.warning-box,.modal-overlay{display:none!important}}
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>Local Market Cost Calculator</h1>
+  <span class="brand">Lucky Duck Group</span>
+</div>
+<div class="container">
+  <div class="section">
+    <h2>Select Your Market</h2>
+    <div class="controls">
+      <div class="control-group">
+        <label>State</label>
+        <select id="stateSelect" onchange="updateMetros()"><option value="">Select state...</option></select>
+      </div>
+      <div class="control-group">
+        <label>Metro Area</label>
+        <select id="metroSelect" onchange="calculate()"><option value="">Select metro...</option></select>
+      </div>
+    </div>
+    <div class="controls">
+      <div class="control-group">
+        <label>Unit Count</label>
+        <input type="number" id="unitInput" value="50" min="1" oninput="calculate()">
+      </div>
+      <div class="control-group">
+        <label>Property Class</label>
+        <div class="class-btns">
+          <div class="class-btn" onclick="setClass('A')">A</div>
+          <div class="class-btn" onclick="setClass('B')">B</div>
+          <div class="class-btn active" onclick="setClass('C')">C</div>
+          <div class="class-btn" onclick="setClass('D')">D</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="hero-number">
+    <div class="big" id="heroOpex">Select a market above</div>
+    <div class="sub" id="heroSub">Estimated total OpEx per unit per year</div>
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="kpi-label">Cap Rate Range</div><div class="kpi-value blue" id="kpiCap">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Vacancy Rate</div><div class="kpi-value amber" id="kpiVac">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Insurance/Unit</div><div class="kpi-value" id="kpiIns">—</div></div>
+    <div class="kpi-card"><div class="kpi-label">Avg Rent (1BR)</div><div class="kpi-value green" id="kpiRent">—</div></div>
+  </div>
+
+  <div class="section">
+    <h2>Expense Breakdown by Category</h2>
+    <table id="expTable">
+      <thead><tr><th>Category</th><th>$/Unit/Year</th><th>% of Total</th></tr></thead>
+      <tbody></tbody>
+    </table>
+  </div>
+
+  <div id="chartBox" class="section" style="display:none">
+    <div id="expChart" style="height:380px"></div>
+  </div>
+
+  <div class="warning-box" id="warningBox" style="display:none">
+    <p><strong>Red Flag Alert:</strong> If your broker's OM shows total expenses below <strong id="warningFloor">$0</strong>/unit — that's a red flag. Get the Broker NOI Checker to find out where they're hiding costs.</p>
+  </div>
+
+  <div style="text-align:center;margin:24px 0">
+    <button class="class-btn" style="border-color:#2563EB;color:#2563EB;padding:14px 28px;font-size:1rem;cursor:pointer" onclick="showModal()">Save My Market Report</button>
+  </div>
+
+  <div class="cta">
+    <h3>Ready to check a real deal?</h3>
+    <p>The Broker NOI Checker compares broker assumptions against institutional underwriting standards with 15 expense categories, 12 automated red flags, and valuation projections.</p>
+    <a href="#">Get the Broker NOI Checker ($29) &rarr;</a>
+  </div>
+</div>
+
+<div class="modal-overlay" id="emailModal">
+  <div class="modal">
+    <h3>Save Your Market Report</h3>
+    <p style="color:#94a3b8;font-size:.9rem;margin-bottom:16px">Enter your email to save this report and get quarterly updates when market data changes.</p>
+    <input type="email" id="emailInput" placeholder="you@email.com">
+    <button onclick="captureEmail()">Save & Get Updates</button>
+    <p style="color:#64748b;font-size:.75rem;margin-top:8px;cursor:pointer" onclick="hideModal()">No thanks</p>
+  </div>
+</div>
+
+<div class="footer">
+  Data: 2026-Q1 | Sources: CBRE, CoStar, Zillow ZORI, BLS | &copy; 2026 Lucky Duck Group
+</div>
+
+<script>
+const MDATA = {"version":"2026-Q1","last_updated":"2026-01-15","sources":{"cap_rates":"CBRE Cap Rate Survey Q4 2025","vacancy":"Census ACS / CoStar Q4 2025","rents":"Zillow ZORI December 2025","insurance":"BLS PPI Property Insurance Index","tax_rates":"State/County Assessor 2025 Millage"},"states":{"FL":{"name":"Florida","metros":{"miami":{"name":"Miami-Fort Lauderdale","cap_rate":{"low":4.5,"mid":5.2,"high":6.0},"vacancy_rate":7.8,"insurance_per_unit":2850,"property_tax_rate":1.02,"avg_rent_1br":2150,"expenses_per_unit":{"management":8.5,"insurance":2850,"rm":1200,"turnover":450,"utilities":720,"payroll_100plus":1300,"admin":200,"marketing":175,"landscaping":360,"pest":85,"trash":130,"reserves":450}},"tampa":{"name":"Tampa-St. Petersburg","cap_rate":{"low":4.8,"mid":5.5,"high":6.3},"vacancy_rate":8.2,"insurance_per_unit":2650,"property_tax_rate":0.97,"avg_rent_1br":1750,"expenses_per_unit":{"management":8.0,"insurance":2650,"rm":1100,"turnover":400,"utilities":680,"payroll_100plus":1200,"admin":180,"marketing":160,"landscaping":340,"pest":80,"trash":120,"reserves":400}},"orlando":{"name":"Orlando-Kissimmee","cap_rate":{"low":4.9,"mid":5.6,"high":6.4},"vacancy_rate":8.5,"insurance_per_unit":2500,"property_tax_rate":0.93,"avg_rent_1br":1680,"expenses_per_unit":{"management":8.0,"insurance":2500,"rm":1050,"turnover":400,"utilities":700,"payroll_100plus":1150,"admin":175,"marketing":155,"landscaping":330,"pest":80,"trash":115,"reserves":400}},"jacksonville":{"name":"Jacksonville","cap_rate":{"low":5.2,"mid":5.9,"high":6.7},"vacancy_rate":8.8,"insurance_per_unit":2400,"property_tax_rate":0.91,"avg_rent_1br":1520,"expenses_per_unit":{"management":7.5,"insurance":2400,"rm":1000,"turnover":375,"utilities":660,"payroll_100plus":1100,"admin":170,"marketing":145,"landscaping":310,"pest":75,"trash":110,"reserves":375}},"fort_lauderdale":{"name":"Fort Lauderdale-Broward","cap_rate":{"low":4.6,"mid":5.3,"high":6.1},"vacancy_rate":7.5,"insurance_per_unit":2900,"property_tax_rate":1.05,"avg_rent_1br":2080,"expenses_per_unit":{"management":8.5,"insurance":2900,"rm":1180,"turnover":440,"utilities":710,"payroll_100plus":1280,"admin":195,"marketing":170,"landscaping":350,"pest":85,"trash":128,"reserves":440}}}},"TX":{"name":"Texas","metros":{"houston":{"name":"Houston-The Woodlands","cap_rate":{"low":5.0,"mid":5.7,"high":6.5},"vacancy_rate":9.2,"insurance_per_unit":1950,"property_tax_rate":1.8,"avg_rent_1br":1350,"expenses_per_unit":{"management":7.5,"insurance":1950,"rm":1050,"turnover":400,"utilities":750,"payroll_100plus":1150,"admin":175,"marketing":150,"landscaping":280,"pest":70,"trash":115,"reserves":400}},"dallas_fort_worth":{"name":"Dallas-Fort Worth","cap_rate":{"low":4.8,"mid":5.5,"high":6.3},"vacancy_rate":8.8,"insurance_per_unit":1800,"property_tax_rate":1.83,"avg_rent_1br":1480,"expenses_per_unit":{"management":7.5,"insurance":1800,"rm":1080,"turnover":420,"utilities":720,"payroll_100plus":1200,"admin":180,"marketing":155,"landscaping":290,"pest":70,"trash":118,"reserves":420}},"san_antonio":{"name":"San Antonio","cap_rate":{"low":5.3,"mid":6.0,"high":6.8},"vacancy_rate":9.5,"insurance_per_unit":1700,"property_tax_rate":1.78,"avg_rent_1br":1220,"expenses_per_unit":{"management":7.0,"insurance":1700,"rm":950,"turnover":360,"utilities":700,"payroll_100plus":1050,"admin":165,"marketing":140,"landscaping":260,"pest":65,"trash":105,"reserves":360}},"austin":{"name":"Austin-Round Rock","cap_rate":{"low":4.6,"mid":5.3,"high":6.1},"vacancy_rate":10.2,"insurance_per_unit":1750,"property_tax_rate":1.75,"avg_rent_1br":1580,"expenses_per_unit":{"management":8.0,"insurance":1750,"rm":1100,"turnover":430,"utilities":710,"payroll_100plus":1220,"admin":185,"marketing":165,"landscaping":300,"pest":68,"trash":112,"reserves":430}}}},"NY":{"name":"New York","metros":{"new_york_city":{"name":"New York City Metro","cap_rate":{"low":3.8,"mid":4.5,"high":5.3},"vacancy_rate":5.2,"insurance_per_unit":2200,"property_tax_rate":1.4,"avg_rent_1br":3450,"expenses_per_unit":{"management":6.0,"insurance":2200,"rm":1650,"turnover":600,"utilities":980,"payroll_100plus":2100,"admin":280,"marketing":200,"landscaping":250,"pest":95,"trash":180,"reserves":600}}}},"MA":{"name":"Massachusetts","metros":{"boston":{"name":"Boston-Cambridge","cap_rate":{"low":4.0,"mid":4.7,"high":5.5},"vacancy_rate":5.8,"insurance_per_unit":1900,"property_tax_rate":1.2,"avg_rent_1br":2950,"expenses_per_unit":{"management":7.0,"insurance":1900,"rm":1500,"turnover":550,"utilities":1050,"payroll_100plus":1850,"admin":260,"marketing":190,"landscaping":280,"pest":80,"trash":165,"reserves":550}}}},"PA":{"name":"Pennsylvania","metros":{"philadelphia":{"name":"Philadelphia-Camden","cap_rate":{"low":5.0,"mid":5.7,"high":6.5},"vacancy_rate":7.5,"insurance_per_unit":1550,"property_tax_rate":1.36,"avg_rent_1br":1680,"expenses_per_unit":{"management":7.5,"insurance":1550,"rm":1200,"turnover":420,"utilities":880,"payroll_100plus":1400,"admin":210,"marketing":160,"landscaping":240,"pest":75,"trash":140,"reserves":420}}}},"DC":{"name":"District of Columbia","metros":{"washington_dc":{"name":"Washington DC Metro","cap_rate":{"low":4.2,"mid":4.9,"high":5.7},"vacancy_rate":7.0,"insurance_per_unit":1650,"property_tax_rate":1.1,"avg_rent_1br":2350,"expenses_per_unit":{"management":7.5,"insurance":1650,"rm":1350,"turnover":480,"utilities":850,"payroll_100plus":1650,"admin":240,"marketing":180,"landscaping":300,"pest":78,"trash":150,"reserves":480}}}},"IL":{"name":"Illinois","metros":{"chicago":{"name":"Chicago-Naperville","cap_rate":{"low":5.0,"mid":5.7,"high":6.5},"vacancy_rate":7.8,"insurance_per_unit":1350,"property_tax_rate":2.07,"avg_rent_1br":1750,"expenses_per_unit":{"management":7.0,"insurance":1350,"rm":1150,"turnover":420,"utilities":880,"payroll_100plus":1400,"admin":210,"marketing":160,"landscaping":260,"pest":68,"trash":135,"reserves":420}}}},"OH":{"name":"Ohio","metros":{"columbus":{"name":"Columbus","cap_rate":{"low":5.3,"mid":6.0,"high":6.8},"vacancy_rate":7.2,"insurance_per_unit":1150,"property_tax_rate":1.56,"avg_rent_1br":1280,"expenses_per_unit":{"management":7.0,"insurance":1150,"rm":950,"turnover":350,"utilities":780,"payroll_100plus":1050,"admin":170,"marketing":135,"landscaping":230,"pest":60,"trash":110,"reserves":350}}}},"IN":{"name":"Indiana","metros":{"indianapolis":{"name":"Indianapolis","cap_rate":{"low":5.5,"mid":6.2,"high":7.0},"vacancy_rate":7.8,"insurance_per_unit":1100,"property_tax_rate":0.84,"avg_rent_1br":1180,"expenses_per_unit":{"management":7.0,"insurance":1100,"rm":900,"turnover":330,"utilities":750,"payroll_100plus":1000,"admin":160,"marketing":130,"landscaping":220,"pest":58,"trash":105,"reserves":330}}}},"MN":{"name":"Minnesota","metros":{"minneapolis":{"name":"Minneapolis-St. Paul","cap_rate":{"low":5.0,"mid":5.7,"high":6.5},"vacancy_rate":6.5,"insurance_per_unit":1200,"property_tax_rate":1.12,"avg_rent_1br":1450,"expenses_per_unit":{"management":7.0,"insurance":1200,"rm":1050,"turnover":380,"utilities":850,"payroll_100plus":1150,"admin":185,"marketing":145,"landscaping":250,"pest":55,"trash":120,"reserves":380}}}},"MI":{"name":"Michigan","metros":{"detroit":{"name":"Detroit-Warren","cap_rate":{"low":5.8,"mid":6.5,"high":7.3},"vacancy_rate":9.5,"insurance_per_unit":1250,"property_tax_rate":1.62,"avg_rent_1br":1100,"expenses_per_unit":{"management":7.5,"insurance":1250,"rm":1000,"turnover":380,"utilities":820,"payroll_100plus":1050,"admin":170,"marketing":140,"landscaping":220,"pest":58,"trash":115,"reserves":380}}}},"CO":{"name":"Colorado","metros":{"denver":{"name":"Denver-Aurora","cap_rate":{"low":4.5,"mid":5.2,"high":6.0},"vacancy_rate":8.5,"insurance_per_unit":1400,"property_tax_rate":0.55,"avg_rent_1br":1780,"expenses_per_unit":{"management":7.5,"insurance":1400,"rm":1150,"turnover":430,"utilities":750,"payroll_100plus":1300,"admin":200,"marketing":165,"landscaping":280,"pest":60,"trash":120,"reserves":430}}}},"AZ":{"name":"Arizona","metros":{"phoenix":{"name":"Phoenix-Mesa-Scottsdale","cap_rate":{"low":4.8,"mid":5.5,"high":6.3},"vacancy_rate":9.0,"insurance_per_unit":1300,"property_tax_rate":0.62,"avg_rent_1br":1520,"expenses_per_unit":{"management":7.5,"insurance":1300,"rm":1050,"turnover":400,"utilities":780,"payroll_100plus":1150,"admin":180,"marketing":155,"landscaping":350,"pest":85,"trash":115,"reserves":400}}}},"UT":{"name":"Utah","metros":{"salt_lake_city":{"name":"Salt Lake City","cap_rate":{"low":4.7,"mid":5.4,"high":6.2},"vacancy_rate":6.8,"insurance_per_unit":1150,"property_tax_rate":0.58,"avg_rent_1br":1480,"expenses_per_unit":{"management":7.0,"insurance":1150,"rm":1000,"turnover":380,"utilities":720,"payroll_100plus":1100,"admin":175,"marketing":148,"landscaping":260,"pest":55,"trash":110,"reserves":380}}}},"NV":{"name":"Nevada","metros":{"las_vegas":{"name":"Las Vegas-Henderson","cap_rate":{"low":5.0,"mid":5.7,"high":6.5},"vacancy_rate":9.3,"insurance_per_unit":1250,"property_tax_rate":0.6,"avg_rent_1br":1420,"expenses_per_unit":{"management":7.5,"insurance":1250,"rm":1000,"turnover":400,"utilities":800,"payroll_100plus":1100,"admin":175,"marketing":160,"landscaping":340,"pest":78,"trash":118,"reserves":400}}}},"CA":{"name":"California","metros":{"los_angeles":{"name":"Los Angeles-Long Beach","cap_rate":{"low":3.8,"mid":4.5,"high":5.3},"vacancy_rate":5.5,"insurance_per_unit":2100,"property_tax_rate":0.75,"avg_rent_1br":2650,"expenses_per_unit":{"management":7.0,"insurance":2100,"rm":1400,"turnover":520,"utilities":750,"payroll_100plus":1800,"admin":250,"marketing":185,"landscaping":380,"pest":80,"trash":160,"reserves":520}},"san_francisco":{"name":"San Francisco-Oakland","cap_rate":{"low":3.5,"mid":4.2,"high":5.0},"vacancy_rate":6.8,"insurance_per_unit":2000,"property_tax_rate":0.73,"avg_rent_1br":3100,"expenses_per_unit":{"management":6.5,"insurance":2000,"rm":1550,"turnover":580,"utilities":720,"payroll_100plus":2000,"admin":270,"marketing":195,"landscaping":350,"pest":75,"trash":170,"reserves":580}}}},"WA":{"name":"Washington","metros":{"seattle":{"name":"Seattle-Tacoma","cap_rate":{"low":4.0,"mid":4.7,"high":5.5},"vacancy_rate":6.5,"insurance_per_unit":1500,"property_tax_rate":0.93,"avg_rent_1br":2250,"expenses_per_unit":{"management":7.0,"insurance":1500,"rm":1300,"turnover":480,"utilities":700,"payroll_100plus":1700,"admin":240,"marketing":180,"landscaping":300,"pest":65,"trash":150,"reserves":480}}}},"OR":{"name":"Oregon","metros":{"portland":{"name":"Portland-Vancouver","cap_rate":{"low":4.3,"mid":5.0,"high":5.8},"vacancy_rate":7.2,"insurance_per_unit":1400,"property_tax_rate":0.97,"avg_rent_1br":1680,"expenses_per_unit":{"management":7.0,"insurance":1400,"rm":1150,"turnover":430,"utilities":680,"payroll_100plus":1350,"admin":210,"marketing":165,"landscaping":290,"pest":60,"trash":135,"reserves":430}}}},"GA":{"name":"Georgia","metros":{"atlanta":{"name":"Atlanta-Sandy Springs","cap_rate":{"low":4.8,"mid":5.5,"high":6.3},"vacancy_rate":8.5,"insurance_per_unit":1500,"property_tax_rate":0.92,"avg_rent_1br":1650,"expenses_per_unit":{"management":7.5,"insurance":1500,"rm":1100,"turnover":400,"utilities":750,"payroll_100plus":1200,"admin":190,"marketing":155,"landscaping":300,"pest":80,"trash":120,"reserves":400}}}},"TN":{"name":"Tennessee","metros":{"nashville":{"name":"Nashville-Davidson","cap_rate":{"low":4.7,"mid":5.4,"high":6.2},"vacancy_rate":8.0,"insurance_per_unit":1350,"property_tax_rate":0.66,"avg_rent_1br":1620,"expenses_per_unit":{"management":7.5,"insurance":1350,"rm":1050,"turnover":390,"utilities":720,"payroll_100plus":1150,"admin":180,"marketing":150,"landscaping":280,"pest":72,"trash":115,"reserves":390}}}},"NC":{"name":"North Carolina","metros":{"charlotte":{"name":"Charlotte-Concord","cap_rate":{"low":4.8,"mid":5.5,"high":6.3},"vacancy_rate":8.2,"insurance_per_unit":1350,"property_tax_rate":0.84,"avg_rent_1br":1550,"expenses_per_unit":{"management":7.5,"insurance":1350,"rm":1050,"turnover":380,"utilities":710,"payroll_100plus":1150,"admin":180,"marketing":150,"landscaping":290,"pest":72,"trash":115,"reserves":380}},"raleigh":{"name":"Raleigh-Durham","cap_rate":{"low":4.6,"mid":5.3,"high":6.1},"vacancy_rate":7.5,"insurance_per_unit":1300,"property_tax_rate":0.86,"avg_rent_1br":1580,"expenses_per_unit":{"management":7.5,"insurance":1300,"rm":1020,"turnover":375,"utilities":700,"payroll_100plus":1120,"admin":178,"marketing":148,"landscaping":280,"pest":70,"trash":112,"reserves":375}}}}}};
+
+let selectedClass = 'C';
+const CLASS_MULT = {A:0.85, B:0.95, C:1.0, D:1.15};
+
+// Populate states
+const stSel = document.getElementById('stateSelect');
+Object.entries(MDATA.states).sort((a,b)=>a[1].name.localeCompare(b[1].name)).forEach(([code, st]) => {
+  const o = document.createElement('option');
+  o.value = code; o.textContent = st.name;
+  stSel.appendChild(o);
+});
+
+function updateMetros(){
+  const st = stSel.value;
+  const mSel = document.getElementById('metroSelect');
+  mSel.innerHTML = '<option value="">Select metro...</option>';
+  if(!st || !MDATA.states[st]) return;
+  Object.entries(MDATA.states[st].metros).forEach(([key, m]) => {
+    const o = document.createElement('option');
+    o.value = key; o.textContent = m.name;
+    mSel.appendChild(o);
+  });
+}
+
+function setClass(c){
+  selectedClass = c;
+  document.querySelectorAll('.class-btn').forEach(b => b.classList.remove('active'));
+  event.target.classList.add('active');
+  calculate();
+}
+
+function fmt(v){return '$'+Math.round(v).toLocaleString();}
+
+function calculate(){
+  const st = stSel.value;
+  const mk = document.getElementById('metroSelect').value;
+  if(!st || !mk || !MDATA.states[st] || !MDATA.states[st].metros[mk]) return;
+
+  const m = MDATA.states[st].metros[mk];
+  const units = +document.getElementById('unitInput').value || 50;
+  const mult = CLASS_MULT[selectedClass];
+  const exp = m.expenses_per_unit;
+
+  // Adjust expenses by class
+  const cats = [
+    ['Management Fee', exp.management ? exp.management/100 * m.avg_rent_1br * 12 : 0, '%'],
+    ['Insurance', exp.insurance * mult, '$'],
+    ['Repairs & Maintenance', exp.rm * mult, '$'],
+    ['Turnover/Make-Ready', exp.turnover * mult, '$'],
+    ['Utilities', exp.utilities * mult, '$'],
+    ['Payroll (100+ units)', units >= 50 ? exp.payroll_100plus * mult : 0, '$'],
+    ['Admin/G&A', exp.admin, '$'],
+    ['Marketing/Leasing', exp.marketing * mult, '$'],
+    ['Landscaping', exp.landscaping * mult, '$'],
+    ['Pest Control', exp.pest * mult, '$'],
+    ['Trash Removal', exp.trash, '$'],
+    ['Reserves', exp.reserves * mult, '$'],
+  ];
+
+  const total = cats.reduce((s, c) => s + c[1], 0);
+
+  document.getElementById('heroOpex').textContent = fmt(total) + '/unit/year';
+  document.getElementById('heroSub').textContent = m.name + ' — Class ' + selectedClass + ' — ' + units + ' units';
+  document.getElementById('kpiCap').textContent = m.cap_rate.low.toFixed(1) + '-' + m.cap_rate.high.toFixed(1) + '%';
+  document.getElementById('kpiVac').textContent = m.vacancy_rate.toFixed(1) + '%';
+  document.getElementById('kpiIns').textContent = fmt(m.insurance_per_unit);
+  document.getElementById('kpiRent').textContent = fmt(m.avg_rent_1br);
+
+  // Table
+  let html = '';
+  cats.forEach(c => {
+    const pct = total > 0 ? (c[1]/total*100).toFixed(1) : '0';
+    html += '<tr><td>' + c[0] + '</td><td>' + fmt(c[1]) + '</td><td>' + pct + '%</td></tr>';
+  });
+  html += '<tr style="font-weight:700;border-top:2px solid #334155"><td>Total OpEx/Unit</td><td>' + fmt(total) + '</td><td>100%</td></tr>';
+  document.querySelector('#expTable tbody').innerHTML = html;
+
+  // Chart
+  document.getElementById('chartBox').style.display = 'block';
+  Plotly.react('expChart', [{
+    x: cats.map(c=>c[0]), y: cats.map(c=>c[1]), type: 'bar',
+    marker: {color: '#2563EB'},
+    text: cats.map(c=>fmt(c[1])), textposition: 'outside', textfont: {color: '#e2e8f0', size: 10},
+  }], {
+    paper_bgcolor: 'transparent', plot_bgcolor: 'transparent',
+    font: {color: '#94a3b8'}, yaxis: {gridcolor: '#334155', tickformat: '$,.0f'},
+    xaxis: {gridcolor: '#334155', tickangle: -35}, margin: {t:20, b:100, l:60, r:20},
+  }, {displayModeBar: false, responsive: true});
+
+  // Warning
+  const floor = Math.round(total * 0.75);
+  document.getElementById('warningFloor').textContent = fmt(floor);
+  document.getElementById('warningBox').style.display = 'block';
+}
+
+function showModal(){document.getElementById('emailModal').style.display='flex';}
+function hideModal(){document.getElementById('emailModal').style.display='none';}
+function captureEmail(){
+  const email = document.getElementById('emailInput').value;
+  if(!email || !email.includes('@')){alert('Please enter a valid email.');return;}
+  hideModal();
+  alert('Saved! You will receive quarterly market updates at ' + email);
+}
+</script>
+</body>
+</html>
