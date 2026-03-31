@@ -77,7 +77,8 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
       document.getElementById('loopsEmail').disabled=true;
     }catch(err){
       document.getElementById('loopsBtn').textContent='Try again';
-      document.getElementById('loopsMsg').textContent='Something went wrong. Please try again.';
+      document.getElementById('loopsMsg').textContent='Error: '+err.message+'. Open browser console (F12) for details.';
+      console.error('Loops form error:', err);
     }
     return false;
   }
