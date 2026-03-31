@@ -51,22 +51,29 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
 
 <div class="signup-box">
   <h2>Subscribe Free</h2>
-  <iframe name="loopsTarget" style="display:none"></iframe>
-  <form action="https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6" method="POST" target="loopsTarget" onsubmit="handleSubmit()">
+  <form id="loopsForm" onsubmit="return handleSubmit(event)">
     <div class="input-row">
-      <input type="email" name="email" id="loopsEmail" placeholder="you@email.com" required>
-      <input type="hidden" name="userGroup" value="rehab-costs">
+      <input type="email" id="loopsEmail" placeholder="you@email.com" required>
     </div>
     <button type="submit" class="btn-subscribe" id="loopsBtn">Get Free Quarterly Updates</button>
   </form>
   <p class="fine-print" id="loopsMsg">No spam. One email per quarter with updated costs. Unsubscribe anytime.</p>
   <script>
-  function handleSubmit(){
+  function handleSubmit(e){
+    e.preventDefault();
+    var email=document.getElementById('loopsEmail').value;
+    if(!email)return false;
+    var formData=new FormData();
+    formData.append('email',email);
+    formData.append('userGroup','rehab-costs');
+    formData.append('mailingLists','cmndeb7y305hd0iyu3k1sd3n4');
+    navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',formData);
     document.getElementById('loopsBtn').textContent='Subscribed!';
     document.getElementById('loopsBtn').style.background='#16a34a';
     document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
     document.getElementById('loopsEmail').disabled=true;
     document.getElementById('loopsBtn').disabled=true;
+    return false;
   }
   </script>
 </div>
