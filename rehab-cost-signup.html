@@ -51,13 +51,29 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
 
 <div class="signup-box">
   <h2>Subscribe Free</h2>
-  <form action="#" method="POST">
+  <form id="loopsForm" onsubmit="return submitToLoops(event)">
     <div class="input-row">
-      <input type="email" name="email" placeholder="you@email.com" required>
+      <input type="email" id="loopsEmail" placeholder="you@email.com" required>
     </div>
-    <button type="submit" class="btn-subscribe">Get Free Quarterly Updates</button>
+    <button type="submit" class="btn-subscribe" id="loopsBtn">Get Free Quarterly Updates</button>
   </form>
-  <p class="fine-print">No spam. One email per quarter with updated costs. Unsubscribe anytime.</p>
+  <p class="fine-print" id="loopsMsg">No spam. One email per quarter with updated costs. Unsubscribe anytime.</p>
+  <script>
+  async function submitToLoops(e){
+    e.preventDefault();
+    const email=document.getElementById('loopsEmail').value;
+    if(!email)return false;
+    document.getElementById('loopsBtn').textContent='Subscribing...';
+    try{
+      await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+      await fetch('https://app.loops.so/api/v1/events/send',{method:'POST',headers:{'Authorization':'Bearer ef81a71c064cfb0a4b7010e2faf4a9a4','Content-Type':'application/json'},body:JSON.stringify({email,eventName:'lead_magnet_rehab'})});
+      document.getElementById('loopsBtn').textContent='Subscribed!';
+      document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
+      document.getElementById('loopsEmail').disabled=true;
+    }catch(err){document.getElementById('loopsBtn').textContent='Try again';}
+    return false;
+  }
+  </script>
 </div>
 
 <div class="features">

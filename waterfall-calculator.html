@@ -984,16 +984,20 @@ function renderInvestorTable(result) {
 /* ============================================================
    EMAIL CAPTURE
 ============================================================ */
-function captureEmail() {
+async function captureEmail() {
   var email = $('emailInput').value.trim();
   if (!email || !email.includes('@')) {
     $('emailInput').style.borderColor = '#ef4444';
     return;
   }
-  $('emailInput').style.borderColor = '#22c55e';
-  $('emailSuccess').style.display = 'block';
-  // In production, POST to your email service here
-  console.log('Email captured:', email);
+  try {
+    await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
+    await fetch('https://app.loops.so/api/v1/events/send',{method:'POST',headers:{'Authorization':'Bearer ef81a71c064cfb0a4b7010e2faf4a9a4','Content-Type':'application/json'},body:JSON.stringify({email,eventName:'lead_magnet_waterfall'})});
+    $('emailInput').style.borderColor = '#22c55e';
+    $('emailSuccess').style.display = 'block';
+  } catch(err) {
+    $('emailInput').style.borderColor = '#ef4444';
+  }
 }
 
 /* ============================================================
