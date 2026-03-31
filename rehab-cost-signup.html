@@ -51,36 +51,22 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
 
 <div class="signup-box">
   <h2>Subscribe Free</h2>
-  <form id="loopsForm" onsubmit="return submitToLoops(event)">
+  <iframe name="loopsTarget" style="display:none"></iframe>
+  <form action="https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6" method="POST" target="loopsTarget" onsubmit="handleSubmit()">
     <div class="input-row">
-      <input type="email" id="loopsEmail" placeholder="you@email.com" required>
+      <input type="email" name="email" id="loopsEmail" placeholder="you@email.com" required>
+      <input type="hidden" name="userGroup" value="rehab-costs">
     </div>
     <button type="submit" class="btn-subscribe" id="loopsBtn">Get Free Quarterly Updates</button>
   </form>
   <p class="fine-print" id="loopsMsg">No spam. One email per quarter with updated costs. Unsubscribe anytime.</p>
   <script>
-  async function submitToLoops(e){
-    e.preventDefault();
-    const email=document.getElementById('loopsEmail').value;
-    if(!email)return false;
-    document.getElementById('loopsBtn').textContent='Subscribing...';
-    try{
-      const formBody='email='+encodeURIComponent(email)+'&userGroup=rehab-costs';
-      const res=await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
-        method:'POST',
-        headers:{'Content-Type':'application/x-www-form-urlencoded'},
-        body:formBody
-      });
-      document.getElementById('loopsBtn').textContent='Subscribed!';
-      document.getElementById('loopsBtn').style.background='#16a34a';
-      document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
-      document.getElementById('loopsEmail').disabled=true;
-    }catch(err){
-      document.getElementById('loopsBtn').textContent='Try again';
-      document.getElementById('loopsMsg').textContent='Error: '+err.message+'. Open browser console (F12) for details.';
-      console.error('Loops form error:', err);
-    }
-    return false;
+  function handleSubmit(){
+    document.getElementById('loopsBtn').textContent='Subscribed!';
+    document.getElementById('loopsBtn').style.background='#16a34a';
+    document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
+    document.getElementById('loopsEmail').disabled=true;
+    document.getElementById('loopsBtn').disabled=true;
   }
   </script>
 </div>

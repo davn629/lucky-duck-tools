@@ -122,6 +122,7 @@ td{padding:10px 12px;border-bottom:1px solid #334155}
   </div>
 </div>
 
+<iframe name="loopsFrame" style="display:none"></iframe>
 <div class="modal-overlay" id="emailModal">
   <div class="modal">
     <h3>Save Your Market Report</h3>
@@ -235,19 +236,20 @@ function calculate(){
 
 function showModal(){document.getElementById('emailModal').style.display='flex';}
 function hideModal(){document.getElementById('emailModal').style.display='none';}
-async function captureEmail(){
+function captureEmail(){
   const email = document.getElementById('emailInput').value;
   if(!email || !email.includes('@')){alert('Please enter a valid email.');return;}
-  try{
-    const formBody='email='+encodeURIComponent(email)+'&userGroup=market-calculator';
-    const res=await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:formBody
-    });
-    hideModal();
-    alert('Report saved! You will receive quarterly market data updates at ' + email);
-  }catch(err){alert('Something went wrong. Please try again.');}
+  // Submit via hidden iframe to avoid CORS
+  const form = document.createElement('form');
+  form.method='POST';
+  form.action='https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6';
+  form.target='loopsFrame';
+  form.innerHTML='<input name="email" value="'+email+'"><input name="userGroup" value="market-calculator">';
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  hideModal();
+  alert('Report saved! You will receive quarterly market data updates at ' + email);
 }
 </script>
 </body>

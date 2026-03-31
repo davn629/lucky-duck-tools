@@ -453,6 +453,7 @@ tr:hover td{background:#1E293B}
       </div>
     </div>
 
+    <iframe name="loopsFrame" style="display:none"></iframe>
     <!-- Email capture -->
     <div class="email-section">
       <h3>Save This Analysis + Get a Free Syndication Guide</h3>
@@ -984,24 +985,22 @@ function renderInvestorTable(result) {
 /* ============================================================
    EMAIL CAPTURE
 ============================================================ */
-async function captureEmail() {
+function captureEmail() {
   var email = $('emailInput').value.trim();
   if (!email || !email.includes('@')) {
     $('emailInput').style.borderColor = '#ef4444';
     return;
   }
-  try {
-    var formBody='email='+encodeURIComponent(email)+'&userGroup=waterfall-calculator';
-    var res = await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:formBody
-    });
-    $('emailInput').style.borderColor = '#22c55e';
-    $('emailSuccess').style.display = 'block';
-  } catch(err) {
-    $('emailInput').style.borderColor = '#ef4444';
-  }
+  var form = document.createElement('form');
+  form.method='POST';
+  form.action='https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6';
+  form.target='loopsFrame';
+  form.innerHTML='<input name="email" value="'+email+'"><input name="userGroup" value="waterfall-calculator">';
+  document.body.appendChild(form);
+  form.submit();
+  document.body.removeChild(form);
+  $('emailInput').style.borderColor = '#22c55e';
+  $('emailSuccess').style.display = 'block';
 }
 
 /* ============================================================

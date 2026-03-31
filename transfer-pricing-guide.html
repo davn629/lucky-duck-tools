@@ -1583,10 +1583,12 @@ tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
 <div class="email-capture">
   <h3>Get the Full Guide as PDF + Quarterly Updates</h3>
   <p>Receive the complete Transfer Pricing Guide as a downloadable PDF, plus quarterly regulatory updates covering Pillar Two changes, enforcement actions, and new jurisdiction requirements.</p>
-  <div class="email-form" id="email-form">
-    <input type="email" id="email-input" placeholder="your@email.com" aria-label="Email address">
-    <button type="button" onclick="handleEmailSubmit()">Subscribe</button>
-  </div>
+  <iframe name="loopsFrame" style="display:none"></iframe>
+  <form class="email-form" id="email-form" action="https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6" method="POST" target="loopsFrame" onsubmit="handleEmailSubmit()">
+    <input type="email" name="email" id="email-input" placeholder="your@email.com" aria-label="Email address" required>
+    <input type="hidden" name="userGroup" value="tp-guide">
+    <button type="submit">Subscribe</button>
+  </form>
   <p class="email-note" id="email-note">No spam. Quarterly updates only. Tagged as "tp-guide" for relevant content.</p>
 </div>
 
@@ -2304,7 +2306,7 @@ function toggleCheck(e) {
 }
 
 // ===== EMAIL FORM =====
-async function handleEmailSubmit() {
+function handleEmailSubmit() {
   var input = document.getElementById('email-input');
   var note = document.getElementById('email-note');
   var email = input.value.trim();
@@ -2313,25 +2315,12 @@ async function handleEmailSubmit() {
     note.style.color = '#EF4444';
     return;
   }
-  document.querySelector('.email-form button').textContent = 'Subscribing...';
-  try {
-    var formBody='email='+encodeURIComponent(email)+'&userGroup=tp-guide';
-    var res = await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
-      method:'POST',
-      headers:{'Content-Type':'application/x-www-form-urlencoded'},
-      body:formBody
-    });
-    input.value = '';
-    input.disabled = true;
-    document.querySelector('.email-form button').disabled = true;
-    document.querySelector('.email-form button').textContent = 'Subscribed';
-    note.textContent = 'Thank you! Check your inbox for the PDF guide and quarterly regulatory updates.';
-    note.style.color = '#10B981';
-  } catch(err) {
-    note.textContent = 'Something went wrong. Please try again.';
-    note.style.color = '#EF4444';
-    document.querySelector('.email-form button').textContent = 'Subscribe';
-  }
+  // Form submits via hidden iframe (no CORS issues)
+  input.disabled = true;
+  document.querySelector('.email-form button').disabled = true;
+  document.querySelector('.email-form button').textContent = 'Subscribed';
+  note.textContent = 'Thank you! Check your inbox for the PDF guide and quarterly regulatory updates.';
+  note.style.color = '#10B981';
 }
 </script>
 
