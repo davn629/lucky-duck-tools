@@ -65,12 +65,12 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
     if(!email)return false;
     document.getElementById('loopsBtn').textContent='Subscribing...';
     try{
+      const formBody='email='+encodeURIComponent(email)+'&userGroup=rehab-costs';
       const res=await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
         method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body:JSON.stringify({email:email,userGroup:'rehab-costs'})
+        headers:{'Content-Type':'application/x-www-form-urlencoded'},
+        body:formBody
       });
-      if(!res.ok)throw new Error('Failed');
       document.getElementById('loopsBtn').textContent='Subscribed!';
       document.getElementById('loopsBtn').style.background='#16a34a';
       document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';

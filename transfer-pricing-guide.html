@@ -2315,12 +2315,12 @@ async function handleEmailSubmit() {
   }
   document.querySelector('.email-form button').textContent = 'Subscribing...';
   try {
+    var formBody='email='+encodeURIComponent(email)+'&userGroup=tp-guide';
     var res = await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({email:email,userGroup:'tp-guide'})
+      headers:{'Content-Type':'application/x-www-form-urlencoded'},
+      body:formBody
     });
-    if(!res.ok)throw new Error('Failed');
     input.value = '';
     input.disabled = true;
     document.querySelector('.email-form button').disabled = true;
