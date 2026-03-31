@@ -991,14 +991,9 @@ function captureEmail() {
     $('emailInput').style.borderColor = '#ef4444';
     return;
   }
-  var form = document.createElement('form');
-  form.method='POST';
-  form.action='https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6';
-  form.target='loopsFrame';
-  form.innerHTML='<input name="email" value="'+email+'"><input name="userGroup" value="waterfall-calculator">';
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
+  var body='email='+encodeURIComponent(email)+'&userGroup=waterfall-calculator&mailingLists=cmnde8yzz04ym0ivjbyd969v0';
+  var blob=new Blob([body],{type:'application/x-www-form-urlencoded'});
+  navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',blob);
   $('emailInput').style.borderColor = '#22c55e';
   $('emailSuccess').style.display = 'block';
 }

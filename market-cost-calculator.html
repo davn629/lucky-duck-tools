@@ -239,15 +239,9 @@ function hideModal(){document.getElementById('emailModal').style.display='none';
 function captureEmail(){
   const email = document.getElementById('emailInput').value;
   if(!email || !email.includes('@')){alert('Please enter a valid email.');return;}
-  // Submit via hidden iframe to avoid CORS
-  const form = document.createElement('form');
-  form.method='POST';
-  form.action='https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6';
-  form.target='loopsFrame';
-  form.innerHTML='<input name="email" value="'+email+'"><input name="userGroup" value="market-calculator">';
-  document.body.appendChild(form);
-  form.submit();
-  document.body.removeChild(form);
+  var body='email='+encodeURIComponent(email)+'&userGroup=market-calculator&mailingLists=cmndedlpb069n0iwgdpbrg8mz';
+  var blob=new Blob([body],{type:'application/x-www-form-urlencoded'});
+  navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',blob);
   hideModal();
   alert('Report saved! You will receive quarterly market data updates at ' + email);
 }
