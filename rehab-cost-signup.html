@@ -65,12 +65,20 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
     if(!email)return false;
     document.getElementById('loopsBtn').textContent='Subscribing...';
     try{
-      await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({email})});
-      await fetch('https://app.loops.so/api/v1/events/send',{method:'POST',headers:{'Authorization':'Bearer ef81a71c064cfb0a4b7010e2faf4a9a4','Content-Type':'application/json'},body:JSON.stringify({email,eventName:'lead_magnet_rehab'})});
+      const res=await fetch('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:email,userGroup:'rehab-costs'})
+      });
+      if(!res.ok)throw new Error('Failed');
       document.getElementById('loopsBtn').textContent='Subscribed!';
+      document.getElementById('loopsBtn').style.background='#16a34a';
       document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
       document.getElementById('loopsEmail').disabled=true;
-    }catch(err){document.getElementById('loopsBtn').textContent='Try again';}
+    }catch(err){
+      document.getElementById('loopsBtn').textContent='Try again';
+      document.getElementById('loopsMsg').textContent='Something went wrong. Please try again.';
+    }
     return false;
   }
   </script>
