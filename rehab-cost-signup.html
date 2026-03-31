@@ -63,11 +63,9 @@ body{background:#1E293B;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-seri
     e.preventDefault();
     var email=document.getElementById('loopsEmail').value;
     if(!email)return false;
-    var formData=new FormData();
-    formData.append('email',email);
-    formData.append('userGroup','rehab-costs');
-    formData.append('mailingLists','cmndeb7y305hd0iyu3k1sd3n4');
-    navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',formData);
+    var body='email='+encodeURIComponent(email)+'&userGroup=rehab-costs&mailingLists=cmndeb7y305hd0iyu3k1sd3n4';
+    var blob=new Blob([body],{type:'application/x-www-form-urlencoded'});
+    navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6',blob);
     document.getElementById('loopsBtn').textContent='Subscribed!';
     document.getElementById('loopsBtn').style.background='#16a34a';
     document.getElementById('loopsMsg').textContent='Check your inbox for the latest rehab cost data.';
