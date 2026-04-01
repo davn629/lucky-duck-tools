@@ -434,6 +434,16 @@ function getAutoQty(item) {
   const bath = num('propBath');
   const stories = Math.max(1, num('propStories'));
   const roofSF = Math.round(sf * 1.15 / stories);
+  const ceilingHeight = 8;
+  // Wall+ceiling surface area: perimeter × height + floor SF for ceilings
+  // Perimeter approx: 4 × √(sf/stories) for one floor, times stories
+  const floorSF = sf / stories;
+  const perim = 4 * Math.sqrt(floorSF);
+  const wallSF = Math.round(perim * ceilingHeight * stories * 0.85); // 15% deduction for windows/doors
+  const ceilingSF = sf; // ceiling ≈ floor area
+  const paintableSF = wallSF + ceilingSF; // total wall + ceiling surface
+  const wallOnlySF = wallSF; // walls without ceilings
+
   const cat = item.category;
   const name = item.line_item.toLowerCase();
   const unit = item.unit.toLowerCase();
@@ -441,10 +451,21 @@ function getAutoQty(item) {
   // Roofing items: use Roof SF
   if (cat === 'Roofing' && (unit.includes('sf'))) return roofSF;
 
-  // Interior paint: use Property SF
-  if (cat === 'Interior Paint' && unit.includes('sf')) return sf;
+  // Interior paint: use paintable surface area
+  // "walls only" = wall SF, "walls + trim + ceilings" = full paintable SF
+  if (cat === 'Interior Paint' && unit.includes('sf')) {
+    if (name.includes('ceiling') || name.includes('trim')) return paintableSF;
+    return wallOnlySF; // walls only
+  }
 
-  // Flooring: use Property SF (except bathroom floor)
+  // Drywall: wall + ceiling surface area
+  // Popcorn/texture removal = ceiling only
+  if (cat === 'Drywall & Interior Walls' && unit.includes('sf')) {
+    if (name.includes('popcorn') || name.includes('texture') || name.includes('ceiling')) return ceilingSF;
+    return paintableSF; // hang/tape/finish or skim coat = walls + ceilings
+  }
+
+  // Flooring: use living SF (correct — floors = floor area)
   if (cat === 'Flooring' && unit.includes('sf')) return sf;
   if (cat === 'Flooring' && unit.includes('bath')) return bath;
 
@@ -457,20 +478,20 @@ function getAutoQty(item) {
   // Toilet / faucet by bathrooms
   if (name.includes('toilet')) return bath;
 
-  // Full rewire, re-pipe, ductwork by SF
+  // Full rewire, re-pipe, ductwork by SF (these price per living SF, not wall SF)
   if (unit.includes('sf') && (name.includes('rewire') || name.includes('re-pipe') || name.includes('ductwork'))) return sf;
 
-  // Drywall by SF
-  if (cat === 'Drywall & Interior Walls' && unit.includes('sf')) return sf;
-
-  // General demo by SF
+  // General demo by SF (living area)
   if (name.includes('general demolition') && unit.includes('sf')) return sf;
 
-  // Subfloor by SF
+  // Subfloor by SF (floor area)
   if (name.includes('subfloor') && unit.includes('sf')) return sf;
 
-  // Insulation SF items
-  if (cat === 'Insulation' && unit.includes('sf')) return sf;
+  // Insulation SF items (living area — attic/crawlspace = floor footprint)
+  if (cat === 'Insulation' && unit.includes('sf')) return Math.round(sf / stories);
+
+  // Exterior paint & siding: exterior wall surface area
+  if (cat === 'Exterior' && unit.includes('sf') && (name.includes('paint') || name.includes('siding'))) return wallOnlySF;
 
   // Default: 1 for each/lump sum, 0 for per SF/LF
   if (unit === 'each' || unit === 'lump sum') return 1;
@@ -490,14 +511,14 @@ function buildCategories() {
   items = [];
 
   let html = `<table class="sheet-table"><thead><tr>
-    <th style="width:32px">&#10003;</th><th>Line Item</th><th>Unit</th><th>Contractor</th><th>Mid-Range</th><th>High-End</th><th style="width:65px">Qty</th><th style="text-align:right">Total</th>
+    <th style="width:32px">&#10003;</th><th>Line Item</th><th>Unit</th><th>Contractor</th><th>Mid-Range</th><th>High-End</th><th>Custom</th><th style="width:65px">Qty</th><th style="text-align:right">Total</th>
   </tr></thead><tbody>`;
 
   CATEGORIES.forEach((cat, ci) => {
     const catItems = COST_DATA.filter(d => d.category === cat);
 
     // Category header row
-    html += `<tr class="cat-row"><td colspan="7">${cat}</td><td class="cat-total-cell" id="catTotal-${ci}">$0</td></tr>`;
+    html += `<tr class="cat-row"><td colspan="8">${cat}</td><td class="cat-total-cell" id="catTotal-${ci}">$0</td></tr>`;
 
     catItems.forEach((d) => {
       const idx = items.length;
@@ -509,7 +530,8 @@ function buildCategories() {
         catIdx: ci,
         tier: defaultTier,
         qty: autoQty,
-        included: false
+        included: false,
+        customPrice: null
       });
 
       const cAvail = d.contractor !== null;
@@ -523,6 +545,7 @@ function buildCategories() {
         <td><button class="tier-btn ${defaultTier==='contractor'?'active':''} ${!cAvail?'na':''}" id="tc-${idx}" onclick="setTier(${idx},'contractor')" ${!cAvail?'disabled':''}>${cAvail ? fmtDec(d.contractor) : '—'}</button></td>
         <td><button class="tier-btn ${defaultTier==='mid_range'?'active':''} ${!mAvail?'na':''}" id="tm-${idx}" onclick="setTier(${idx},'mid_range')" ${!mAvail?'disabled':''}>${mAvail ? fmtDec(d.mid_range) : '—'}</button></td>
         <td><button class="tier-btn ${defaultTier==='high_end'?'active':''} ${!hAvail?'na':''}" id="th-${idx}" onclick="setTier(${idx},'high_end')" ${!hAvail?'disabled':''}>${hAvail ? fmtDec(d.high_end) : '—'}</button></td>
+        <td><input type="number" class="qty-input" id="custom-${idx}" placeholder="—" step="any" min="0" oninput="setCustomPrice(${idx})" style="width:65px"></td>
         <td><input type="number" class="qty-input" id="qty-${idx}" value="${autoQty}" min="0" oninput="updateQty(${idx})"></td>
         <td class="line-total" id="lt-${idx}">$0</td>
       </tr>`;
@@ -547,10 +570,34 @@ function setTier(idx, tier) {
   const cost = d[tier];
   if (cost === null) return;
   items[idx].tier = tier;
+  items[idx].customPrice = null; // clear custom when selecting a tier
+  document.getElementById('custom-'+idx).value = '';
   // Update button states
   document.getElementById('tc-'+idx).className = 'tier-btn' + (tier==='contractor'?' active':'') + (d.contractor===null?' na':'');
   document.getElementById('tm-'+idx).className = 'tier-btn' + (tier==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
   document.getElementById('th-'+idx).className = 'tier-btn' + (tier==='high_end'?' active':'') + (d.high_end===null?' na':'');
+  recalcAll();
+}
+
+function setCustomPrice(idx) {
+  const val = parseFloat(document.getElementById('custom-'+idx).value);
+  if (!isNaN(val) && val > 0) {
+    items[idx].customPrice = val;
+    items[idx].tier = 'custom';
+    // Deselect all tier buttons
+    document.getElementById('tc-'+idx).className = 'tier-btn' + (items[idx].data.contractor===null?' na':'');
+    document.getElementById('tm-'+idx).className = 'tier-btn' + (items[idx].data.mid_range===null?' na':'');
+    document.getElementById('th-'+idx).className = 'tier-btn' + (items[idx].data.high_end===null?' na':'');
+  } else {
+    items[idx].customPrice = null;
+    // Re-select default tier
+    const d = items[idx].data;
+    const dt = d.contractor !== null ? 'contractor' : (d.mid_range !== null ? 'mid_range' : 'high_end');
+    items[idx].tier = dt;
+    document.getElementById('tc-'+idx).className = 'tier-btn' + (dt==='contractor'?' active':'') + (d.contractor===null?' na':'');
+    document.getElementById('tm-'+idx).className = 'tier-btn' + (dt==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
+    document.getElementById('th-'+idx).className = 'tier-btn' + (dt==='high_end'?' active':'') + (d.high_end===null?' na':'');
+  }
   recalcAll();
 }
 
@@ -581,7 +628,7 @@ function recalcAll() {
 
   let subtotal = 0;
   items.forEach((item, idx) => {
-    const cost = item.data[item.tier];
+    const cost = item.customPrice !== null ? item.customPrice : item.data[item.tier];
     let lineTotal = 0;
     if (item.included && cost !== null) {
       lineTotal = item.qty * cost;
