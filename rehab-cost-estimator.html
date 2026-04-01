@@ -72,6 +72,17 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 .add-row-btn{background:none;border:1px dashed #334155;border-radius:4px;color:#4a6a8a;font-size:.72rem;padding:3px 10px;cursor:pointer;transition:all .15s}
 .add-row-btn:hover{border-color:#3B82F6;color:#3B82F6}
 
+/* Grand total card */
+.gt-grid{display:flex;flex-direction:column;gap:8px}
+.gt-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #1e2530}
+.gt-row:last-child{border-bottom:none}
+.gt-row.gt-total{border-top:2px solid #3B82F6;border-bottom:2px solid #3B82F6;padding:12px 0;margin:4px 0}
+.gt-label{color:#a0aec0;font-size:.88rem;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.gt-label .contingency-sel{font-size:.78rem}
+.gt-note{font-size:.68rem;color:#4a5568;display:block;width:100%}
+.gt-value{color:#e2e8f0;font-size:1.1rem;font-weight:700;white-space:nowrap}
+.gt-value.blue{color:#3B82F6;font-size:1.4rem}
+
 /* Sticky total */
 .sticky-total{position:fixed;bottom:0;left:0;right:0;background:#0F172A;border-top:2px solid #3B82F6;padding:12px 24px;z-index:50;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
 .sticky-total .st-item{text-align:center}
@@ -161,6 +172,15 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .tier-btn{background:#fff!important;color:#888!important;border-color:#ccc!important}
   .tier-btn.active{background:#2563EB!important;color:#fff!important}
   .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr{display:none!important}
+  #grandTotalCard{display:block!important;border:2px solid #333!important}
+  .gt-label{color:#333!important}
+  .gt-value{color:#111!important}
+  .gt-value.blue{color:#2563EB!important}
+  .gt-row{border-color:#ccc!important}
+  .gt-row.gt-total{border-color:#333!important}
+  .gt-note{color:#888!important}
+  .gt-label select{display:none!important}
+  .gt-label::after{content:attr(data-print);color:#666;font-size:.8rem}
   .presets{display:none!important}
   .cta-card{display:none!important}
   .footer{color:#888!important;border-color:#ccc!important}
@@ -319,22 +339,69 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 
 </div><!-- /container -->
 
-<!-- Sticky Total -->
+<!-- Grand Total Card (inline, always visible) -->
+<div class="container">
+<div class="card" id="grandTotalCard">
+  <h2>Grand Total</h2>
+  <div class="gt-grid">
+    <div class="gt-row">
+      <span class="gt-label">Subtotal (all included items)</span>
+      <span class="gt-value" id="gtSubtotal">$0</span>
+    </div>
+    <div class="gt-row">
+      <span class="gt-label">Contingency
+        <select class="contingency-sel" id="contingencySel" onchange="recalcAll()">
+          <option value="0.10" selected>10%</option>
+          <option value="0.12">12%</option>
+          <option value="0.15">15%</option>
+          <option value="0.20">20%</option>
+        </select>
+      </span>
+      <span class="gt-value" id="gtContingency">$0</span>
+    </div>
+    <div class="gt-row">
+      <span class="gt-label">Sales Tax
+        <select class="contingency-sel" id="taxSel" onchange="recalcAll()">
+          <option value="0" selected>0% (no tax)</option>
+          <option value="0.04">4%</option>
+          <option value="0.05">5%</option>
+          <option value="0.06">6%</option>
+          <option value="0.065">6.5%</option>
+          <option value="0.07">7%</option>
+          <option value="0.075">7.5%</option>
+          <option value="0.08">8%</option>
+          <option value="0.085">8.5%</option>
+          <option value="0.09">9%</option>
+          <option value="0.10">10%</option>
+        </select>
+        <span class="gt-note">Materials only — typically 40-60% of total. Labor is usually exempt.</span>
+      </span>
+      <span class="gt-value" id="gtTax">$0</span>
+    </div>
+    <div class="gt-row gt-total">
+      <span class="gt-label">Grand Total</span>
+      <span class="gt-value blue" id="gtGrandTotal">$0</span>
+    </div>
+    <div class="gt-row">
+      <span class="gt-label">Cost per SF</span>
+      <span class="gt-value" id="gtPerSF">$0/SF</span>
+    </div>
+    <div class="gt-row">
+      <span class="gt-label">Region</span>
+      <span class="gt-value" id="gtRegion" style="font-size:.85rem">National Average (1.00x)</span>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- Sticky Total (compact bar at bottom) -->
 <div class="sticky-total">
   <div class="st-item">
     <div class="st-label">Subtotal</div>
     <div class="st-value" id="stSubtotal">$0</div>
   </div>
   <div class="st-item">
-    <div class="st-label">Contingency</div>
-    <select class="contingency-sel" id="contingencySel" onchange="recalcAll()">
-      <option value="0.10" selected>10%</option>
-      <option value="0.12">12%</option>
-      <option value="0.15">15%</option>
-    </select>
-  </div>
-  <div class="st-item">
-    <div class="st-label">Total w/ Contingency</div>
+    <div class="st-label">Grand Total</div>
     <div class="st-value blue" id="stTotal">$0</div>
   </div>
   <div class="st-item">
@@ -767,20 +834,36 @@ function recalcAll() {
     document.getElementById('catTotal-'+i).textContent = fmt(catTotals[i]);
   });
 
-  // Contingency
+  // Contingency + Tax + Grand Total
   const contPct = parseFloat(document.getElementById('contingencySel').value);
   const contingency = subtotal * contPct;
-  const total = subtotal + contingency;
+  const afterContingency = subtotal + contingency;
+  const taxRate = parseFloat(document.getElementById('taxSel').value) || 0;
+  // Tax applies to materials only — industry rule of thumb: ~50% of rehab cost is materials
+  const taxableAmount = afterContingency * 0.50;
+  const tax = taxableAmount * taxRate;
+  const grandTotal = afterContingency + tax;
   const sf = num('propSF') || 1;
 
+  // Grand Total card (inline)
+  document.getElementById('gtSubtotal').textContent = fmt(subtotal);
+  document.getElementById('gtContingency').textContent = fmt(contingency);
+  document.getElementById('gtTax').textContent = fmt(tax);
+  document.getElementById('gtGrandTotal').textContent = fmt(grandTotal);
+  document.getElementById('gtPerSF').textContent = fmt(grandTotal / sf) + '/SF';
+  const regionSel = document.getElementById('propRegion');
+  document.getElementById('gtRegion').textContent = regionSel.options[regionSel.selectedIndex].text;
+
+  // Sticky bar (compact)
   document.getElementById('stSubtotal').textContent = fmt(subtotal);
-  document.getElementById('stTotal').textContent = fmt(total);
-  document.getElementById('stPerSF').textContent = fmt(total / sf) + '/SF';
+  document.getElementById('stTotal').textContent = fmt(grandTotal);
+  document.getElementById('stPerSF').textContent = fmt(grandTotal / sf) + '/SF';
 
   // Show breakdown and email if there's a total
   const hasTotal = subtotal > 0;
   document.getElementById('breakdownCard').style.display = hasTotal ? 'block' : 'none';
   document.getElementById('emailCard').style.display = hasTotal ? 'block' : 'none';
+  document.getElementById('grandTotalCard').style.display = hasTotal ? 'block' : 'none';
 
   // Category bars
   if (hasTotal) {
