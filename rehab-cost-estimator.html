@@ -33,12 +33,26 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 
 /* Quick Estimate */
 .presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
-.preset-btn{background:#0f1117;border:2px solid #2d3748;border-radius:10px;padding:14px 12px;cursor:pointer;text-align:center;transition:all .2s}
-.preset-btn:hover{border-color:#3B82F6}
-.preset-btn.active{border-color:#3B82F6;background:#1e3a5f}
-.preset-btn h4{color:#fff;font-size:.9rem;margin-bottom:4px}
-.preset-btn .cost{color:#3B82F6;font-weight:700;font-size:1rem}
-.preset-btn .desc{color:#718096;font-size:.72rem;margin-top:4px;line-height:1.3}
+.preset-card{background:#0f1117;border:2px solid #2d3748;border-radius:10px;overflow:hidden;transition:border-color .2s}
+.preset-card:hover{border-color:#475569}
+.preset-card.active{border-color:#3B82F6;background:#0c1525}
+.preset-top{padding:14px 12px 8px;cursor:pointer;text-align:center}
+.preset-top h4{color:#fff;font-size:.9rem;margin-bottom:4px}
+.preset-top .cost{color:#3B82F6;font-weight:700;font-size:1rem}
+.preset-top .desc{color:#718096;font-size:.72rem;margin-top:4px;line-height:1.3}
+.preset-toggle{display:block;width:100%;background:none;border:none;border-top:1px solid #1e2530;color:#4a6a8a;font-size:.68rem;padding:6px 8px;cursor:pointer;transition:color .15s;text-align:center}
+.preset-toggle:hover{color:#3B82F6}
+.preset-detail{display:none;padding:8px 12px 12px;border-top:1px solid #1e2530;background:#0a0e18}
+.preset-detail.open{display:block}
+.preset-detail ul{margin:0;padding:0 0 0 14px;font-size:.68rem;color:#94a3b8;line-height:1.6}
+.preset-detail li{margin-bottom:2px}
+.preset-detail li strong{color:#cbd5e1}
+.preset-not{margin-top:6px;font-size:.62rem;color:#4a5568;font-style:italic;padding-top:6px;border-top:1px solid #1a2030}
+
+/* Global tier buttons */
+.tier-global{padding:6px 14px;border:1px solid #2d3748;border-radius:6px;background:#0f1117;color:#a0aec0;cursor:pointer;font-size:.78rem;font-weight:600;transition:all .15s}
+.tier-global:hover{border-color:#3B82F6;color:#e2e8f0}
+.tier-global.active{background:#3B82F6;border-color:#3B82F6;color:#fff}
 
 /* Spreadsheet table */
 .sheet-wrap{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;overflow-x:auto;margin-bottom:20px}
@@ -195,7 +209,7 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .fg input,.fg select,.qty-input{background:#fff!important;color:#111!important;border-color:#ccc!important}
   .tier-btn{background:#fff!important;color:#888!important;border-color:#ccc!important}
   .tier-btn.active{background:#2563EB!important;color:#fff!important}
-  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr,.save-card,.loaded-banner{display:none!important}
+  .preset-card,.preset-toggle,.preset-detail,.tier-global,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr,.save-card,.loaded-banner{display:none!important}
   #grandTotalCard{display:block!important;border:2px solid #333!important}
   .gt-label{color:#333!important}
   .gt-value{color:#111!important}
@@ -308,32 +322,136 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   <h2>Quick Estimate</h2>
   <p style="color:#718096;font-size:.85rem;margin-bottom:14px">Select a preset to auto-check common items, or skip to customize line-by-line below.</p>
   <div class="presets">
-    <div class="preset-btn" onclick="applyPreset('cosmetic')" id="pre-cosmetic">
-      <h4>Cosmetic</h4>
-      <div class="cost">~$15/SF</div>
-      <div class="desc">Paint, flooring, fixtures</div>
+    <div class="preset-card" id="pre-cosmetic">
+      <div class="preset-top" onclick="applyPreset('cosmetic')">
+        <h4>Cosmetic</h4>
+        <div class="cost">~$15/SF</div>
+        <div class="desc">Paint, flooring, fixtures</div>
+      </div>
+      <button class="preset-toggle" onclick="togglePresetDetail('cosmetic',event)">What's included ▾</button>
+      <div class="preset-detail" id="detail-cosmetic">
+        <ul>
+          <li><strong>Paint:</strong> Walls + trim + ceilings (full interior)</li>
+          <li><strong>Flooring:</strong> LVP throughout</li>
+          <li><strong>Electrical:</strong> Light fixtures (1 per room)</li>
+          <li><strong>Plumbing:</strong> Faucets (each bath + kitchen)</li>
+          <li><strong>Kitchen:</strong> Appliance package</li>
+          <li><strong>Landscaping:</strong> Yard cleanup</li>
+          <li><strong>Misc:</strong> Post-construction cleaning</li>
+        </ul>
+        <div class="preset-not">Not included: roofing, siding, windows, doors, electrical panel, plumbing systems, HVAC, drywall, kitchen cabinets/counters, bathroom remodel</div>
+      </div>
     </div>
-    <div class="preset-btn" onclick="applyPreset('light')" id="pre-light">
-      <h4>Light Rehab</h4>
-      <div class="cost">~$30/SF</div>
-      <div class="desc">+ Kitchen/bath refresh</div>
+    <div class="preset-card" id="pre-light">
+      <div class="preset-top" onclick="applyPreset('light')">
+        <h4>Light Rehab</h4>
+        <div class="cost">~$30/SF</div>
+        <div class="desc">+ Kitchen/bath refresh</div>
+      </div>
+      <button class="preset-toggle" onclick="togglePresetDetail('light',event)">What's included ▾</button>
+      <div class="preset-detail" id="detail-light">
+        <ul>
+          <li><strong>Paint:</strong> Full interior + cabinet painting</li>
+          <li><strong>Flooring:</strong> LVP + bathroom tile</li>
+          <li><strong>Kitchen:</strong> Cabinet refacing, laminate counters, subway backsplash, sink, appliances, range hood</li>
+          <li><strong>Bathroom:</strong> Fiberglass tub/shower, vanity, toilet, faucets, mirror, exhaust fan</li>
+          <li><strong>Electrical:</strong> Light fixtures, GFCIs, smoke detectors</li>
+          <li><strong>Plumbing:</strong> Faucets, garbage disposal</li>
+          <li><strong>Landscaping:</strong> Yard cleanup + basic landscaping</li>
+          <li><strong>Misc:</strong> Dumpster, cleaning</li>
+        </ul>
+        <div class="preset-not">Not included: roofing, siding, windows, doors, electrical panel/rewire, plumbing re-pipe, HVAC, drywall, structural, insulation</div>
+      </div>
     </div>
-    <div class="preset-btn" onclick="applyPreset('medium')" id="pre-medium">
-      <h4>Medium Rehab</h4>
-      <div class="cost">~$55/SF</div>
-      <div class="desc">Most categories, standard</div>
+    <div class="preset-card" id="pre-medium">
+      <div class="preset-top" onclick="applyPreset('medium')">
+        <h4>Medium Rehab</h4>
+        <div class="cost">~$55/SF</div>
+        <div class="desc">Most categories, mid-range</div>
+      </div>
+      <button class="preset-toggle" onclick="togglePresetDetail('medium',event)">What's included ▾</button>
+      <div class="preset-detail" id="detail-medium">
+        <ul>
+          <li><strong>Roof:</strong> Tear-off + architectural shingles, flashing, gutters</li>
+          <li><strong>Exterior:</strong> Paint, soffit &amp; fascia</li>
+          <li><strong>Windows:</strong> Vinyl double-hung (all), steel entry door, solid-core interior doors</li>
+          <li><strong>Electrical:</strong> Panel upgrade, circuits, GFCIs, fixtures, ceiling fans, smoke detectors</li>
+          <li><strong>Plumbing:</strong> Water heater (40 gal), toilets, faucets, disposal</li>
+          <li><strong>HVAC:</strong> A/C condenser, thermostat</li>
+          <li><strong>Drywall:</strong> Hang/tape/finish + patch</li>
+          <li><strong>Paint:</strong> Full interior + cabinets</li>
+          <li><strong>Flooring:</strong> Remove old + LVP + bathroom tile</li>
+          <li><strong>Kitchen:</strong> Semi-custom cabinets, quartz counters, subway backsplash, sink, appliances</li>
+          <li><strong>Bathroom:</strong> Tile surround, vanity, toilet, faucets, mirror, exhaust</li>
+          <li><strong>Admin:</strong> Permits, insurance, holding costs, appraisal</li>
+        </ul>
+        <div class="preset-not">Not included: structural, full rewire, re-pipe, siding replacement, HVAC system, insulation, demo</div>
+      </div>
     </div>
-    <div class="preset-btn" onclick="applyPreset('heavy')" id="pre-heavy">
-      <h4>Heavy Rehab</h4>
-      <div class="cost">~$100/SF</div>
-      <div class="desc">Everything except structural</div>
+    <div class="preset-card" id="pre-heavy">
+      <div class="preset-top" onclick="applyPreset('heavy')">
+        <h4>Heavy Rehab</h4>
+        <div class="cost">~$100/SF</div>
+        <div class="desc">Everything except structural</div>
+      </div>
+      <button class="preset-toggle" onclick="togglePresetDetail('heavy',event)">What's included ▾</button>
+      <div class="preset-detail" id="detail-heavy">
+        <ul>
+          <li><strong>Demo:</strong> Full interior demo, dumpsters, hazmat abatement, permits</li>
+          <li><strong>Roof:</strong> Full tear-off + reshingle + decking repair</li>
+          <li><strong>Exterior:</strong> Hardie siding, paint, soffit, concrete</li>
+          <li><strong>Windows:</strong> All windows + sliding glass + entry door + garage door</li>
+          <li><strong>Electrical:</strong> Panel upgrade + full rewire + all fixtures</li>
+          <li><strong>Plumbing:</strong> 50-gal water heater + full re-pipe + all fixtures</li>
+          <li><strong>HVAC:</strong> Full system + ductwork + thermostat</li>
+          <li><strong>Insulation:</strong> Attic + walls</li>
+          <li><strong>Drywall:</strong> Full hang/tape/finish + texture removal</li>
+          <li><strong>Paint:</strong> Primer + full interior + cabinets</li>
+          <li><strong>Flooring:</strong> Full removal + LVP + ceramic tile</li>
+          <li><strong>Kitchen:</strong> Semi-custom cabinets, quartz, backsplash, sink, appliances</li>
+          <li><strong>Bathroom:</strong> Tile surround, vanity, toilet, all fixtures</li>
+          <li><strong>Landscaping:</strong> Cleanup + sod + landscaping</li>
+          <li><strong>Admin:</strong> Permits, engineering, insurance, holding costs, appraisal, closing</li>
+        </ul>
+        <div class="preset-not">Not included: foundation repair, framing, structural beams, subfloor</div>
+      </div>
     </div>
-    <div class="preset-btn" onclick="applyPreset('gut')" id="pre-gut">
-      <h4>Full Gut</h4>
-      <div class="cost">~$180/SF</div>
-      <div class="desc">Complete renovation</div>
+    <div class="preset-card" id="pre-gut">
+      <div class="preset-top" onclick="applyPreset('gut')">
+        <h4>Full Gut</h4>
+        <div class="cost">~$180/SF</div>
+        <div class="desc">Complete renovation</div>
+      </div>
+      <button class="preset-toggle" onclick="togglePresetDetail('gut',event)">What's included ▾</button>
+      <div class="preset-detail" id="detail-gut">
+        <ul>
+          <li><strong>Everything in Heavy</strong> plus:</li>
+          <li><strong>Structural:</strong> Foundation crack repair, framing, structural beams, subfloor</li>
+          <li><strong>Plumbing:</strong> Tankless water heater, sewer line, rough-in new bath</li>
+          <li><strong>Insulation:</strong> + spray foam</li>
+          <li><strong>Flooring:</strong> Engineered hardwood + porcelain tile (high-end)</li>
+          <li><strong>Kitchen:</strong> High-end finishes, glass/mosaic backsplash</li>
+          <li><strong>Bathroom:</strong> Frameless glass shower, double vanity</li>
+          <li><strong>Exterior:</strong> Deck repair, fencing</li>
+          <li><strong>Landscaping:</strong> + irrigation, tree removal</li>
+          <li><strong>Admin:</strong> + architect, environmental assessment, asbestos testing</li>
+          <li><strong>Misc:</strong> + termite treatment, mold remediation</li>
+        </ul>
+        <div class="preset-not">All categories and 85+ items at high-end tier</div>
+      </div>
     </div>
   </div>
+</div>
+
+<!-- Global tier + controls bar -->
+<div class="card" style="padding:12px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px">
+  <div style="display:flex;align-items:center;gap:8px">
+    <span style="font-size:.75rem;color:#a0aec0;text-transform:uppercase;letter-spacing:.04em;font-weight:600">Quality Tier:</span>
+    <button class="tier-global active" data-tier="contractor" onclick="switchAllTiers('contractor')">Contractor</button>
+    <button class="tier-global" data-tier="mid_range" onclick="switchAllTiers('mid_range')">Mid-Range</button>
+    <button class="tier-global" data-tier="high_end" onclick="switchAllTiers('high_end')">High-End</button>
+  </div>
+  <div style="font-size:.68rem;color:#4a5568">Switches all checked items. Per-item tiers still editable below.</div>
 </div>
 
 <!-- Spreadsheet table rendered by JS -->
@@ -1300,9 +1418,41 @@ const PRESET_ITEMS = {
   ],
 };
 
+function togglePresetDetail(level, event) {
+  event.stopPropagation();
+  const detail = document.getElementById('detail-'+level);
+  const btn = event.target;
+  if (detail.classList.contains('open')) {
+    detail.classList.remove('open');
+    btn.textContent = "What's included ▾";
+  } else {
+    detail.classList.add('open');
+    btn.textContent = "Hide details ▴";
+  }
+}
+
+// Global tier switcher — changes all currently included items to a new tier
+function switchAllTiers(newTier) {
+  document.querySelectorAll('.tier-global').forEach(b => b.classList.remove('active'));
+  document.querySelector('.tier-global[data-tier="'+newTier+'"]').classList.add('active');
+  items.forEach((item, idx) => {
+    if (!item.included) return;
+    const d = item.data;
+    if (d[newTier] === null) return; // skip if tier not available for this item
+    item.tier = newTier;
+    item.customPrice = null;
+    const ce = document.getElementById('custom-'+idx);
+    if (ce) ce.value = '';
+    document.getElementById('tc-'+idx).className = 'tier-btn' + (newTier==='contractor'?' active':'') + (d.contractor===null?' na':'');
+    document.getElementById('tm-'+idx).className = 'tier-btn' + (newTier==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
+    document.getElementById('th-'+idx).className = 'tier-btn' + (newTier==='high_end'?' active':'') + (d.high_end===null?' na':'');
+  });
+  recalcAll();
+}
+
 function applyPreset(level) {
   activePreset = level;
-  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.preset-card').forEach(b => b.classList.remove('active'));
   document.getElementById('pre-'+level).classList.add('active');
 
   const presetItems = PRESET_ITEMS[level];
