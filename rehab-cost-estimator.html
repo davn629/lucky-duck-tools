@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Free Rehab Cost Estimator — 116 Line Items, 2026 Prices | Lucky Duck Group</title>
+<meta name="description" content="Estimate your property rehab costs with 116 line items across 16 construction categories. 3 quality tiers with 2026 national average pricing. Free, instant, no signup required.">
+<meta property="og:title" content="Free Rehab Cost Estimator — 116 Line Items, 2026 Prices">
+<meta property="og:description" content="Estimate your property rehab costs with 116 line items across 16 construction categories. 3 quality tiers with 2026 national average pricing.">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:'Segoe UI',system-ui,-apple-system,sans-serif;min-height:100vh;line-height:1.5;padding-bottom:80px}
+a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
+
+.header{background:#0F172A;border-bottom:1px solid #2d3748;padding:16px 24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px}
+.header h1{font-size:1.3rem;font-weight:700;color:#fff}
+.header h1 span{color:#3B82F6}
+.brand{color:#3B82F6;font-size:.82rem;font-weight:600;letter-spacing:.03em}
+.brand a{color:#3B82F6}
+
+.container{max-width:1100px;margin:0 auto;padding:20px 20px 0}
+
+.card{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:24px;margin-bottom:20px}
+.card h2{font-size:1.1rem;color:#fff;margin-bottom:16px}
+
+/* Property Info */
+.prop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:14px}
+.fg{display:flex;flex-direction:column;gap:4px}
+.fg label{font-size:.75rem;color:#a0aec0;font-weight:600;text-transform:uppercase;letter-spacing:.04em}
+.fg input,.fg select{background:#0f1117;border:1px solid #2d3748;color:#e2e8f0;padding:10px 12px;border-radius:8px;font-size:.95rem;width:100%}
+.fg input:focus,.fg select:focus{outline:none;border-color:#3B82F6}
+.fg .calc{font-size:.72rem;color:#718096;margin-top:2px}
+
+/* Quick Estimate */
+.presets{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px}
+.preset-btn{background:#0f1117;border:2px solid #2d3748;border-radius:10px;padding:14px 12px;cursor:pointer;text-align:center;transition:all .2s}
+.preset-btn:hover{border-color:#3B82F6}
+.preset-btn.active{border-color:#3B82F6;background:#1e3a5f}
+.preset-btn h4{color:#fff;font-size:.9rem;margin-bottom:4px}
+.preset-btn .cost{color:#3B82F6;font-weight:700;font-size:1rem}
+.preset-btn .desc{color:#718096;font-size:.72rem;margin-top:4px;line-height:1.3}
+
+/* Accordion */
+.accordion{margin-bottom:6px}
+.acc-header{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;user-select:none}
+.acc-header:hover{border-color:#3B82F6}
+.acc-header.open{border-radius:10px 10px 0 0;border-color:#3B82F6;background:#1e2a3e}
+.acc-header .cat-name{font-weight:600;color:#fff;font-size:.95rem}
+.acc-header .cat-total{color:#3B82F6;font-weight:700;font-size:.95rem}
+.acc-header .arrow{color:#718096;transition:transform .2s;font-size:.8rem}
+.acc-header.open .arrow{transform:rotate(180deg)}
+.acc-body{display:none;background:#141820;border:1px solid #2d3748;border-top:none;border-radius:0 0 10px 10px;padding:12px;overflow-x:auto}
+.acc-body.open{display:block}
+
+/* Line items table */
+.items-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:700px}
+.items-table th{text-align:left;padding:8px 10px;color:#a0aec0;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #2d3748}
+.items-table td{padding:8px 10px;border-bottom:1px solid #1e2530;vertical-align:middle}
+.items-table tr.excluded td{opacity:.45}
+.items-table .item-name{color:#e2e8f0;min-width:180px}
+.items-table .unit-col{color:#718096;white-space:nowrap}
+.items-table .tier-btns{display:flex;gap:2px}
+.tier-btn{padding:4px 8px;border:1px solid #2d3748;border-radius:5px;background:#0f1117;color:#718096;cursor:pointer;font-size:.72rem;font-weight:600;transition:all .15s;white-space:nowrap}
+.tier-btn:hover{border-color:#3B82F6;color:#e2e8f0}
+.tier-btn.active{background:#3B82F6;border-color:#3B82F6;color:#fff}
+.tier-btn.na{opacity:.35;cursor:default}
+.tier-btn.na:hover{border-color:#2d3748;color:#718096}
+.qty-input{width:70px;background:#0f1117;border:1px solid #2d3748;color:#e2e8f0;padding:5px 8px;border-radius:6px;font-size:.85rem;text-align:right}
+.qty-input:focus{outline:none;border-color:#3B82F6}
+.incl-cb{width:18px;height:18px;accent-color:#3B82F6;cursor:pointer}
+.line-total{text-align:right;font-weight:600;color:#e2e8f0;white-space:nowrap}
+.na-text{color:#4a5568;font-style:italic}
+
+/* Sticky total */
+.sticky-total{position:fixed;bottom:0;left:0;right:0;background:#0F172A;border-top:2px solid #3B82F6;padding:12px 24px;z-index:50;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
+.sticky-total .st-item{text-align:center}
+.sticky-total .st-label{font-size:.65rem;color:#a0aec0;text-transform:uppercase;letter-spacing:.04em}
+.sticky-total .st-value{font-size:1.2rem;font-weight:700;color:#fff}
+.sticky-total .st-value.blue{color:#3B82F6}
+.contingency-sel{background:#0f1117;border:1px solid #2d3748;color:#e2e8f0;padding:4px 8px;border-radius:6px;font-size:.82rem}
+.contingency-sel:focus{outline:none;border-color:#3B82F6}
+
+/* Category breakdown bar */
+.cat-bars{margin-top:12px}
+.cat-bar-row{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.cat-bar-label{font-size:.72rem;color:#a0aec0;width:160px;flex-shrink:0;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-bar-track{flex:1;height:18px;background:#0f1117;border-radius:4px;overflow:hidden;position:relative}
+.cat-bar-fill{height:100%;border-radius:4px;transition:width .3s;min-width:2px}
+.cat-bar-val{font-size:.72rem;color:#e2e8f0;font-weight:600;width:80px;text-align:right;flex-shrink:0}
+
+/* Email capture */
+.email-card{background:linear-gradient(135deg,#1a2744,#1a1f2e);border:1px solid #2d3748;border-radius:12px;padding:28px;margin-bottom:20px;text-align:center}
+.email-card h3{color:#fff;font-size:1.1rem;margin-bottom:8px}
+.email-card p{color:#94a3b8;font-size:.88rem;margin-bottom:16px}
+.email-row{display:flex;gap:10px;max-width:440px;margin:0 auto}
+.email-row input{flex:1;padding:12px 14px;background:#0f1117;border:1px solid #2d3748;border-radius:8px;color:#e2e8f0;font-size:.95rem}
+.email-row input:focus{outline:none;border-color:#3B82F6}
+.email-row button{padding:12px 24px;background:#3B82F6;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9rem;white-space:nowrap;transition:background .2s}
+.email-row button:hover{background:#2563EB}
+.email-fine{font-size:.72rem;color:#4a5568;margin-top:8px}
+.email-success{color:#22c55e;font-weight:600;font-size:.9rem;margin-top:8px}
+
+/* CTA */
+.cta-card{background:linear-gradient(135deg,#2563EB,#1D4ED8);border-radius:12px;padding:32px;text-align:center;margin-bottom:20px}
+.cta-card h3{font-size:1.2rem;color:#fff;margin-bottom:8px}
+.cta-card p{color:#BFDBFE;margin-bottom:16px;font-size:.88rem;line-height:1.5}
+.cta-card a{display:inline-block;background:#fff;color:#1D4ED8;padding:14px 32px;border-radius:10px;text-decoration:none;font-weight:700;font-size:.95rem}
+.cta-card a:hover{background:#F1F5F9}
+
+/* Footer */
+.footer{text-align:center;padding:24px;color:#4a5568;font-size:.75rem;border-top:1px solid #2d3748;margin-top:20px}
+.footer a{color:#718096}
+.footer a:hover{color:#3B82F6}
+
+/* Colors for category bars */
+.cat-color-0{background:#3B82F6}.cat-color-1{background:#22c55e}.cat-color-2{background:#f59e0b}
+.cat-color-3{background:#ef4444}.cat-color-4{background:#a855f7}.cat-color-5{background:#06b6d4}
+.cat-color-6{background:#ec4899}.cat-color-7{background:#84cc16}.cat-color-8{background:#f97316}
+.cat-color-9{background:#6366f1}.cat-color-10{background:#14b8a6}.cat-color-11{background:#e879f9}
+.cat-color-12{background:#fb923c}.cat-color-13{background:#38bdf8}.cat-color-14{background:#a3e635}
+.cat-color-15{background:#f472b6}
+
+/* Responsive */
+@media(max-width:768px){
+  .header{padding:12px 16px}
+  .header h1{font-size:1.1rem}
+  .container{padding:12px 12px 0}
+  .card{padding:16px}
+  .prop-grid{grid-template-columns:1fr 1fr}
+  .presets{grid-template-columns:1fr 1fr}
+  .sticky-total{padding:8px 12px;gap:12px}
+  .sticky-total .st-value{font-size:1rem}
+  .email-row{flex-direction:column}
+  .cat-bar-label{width:100px;font-size:.65rem}
+}
+@media(max-width:480px){
+  .prop-grid{grid-template-columns:1fr}
+  .presets{grid-template-columns:1fr}
+}
+
+/* Print */
+@media print{
+  body{background:#fff!important;color:#111!important;padding-bottom:0}
+  .header{background:#fff!important;border-color:#ccc!important}
+  .header h1{color:#111!important}
+  .header h1 span{color:#2563EB!important}
+  .brand,.brand a{color:#2563EB!important}
+  .card,.accordion,.acc-header,.acc-body,.items-table,.email-card,.cta-card{background:#fff!important;border-color:#ccc!important;color:#111!important}
+  .acc-header .cat-name{color:#111!important}
+  .acc-header .cat-total{color:#2563EB!important}
+  .items-table th{color:#666!important;border-color:#ccc!important}
+  .items-table td{color:#111!important;border-color:#ddd!important}
+  .item-name{color:#111!important}
+  .line-total{color:#111!important}
+  .fg label{color:#666!important}
+  .fg input,.fg select,.qty-input{background:#fff!important;color:#111!important;border-color:#ccc!important}
+  .tier-btn{background:#fff!important;color:#888!important;border-color:#ccc!important}
+  .tier-btn.active{background:#2563EB!important;color:#fff!important}
+  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb{display:none!important}
+  .presets{display:none!important}
+  .acc-body{display:block!important}
+  .acc-header{cursor:default}
+  .acc-header .arrow{display:none!important}
+  .cta-card{display:none!important}
+  .footer{color:#888!important;border-color:#ccc!important}
+  .footer a{color:#666!important}
+  .cat-bar-track{background:#eee!important}
+  .cat-bar-label{color:#555!important}
+  .cat-bar-val{color:#111!important}
+  .na-text{color:#999!important}
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>Rehab Cost</span> Estimator</h1>
+  <span class="brand"><a href="https://templates.luckyduckgroup.com/tools.html">Lucky Duck Group</a></span>
+</div>
+
+<div class="container">
+
+<!-- Property Info -->
+<div class="card">
+  <h2>Property Info</h2>
+  <div class="prop-grid">
+    <div class="fg">
+      <label>Square Footage</label>
+      <input type="number" id="propSF" value="1500" min="100" max="20000" oninput="onPropertyChange()">
+    </div>
+    <div class="fg">
+      <label>Bedrooms</label>
+      <input type="number" id="propBed" value="3" min="0" max="20" oninput="onPropertyChange()">
+    </div>
+    <div class="fg">
+      <label>Bathrooms</label>
+      <input type="number" id="propBath" value="2" min="0" max="20" oninput="onPropertyChange()">
+    </div>
+    <div class="fg">
+      <label>Stories</label>
+      <input type="number" id="propStories" value="1" min="1" max="4" oninput="onPropertyChange()">
+    </div>
+    <div class="fg">
+      <label>Roof SF (auto)</label>
+      <input type="number" id="propRoofSF" value="1725" readonly style="opacity:.7">
+      <span class="calc">= Living SF &times; 1.15 / Stories</span>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Estimate -->
+<div class="card">
+  <h2>Quick Estimate</h2>
+  <p style="color:#718096;font-size:.85rem;margin-bottom:14px">Select a preset to auto-check common items, or skip to customize line-by-line below.</p>
+  <div class="presets">
+    <div class="preset-btn" onclick="applyPreset('cosmetic')" id="pre-cosmetic">
+      <h4>Cosmetic</h4>
+      <div class="cost">~$15/SF</div>
+      <div class="desc">Paint, flooring, fixtures</div>
+    </div>
+    <div class="preset-btn" onclick="applyPreset('light')" id="pre-light">
+      <h4>Light Rehab</h4>
+      <div class="cost">~$30/SF</div>
+      <div class="desc">+ Kitchen/bath refresh</div>
+    </div>
+    <div class="preset-btn" onclick="applyPreset('medium')" id="pre-medium">
+      <h4>Medium Rehab</h4>
+      <div class="cost">~$55/SF</div>
+      <div class="desc">Most categories, standard</div>
+    </div>
+    <div class="preset-btn" onclick="applyPreset('heavy')" id="pre-heavy">
+      <h4>Heavy Rehab</h4>
+      <div class="cost">~$100/SF</div>
+      <div class="desc">Everything except structural</div>
+    </div>
+    <div class="preset-btn" onclick="applyPreset('gut')" id="pre-gut">
+      <h4>Full Gut</h4>
+      <div class="cost">~$180/SF</div>
+      <div class="desc">Complete renovation</div>
+    </div>
+  </div>
+</div>
+
+<!-- Categories rendered by JS -->
+<div id="categoriesContainer"></div>
+
+<!-- Category Breakdown -->
+<div class="card" id="breakdownCard" style="display:none">
+  <h2>Budget Breakdown by Category</h2>
+  <div id="catBars" class="cat-bars"></div>
+</div>
+
+<!-- Email capture -->
+<div class="email-card" id="emailCard" style="display:none">
+  <h3>Get Quarterly Cost Updates</h3>
+  <p>Updated rehab pricing every quarter + our full BRRRR Calculator template info, delivered free.</p>
+  <div class="email-row">
+    <input type="email" id="captureEmail" placeholder="you@email.com">
+    <button onclick="captureEmailSubmit()" id="captureBtn">Subscribe Free</button>
+  </div>
+  <div class="email-fine" id="captureMsg">No spam. One email per quarter. Unsubscribe anytime.</div>
+</div>
+
+<!-- CTA -->
+<div class="cta-card">
+  <h3>Want the full rehab budget integrated with your BRRRR analysis?</h3>
+  <p>The BRRRR Calculator ($49) includes this 116-item rehab budget plus deal analysis, refinance math, and cash-on-cash returns &mdash; all in one Excel template.</p>
+  <a href="https://davenova3.gumroad.com/l/brrrr-calculator">Get the BRRRR Calculator &mdash; $49</a>
+</div>
+
+<!-- Footer -->
+<div class="footer">
+  Lucky Duck Group &middot; Cape Coral, FL<br>
+  Cost data updated Q2 2026. Sources: HomeGuide, Angi, RSMeans Residential.<br>
+  <a href="https://templates.luckyduckgroup.com/tools.html">More Free Tools</a>
+</div>
+
+</div><!-- /container -->
+
+<!-- Sticky Total -->
+<div class="sticky-total">
+  <div class="st-item">
+    <div class="st-label">Subtotal</div>
+    <div class="st-value" id="stSubtotal">$0</div>
+  </div>
+  <div class="st-item">
+    <div class="st-label">Contingency</div>
+    <select class="contingency-sel" id="contingencySel" onchange="recalcAll()">
+      <option value="0.10" selected>10%</option>
+      <option value="0.12">12%</option>
+      <option value="0.15">15%</option>
+    </select>
+  </div>
+  <div class="st-item">
+    <div class="st-label">Total w/ Contingency</div>
+    <div class="st-value blue" id="stTotal">$0</div>
+  </div>
+  <div class="st-item">
+    <div class="st-label">Cost / SF</div>
+    <div class="st-value" id="stPerSF">$0</div>
+  </div>
+</div>
+
+<script>
+// ========== Q2 2026 COST DATA (from rehab_costs_2026_Q2.json) ==========
+const COST_DATA = [
+  {"category":"Demolition & Site Prep","line_item":"General demolition (gut interior)","unit":"per SF","contractor":3.14,"mid_range":4.63,"high_end":7.8,"notes":"Light demo vs. full gut vs. structural"},
+  {"category":"Demolition & Site Prep","line_item":"Dumpster rental (20-yard)","unit":"each","contractor":385.86,"mid_range":533.65,"high_end":633.2,"notes":"Per haul. Budget 2-4 dumpsters for full rehab"},
+  {"category":"Demolition & Site Prep","line_item":"Hazardous material abatement (asbestos/lead)","unit":"lump sum","contractor":1647.65,"mid_range":3749.55,"high_end":8035.07,"notes":"Required for pre-1980 homes. Test first."},
+  {"category":"Demolition & Site Prep","line_item":"Permit fees","unit":"lump sum","contractor":462.98,"mid_range":1445.59,"high_end":3063.21,"notes":"Varies wildly by municipality"},
+  {"category":"Structural & Framing","line_item":"Foundation repair (crack sealing)","unit":"per LF","contractor":46.27,"mid_range":95.98,"high_end":210.0,"notes":"Minor cracks vs. structural underpinning"},
+  {"category":"Structural & Framing","line_item":"Foundation repair (pier/underpinning)","unit":"each","contractor":1028.99,"mid_range":1446.13,"high_end":2594.63,"notes":"Per pier — 8-15 piers for full underpinning"},
+  {"category":"Structural & Framing","line_item":"Framing repair / wall rebuild","unit":"per LF","contractor":16.23,"mid_range":23.03,"high_end":43.25,"notes":"Per linear foot of wall"},
+  {"category":"Structural & Framing","line_item":"Structural beam replacement","unit":"each","contractor":1589.44,"mid_range":2964.15,"high_end":4755.48,"notes":"Load-bearing beam — requires engineer"},
+  {"category":"Structural & Framing","line_item":"Subfloor replacement","unit":"per SF","contractor":3.33,"mid_range":4.94,"high_end":7.51,"notes":"Plywood/OSB replacement over joists"},
+  {"category":"Roofing","line_item":"Tear-off existing roof (1 layer)","unit":"per SF","contractor":0.94,"mid_range":1.63,"high_end":2.08,"notes":"Add $0.50/SF per additional layer"},
+  {"category":"Roofing","line_item":"Asphalt shingles (3-tab)","unit":"per SF","contractor":3.78,"mid_range":null,"high_end":null,"notes":"Basic architectural grade"},
+  {"category":"Roofing","line_item":"Asphalt shingles (architectural)","unit":"per SF","contractor":null,"mid_range":4.8,"high_end":6.16,"notes":"30-year warranty, better curb appeal"},
+  {"category":"Roofing","line_item":"Metal roofing (standing seam)","unit":"per SF","contractor":null,"mid_range":null,"high_end":13.38,"notes":"Premium — 50-year lifespan"},
+  {"category":"Roofing","line_item":"Decking repair (plywood)","unit":"per SF","contractor":2.49,"mid_range":3.61,"high_end":4.89,"notes":"Replace rotted decking under shingles"},
+  {"category":"Roofing","line_item":"Flashing & drip edge","unit":"per LF","contractor":5.22,"mid_range":8.74,"high_end":12.43,"notes":"Around chimneys, valleys, edges"},
+  {"category":"Roofing","line_item":"Gutters & downspouts","unit":"per LF","contractor":6.37,"mid_range":9.29,"high_end":17.38,"notes":"Aluminum vs. seamless vs. copper"},
+  {"category":"Exterior","line_item":"Siding — vinyl","unit":"per SF","contractor":3.91,"mid_range":5.62,"high_end":null,"notes":"Most common for rentals/flips"},
+  {"category":"Exterior","line_item":"Siding — Hardie fiber cement","unit":"per SF","contractor":null,"mid_range":7.73,"high_end":11.28,"notes":"Premium, low maintenance, great ROI"},
+  {"category":"Exterior","line_item":"Siding — wood lap","unit":"per SF","contractor":null,"mid_range":null,"high_end":9.76,"notes":"Traditional, requires maintenance"},
+  {"category":"Exterior","line_item":"Siding repair (patch/spot)","unit":"per SF","contractor":5.24,"mid_range":7.94,"high_end":11.93,"notes":"Spot repair vs. full re-side"},
+  {"category":"Exterior","line_item":"Exterior paint (whole house)","unit":"per SF","contractor":1.44,"mid_range":2.43,"high_end":4.43,"notes":"Power wash + 2 coats"},
+  {"category":"Exterior","line_item":"Soffit & fascia repair/replace","unit":"per LF","contractor":8.4,"mid_range":14.59,"high_end":20.99,"notes":"Aluminum vs. wood vs. composite"},
+  {"category":"Exterior","line_item":"Deck/porch repair","unit":"per SF","contractor":15.99,"mid_range":28.58,"high_end":54.77,"notes":"Patch repair vs. rebuild vs. composite"},
+  {"category":"Exterior","line_item":"Deck — new build (pressure-treated)","unit":"per SF","contractor":20.12,"mid_range":31.44,"high_end":null,"notes":"Basic pressure-treated lumber"},
+  {"category":"Exterior","line_item":"Deck — new build (composite)","unit":"per SF","contractor":null,"mid_range":41.26,"high_end":68.7,"notes":"Trex or similar composite"},
+  {"category":"Exterior","line_item":"Concrete flatwork (driveway, walkway)","unit":"per SF","contractor":6.53,"mid_range":10.75,"high_end":17.38,"notes":"Broom finish vs. stamped vs. decorative"},
+  {"category":"Exterior","line_item":"Fencing — wood privacy (6 ft)","unit":"per LF","contractor":18.53,"mid_range":34.41,"high_end":53.55,"notes":"Pressure-treated vs. cedar vs. custom"},
+  {"category":"Windows & Doors","line_item":"Window replacement — vinyl double-hung","unit":"each","contractor":336.77,"mid_range":609.72,"high_end":876.22,"notes":"Standard size. Includes labor."},
+  {"category":"Windows & Doors","line_item":"Window replacement — vinyl slider/casement","unit":"each","contractor":393.17,"mid_range":683.21,"high_end":949.17,"notes":"Slightly more than double-hung"},
+  {"category":"Windows & Doors","line_item":"Window replacement — wood or fiberglass","unit":"each","contractor":null,"mid_range":882.33,"high_end":1214.12,"notes":"Premium frames"},
+  {"category":"Windows & Doors","line_item":"Sliding glass door","unit":"each","contractor":778.38,"mid_range":1453.99,"high_end":2580.68,"notes":"Standard 6ft slider"},
+  {"category":"Windows & Doors","line_item":"Exterior entry door (steel)","unit":"each","contractor":389.02,"mid_range":829.53,"high_end":null,"notes":"Basic steel with lockset"},
+  {"category":"Windows & Doors","line_item":"Exterior entry door (fiberglass/wood)","unit":"each","contractor":null,"mid_range":1319.48,"high_end":2499.7,"notes":"Premium entry door with hardware"},
+  {"category":"Windows & Doors","line_item":"Interior door — hollow core","unit":"each","contractor":144.58,"mid_range":null,"high_end":null,"notes":"Builder-grade, lightweight"},
+  {"category":"Windows & Doors","line_item":"Interior door — solid core","unit":"each","contractor":null,"mid_range":335.85,"high_end":510.95,"notes":"Better sound insulation, heavier feel"},
+  {"category":"Windows & Doors","line_item":"Interior door — panel/craftsman","unit":"each","contractor":null,"mid_range":null,"high_end":562.91,"notes":"Architectural style, solid wood"},
+  {"category":"Windows & Doors","line_item":"Garage door (single, 8x7)","unit":"each","contractor":743.54,"mid_range":1130.32,"high_end":2090.98,"notes":"Steel vs. insulated vs. wood"},
+  {"category":"Windows & Doors","line_item":"Garage door (double, 16x7)","unit":"each","contractor":1294.1,"mid_range":1807.98,"high_end":3264.47,"notes":"Steel vs. insulated vs. carriage house"},
+  {"category":"Windows & Doors","line_item":"Garage door opener","unit":"each","contractor":249.08,"mid_range":391.73,"high_end":512.91,"notes":"Chain vs. belt drive vs. smart"},
+  {"category":"Electrical","line_item":"Electrical panel upgrade (100-200 amp)","unit":"each","contractor":1559.9,"mid_range":2184.31,"high_end":2582.43,"notes":"Required for most full rehabs on older homes"},
+  {"category":"Electrical","line_item":"Full rewire (knob & tube or aluminum)","unit":"per SF","contractor":4.26,"mid_range":7.39,"high_end":10.27,"notes":"Per SF of living area. Pre-1960 homes"},
+  {"category":"Electrical","line_item":"Add circuits (per circuit)","unit":"each","contractor":194.67,"mid_range":314.46,"high_end":424.04,"notes":"Kitchen, bathroom, laundry dedicated"},
+  {"category":"Electrical","line_item":"GFCI outlet installation","unit":"each","contractor":100.7,"mid_range":151.61,"high_end":222.15,"notes":"Required in kitchens, baths, garage, exterior"},
+  {"category":"Electrical","line_item":"Light fixture replacement","unit":"each","contractor":82.14,"mid_range":145.9,"high_end":357.04,"notes":"Basic flush-mount vs. pendant vs. designer"},
+  {"category":"Electrical","line_item":"Recessed lighting (per can)","unit":"each","contractor":143.36,"mid_range":248.07,"high_end":382.94,"notes":"LED retrofit vs. new construction"},
+  {"category":"Electrical","line_item":"Ceiling fan installation","unit":"each","contractor":146.95,"mid_range":261.95,"high_end":416.72,"notes":"With light kit. Includes wiring if needed."},
+  {"category":"Electrical","line_item":"Smoke/CO detector (hardwired)","unit":"each","contractor":71.29,"mid_range":128.7,"high_end":179.88,"notes":"Required per code — every bedroom + hallways"},
+  {"category":"Electrical","line_item":"Whole-house smart panel","unit":"each","contractor":null,"mid_range":null,"high_end":5378.63,"notes":"Smart electrical panel for EV/solar-ready"},
+  {"category":"Plumbing","line_item":"Water heater — 40-gal tank (gas)","unit":"each","contractor":923.46,"mid_range":1104.14,"high_end":1575.73,"notes":"Standard replacement"},
+  {"category":"Plumbing","line_item":"Water heater — 50-gal tank (gas)","unit":"each","contractor":1016.28,"mid_range":1658.73,"high_end":2191.49,"notes":"Larger homes / 2+ bath"},
+  {"category":"Plumbing","line_item":"Water heater — tankless (gas)","unit":"each","contractor":null,"mid_range":2715.83,"high_end":3926.01,"notes":"Endless hot water"},
+  {"category":"Plumbing","line_item":"Full re-pipe (PEX)","unit":"per SF","contractor":2.79,"mid_range":5.48,"high_end":8.88,"notes":"Replace galvanized/polybutylene with PEX"},
+  {"category":"Plumbing","line_item":"Main sewer line replacement","unit":"lump sum","contractor":2811.39,"mid_range":5085.99,"high_end":7470.74,"notes":"From house to street"},
+  {"category":"Plumbing","line_item":"Rough-in new bathroom","unit":"each","contractor":1608.18,"mid_range":2682.92,"high_end":3782.71,"notes":"Drain, supply, vent for new bathroom"},
+  {"category":"Plumbing","line_item":"Toilet replacement","unit":"each","contractor":203.01,"mid_range":360.49,"high_end":583.81,"notes":"Standard vs. comfort height vs. wall-mount"},
+  {"category":"Plumbing","line_item":"Faucet replacement (per fixture)","unit":"each","contractor":164.17,"mid_range":301.39,"high_end":577.42,"notes":"Kitchen or bath faucet installed"},
+  {"category":"Plumbing","line_item":"Garbage disposal","unit":"each","contractor":154.18,"mid_range":266.5,"high_end":384.09,"notes":"Basic vs. quiet vs. high-power"},
+  {"category":"HVAC","line_item":"Furnace replacement (gas, 80% eff)","unit":"each","contractor":2455.86,"mid_range":3916.6,"high_end":null,"notes":"Basic single-stage"},
+  {"category":"HVAC","line_item":"Furnace replacement (gas, 96%+ eff)","unit":"each","contractor":null,"mid_range":4724.89,"high_end":6549.53,"notes":"High-efficiency, variable speed"},
+  {"category":"HVAC","line_item":"A/C condenser replacement (2.5-3 ton)","unit":"each","contractor":2558.79,"mid_range":3304.7,"high_end":4824.7,"notes":"SEER 14 vs 16 vs 20+"},
+  {"category":"HVAC","line_item":"Full HVAC system (furnace + A/C + coil)","unit":"each","contractor":5925.7,"mid_range":9338.96,"high_end":13524.32,"notes":"Complete system replacement"},
+  {"category":"HVAC","line_item":"Mini-split (single zone)","unit":"each","contractor":1928.09,"mid_range":3269.7,"high_end":5231.1,"notes":"Ductless, great for additions"},
+  {"category":"HVAC","line_item":"Ductwork replacement / install","unit":"per SF","contractor":1.93,"mid_range":4.4,"high_end":6.55,"notes":"New ducts in attic/crawl"},
+  {"category":"HVAC","line_item":"Thermostat (programmable/smart)","unit":"each","contractor":70.06,"mid_range":145.14,"high_end":316.14,"notes":"Basic programmable vs. Nest/Ecobee"},
+  {"category":"Insulation","line_item":"Attic insulation (blown-in)","unit":"per SF","contractor":0.96,"mid_range":1.66,"high_end":2.77,"notes":"R-38 minimum. Per SF of attic floor."},
+  {"category":"Insulation","line_item":"Wall insulation (blown-in, existing)","unit":"per SF","contractor":1.55,"mid_range":2.54,"high_end":3.77,"notes":"Drill-and-fill into closed walls"},
+  {"category":"Insulation","line_item":"Spray foam insulation (crawl/rim joist)","unit":"per SF","contractor":1.62,"mid_range":2.4,"high_end":3.76,"notes":"Closed-cell spray foam"},
+  {"category":"Insulation","line_item":"Crawlspace encapsulation","unit":"lump sum","contractor":3018.63,"mid_range":6028.29,"high_end":10134.05,"notes":"Vapor barrier + dehumidifier + sealed vents"},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall — hang, tape, finish (Level 4)","unit":"per SF","contractor":2.13,"mid_range":2.9,"high_end":3.91,"notes":"Standard finish"},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall — skim coat (Level 5)","unit":"per SF","contractor":2.35,"mid_range":3.25,"high_end":3.95,"notes":"Smooth finish for paint"},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall patch/repair","unit":"each","contractor":163.85,"mid_range":242.43,"high_end":383.22,"notes":"Per patch. Water damage, holes, etc."},
+  {"category":"Drywall & Interior Walls","line_item":"Texture removal (popcorn ceilings)","unit":"per SF","contractor":1.01,"mid_range":2.01,"high_end":2.93,"notes":"Scrape + skim + paint. Test for asbestos."},
+  {"category":"Interior Paint","line_item":"Interior paint — walls only","unit":"per SF","contractor":1.45,"mid_range":2.76,"high_end":4.03,"notes":"2 coats. Per SF of living area."},
+  {"category":"Interior Paint","line_item":"Interior paint — walls + trim + ceilings","unit":"per SF","contractor":3.0,"mid_range":4.64,"high_end":6.51,"notes":"Full interior repaint"},
+  {"category":"Interior Paint","line_item":"Primer (stain-blocking)","unit":"per SF","contractor":0.56,"mid_range":0.82,"high_end":1.11,"notes":"Kilz/Zinsser primer. Only if needed."},
+  {"category":"Interior Paint","line_item":"Cabinet painting (kitchen)","unit":"per LF","contractor":33.16,"mid_range":54.49,"high_end":76.26,"notes":"Per LF of base + wall cabinets. Spray."},
+  {"category":"Flooring","line_item":"Flooring removal (carpet, vinyl, tile)","unit":"per SF","contractor":1.02,"mid_range":1.44,"high_end":2.5,"notes":"Carpet easy, tile hardest"},
+  {"category":"Flooring","line_item":"LVP (luxury vinyl plank)","unit":"per SF","contractor":2.8,"mid_range":4.98,"high_end":7.82,"notes":"Most popular BRRRR flooring. Waterproof."},
+  {"category":"Flooring","line_item":"Laminate","unit":"per SF","contractor":2.43,"mid_range":4.31,"high_end":null,"notes":"Budget option. Not waterproof."},
+  {"category":"Flooring","line_item":"Engineered hardwood","unit":"per SF","contractor":null,"mid_range":6.07,"high_end":10.05,"notes":"Real wood look, more stable than solid"},
+  {"category":"Flooring","line_item":"Solid hardwood (sand & refinish)","unit":"per SF","contractor":3.33,"mid_range":5.6,"high_end":7.22,"notes":"If existing hardwood underneath"},
+  {"category":"Flooring","line_item":"Solid hardwood (new install)","unit":"per SF","contractor":null,"mid_range":8.51,"high_end":13.31,"notes":"Oak, maple, hickory installed"},
+  {"category":"Flooring","line_item":"Tile — ceramic","unit":"per SF","contractor":4.9,"mid_range":8.91,"high_end":null,"notes":"Bathrooms, kitchens, entries"},
+  {"category":"Flooring","line_item":"Tile — porcelain","unit":"per SF","contractor":null,"mid_range":10.36,"high_end":15.43,"notes":"More durable, wider style options"},
+  {"category":"Flooring","line_item":"Carpet (bedrooms only)","unit":"per SF","contractor":2.14,"mid_range":3.73,"high_end":7.26,"notes":"Budget polyester vs. nylon vs. wool"},
+  {"category":"Flooring","line_item":"Tile — bathroom floor only","unit":"per bath","contractor":510.29,"mid_range":1090.54,"high_end":1902.97,"notes":"Small footprint — per bathroom"},
+  {"category":"Kitchen","line_item":"Cabinets — stock/RTA","unit":"per LF","contractor":111.22,"mid_range":null,"high_end":null,"notes":"Ready-to-assemble. Functional."},
+  {"category":"Kitchen","line_item":"Cabinets — semi-custom","unit":"per LF","contractor":null,"mid_range":280.81,"high_end":478.58,"notes":"Better construction, more style options"},
+  {"category":"Kitchen","line_item":"Cabinets — custom","unit":"per LF","contractor":null,"mid_range":null,"high_end":831.21,"notes":"Full custom. Soft-close, dovetail."},
+  {"category":"Kitchen","line_item":"Cabinet refacing (new doors)","unit":"per LF","contractor":105.5,"mid_range":169.23,"high_end":235.99,"notes":"Keep boxes, replace doors + veneer"},
+  {"category":"Kitchen","line_item":"Countertops — laminate","unit":"per SF","contractor":16.47,"mid_range":24.23,"high_end":null,"notes":"Formica or similar"},
+  {"category":"Kitchen","line_item":"Countertops — quartz","unit":"per SF","contractor":null,"mid_range":57.14,"high_end":88.73,"notes":"Most popular mid/high choice"},
+  {"category":"Kitchen","line_item":"Countertops — granite","unit":"per SF","contractor":null,"mid_range":45.17,"high_end":77.76,"notes":"Natural stone, many color options"},
+  {"category":"Kitchen","line_item":"Countertops — butcher block","unit":"per SF","contractor":20.49,"mid_range":44.28,"high_end":null,"notes":"Warm look. Requires maintenance."},
+  {"category":"Kitchen","line_item":"Backsplash — ceramic subway tile","unit":"per SF","contractor":7.69,"mid_range":15.95,"high_end":null,"notes":"Classic 3x6 subway"},
+  {"category":"Kitchen","line_item":"Backsplash — glass/mosaic/designer","unit":"per SF","contractor":null,"mid_range":19.35,"high_end":39.97,"notes":"Statement backsplash"},
+  {"category":"Kitchen","line_item":"Sink (stainless undermount)","unit":"each","contractor":210.87,"mid_range":343.0,"high_end":589.94,"notes":"Single bowl vs. double vs. farmhouse"},
+  {"category":"Kitchen","line_item":"Appliance package (4 appliances)","unit":"lump sum","contractor":2675.93,"mid_range":4672.54,"high_end":10116.57,"notes":"Basic vs. stainless vs. premium"},
+  {"category":"Kitchen","line_item":"Range hood / vent","unit":"each","contractor":167.95,"mid_range":447.69,"high_end":934.65,"notes":"Under-cabinet vs. wall mount vs. island"},
+  {"category":"Bathroom","line_item":"Full bathroom remodel","unit":"each","contractor":4813.15,"mid_range":11676.48,"high_end":27666.3,"notes":"Everything: tub/shower, tile, vanity, etc."},
+  {"category":"Bathroom","line_item":"Tub/shower — fiberglass insert","unit":"each","contractor":876.94,"mid_range":1315.02,"high_end":null,"notes":"Quick install, builder grade"},
+  {"category":"Bathroom","line_item":"Tub/shower — tile surround","unit":"each","contractor":null,"mid_range":2484.76,"high_end":4757.75,"notes":"Custom tile, waterproofing"},
+  {"category":"Bathroom","line_item":"Shower — frameless glass enclosure","unit":"each","contractor":null,"mid_range":null,"high_end":2173.5,"notes":"Frameless glass door/panel"},
+  {"category":"Bathroom","line_item":"Vanity + top (single)","unit":"each","contractor":318.21,"mid_range":729.63,"high_end":1676.17,"notes":"30-36\" vanity"},
+  {"category":"Bathroom","line_item":"Vanity + top (double)","unit":"each","contractor":525.4,"mid_range":1105.88,"high_end":2708.55,"notes":"48-72\" double vanity"},
+  {"category":"Bathroom","line_item":"Bathroom mirror","unit":"each","contractor":48.99,"mid_range":157.9,"high_end":443.11,"notes":"Frameless vs. framed vs. medicine cabinet"},
+  {"category":"Bathroom","line_item":"Exhaust fan","unit":"each","contractor":94.69,"mid_range":188.62,"high_end":329.49,"notes":"Standard vs. quiet vs. humidity-sensing"},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Yard cleanup / overgrowth removal","unit":"lump sum","contractor":515.32,"mid_range":974.47,"high_end":2081.93,"notes":"Clear debris, overgrown vegetation"},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Sod installation","unit":"per SF","contractor":0.8,"mid_range":1.2,"high_end":2.09,"notes":"Including soil prep"},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Basic landscaping (mulch, shrubs, edging)","unit":"lump sum","contractor":486.4,"mid_range":1526.56,"high_end":3853.74,"notes":"Curb appeal package"},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Irrigation system","unit":"lump sum","contractor":null,"mid_range":2723.05,"high_end":4692.3,"notes":"Underground sprinklers"},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Tree removal (per tree)","unit":"each","contractor":401.89,"mid_range":780.27,"high_end":1381.06,"notes":"Depends on size and access"},
+  {"category":"Miscellaneous & Contingency","line_item":"General cleaning (post-construction)","unit":"lump sum","contractor":322.27,"mid_range":523.71,"high_end":777.91,"notes":"Final cleaning before photos/listing"},
+  {"category":"Miscellaneous & Contingency","line_item":"Property survey","unit":"each","contractor":320.47,"mid_range":515.17,"high_end":804.43,"notes":"If boundary questions exist"},
+  {"category":"Miscellaneous & Contingency","line_item":"Termite treatment","unit":"lump sum","contractor":460.97,"mid_range":935.05,"high_end":2193.24,"notes":"If active or previous infestation"},
+  {"category":"Miscellaneous & Contingency","line_item":"Mold remediation","unit":"lump sum","contractor":1100.79,"mid_range":3087.35,"high_end":6521.51,"notes":"Bathroom, basement, crawlspace"}
+];
+
+// ========== CATEGORY ORDER ==========
+const CATEGORIES = [
+  "Demolition & Site Prep","Structural & Framing","Roofing","Exterior",
+  "Windows & Doors","Electrical","Plumbing","HVAC","Insulation",
+  "Drywall & Interior Walls","Interior Paint","Flooring","Kitchen",
+  "Bathroom","Landscaping & Exterior Cleanup","Miscellaneous & Contingency"
+];
+
+// ========== AUTO-POPULATE RULES ==========
+function getAutoQty(item) {
+  const sf = num('propSF');
+  const bed = num('propBed');
+  const bath = num('propBath');
+  const stories = Math.max(1, num('propStories'));
+  const roofSF = Math.round(sf * 1.15 / stories);
+  const cat = item.category;
+  const name = item.line_item.toLowerCase();
+  const unit = item.unit.toLowerCase();
+
+  // Roofing items: use Roof SF
+  if (cat === 'Roofing' && (unit.includes('sf'))) return roofSF;
+
+  // Interior paint: use Property SF
+  if (cat === 'Interior Paint' && unit.includes('sf')) return sf;
+
+  // Flooring: use Property SF (except bathroom floor)
+  if (cat === 'Flooring' && unit.includes('sf')) return sf;
+  if (cat === 'Flooring' && unit.includes('bath')) return bath;
+
+  // Interior doors: bedrooms*2 + bathrooms + 2
+  if (name.includes('interior door')) return bed * 2 + bath + 2;
+
+  // Bathroom items: # of Bathrooms
+  if (cat === 'Bathroom' && unit === 'each') return bath;
+
+  // Toilet / faucet by bathrooms
+  if (name.includes('toilet')) return bath;
+
+  // Full rewire, re-pipe, ductwork by SF
+  if (unit.includes('sf') && (name.includes('rewire') || name.includes('re-pipe') || name.includes('ductwork'))) return sf;
+
+  // Drywall by SF
+  if (cat === 'Drywall & Interior Walls' && unit.includes('sf')) return sf;
+
+  // General demo by SF
+  if (name.includes('general demolition') && unit.includes('sf')) return sf;
+
+  // Subfloor by SF
+  if (name.includes('subfloor') && unit.includes('sf')) return sf;
+
+  // Insulation SF items
+  if (cat === 'Insulation' && unit.includes('sf')) return sf;
+
+  // Default: 1 for each/lump sum, 0 for per SF/LF
+  if (unit === 'each' || unit === 'lump sum') return 1;
+  return 0;
+}
+
+// ========== HELPERS ==========
+function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function fmt(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
+function fmtDec(v) { return '$' + v.toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2}); }
+
+// ========== BUILD UI ==========
+let items = []; // flat array of item state objects
+
+function buildCategories() {
+  const container = document.getElementById('categoriesContainer');
+  container.innerHTML = '';
+  items = [];
+
+  CATEGORIES.forEach((cat, ci) => {
+    const catItems = COST_DATA.filter(d => d.category === cat);
+    const acc = document.createElement('div');
+    acc.className = 'accordion';
+
+    // Header
+    const hdr = document.createElement('div');
+    hdr.className = 'acc-header';
+    hdr.innerHTML = `<div><span class="cat-name">${cat}</span></div><div style="display:flex;align-items:center;gap:12px"><span class="cat-total" id="catTotal-${ci}">$0</span><span class="arrow">&#9660;</span></div>`;
+    hdr.onclick = () => {
+      hdr.classList.toggle('open');
+      body.classList.toggle('open');
+    };
+
+    // Body
+    const body = document.createElement('div');
+    body.className = 'acc-body';
+
+    let table = `<table class="items-table"><thead><tr>
+      <th>Include</th><th>Line Item</th><th>Unit</th><th>Tier</th><th>Qty</th><th style="text-align:right">Line Total</th>
+    </tr></thead><tbody>`;
+
+    catItems.forEach((d, li) => {
+      const idx = items.length;
+      const autoQty = getAutoQty(d);
+      const defaultTier = d.contractor !== null ? 'contractor' : (d.mid_range !== null ? 'mid_range' : 'high_end');
+
+      items.push({
+        data: d,
+        catIdx: ci,
+        tier: defaultTier,
+        qty: autoQty,
+        included: false
+      });
+
+      const cAvail = d.contractor !== null;
+      const mAvail = d.mid_range !== null;
+      const hAvail = d.high_end !== null;
+
+      table += `<tr id="row-${idx}" class="excluded">
+        <td><input type="checkbox" class="incl-cb" id="incl-${idx}" onchange="toggleInclude(${idx})"></td>
+        <td class="item-name">${d.line_item}<br><span style="font-size:.68rem;color:#718096">${d.notes||''}</span></td>
+        <td class="unit-col">${d.unit}</td>
+        <td><div class="tier-btns">
+          <button class="tier-btn ${defaultTier==='contractor'?'active':''} ${!cAvail?'na':''}" id="tc-${idx}" onclick="setTier(${idx},'contractor')" ${!cAvail?'disabled':''}>${cAvail ? fmtDec(d.contractor) : 'N/A'}</button>
+          <button class="tier-btn ${defaultTier==='mid_range'?'active':''} ${!mAvail?'na':''}" id="tm-${idx}" onclick="setTier(${idx},'mid_range')" ${!mAvail?'disabled':''}>${mAvail ? fmtDec(d.mid_range) : 'N/A'}</button>
+          <button class="tier-btn ${defaultTier==='high_end'?'active':''} ${!hAvail?'na':''}" id="th-${idx}" onclick="setTier(${idx},'high_end')" ${!hAvail?'disabled':''}>${hAvail ? fmtDec(d.high_end) : 'N/A'}</button>
+        </div></td>
+        <td><input type="number" class="qty-input" id="qty-${idx}" value="${autoQty}" min="0" oninput="updateQty(${idx})"></td>
+        <td class="line-total" id="lt-${idx}">$0</td>
+      </tr>`;
+    });
+
+    table += '</tbody></table>';
+    body.innerHTML = table;
+
+    acc.appendChild(hdr);
+    acc.appendChild(body);
+    container.appendChild(acc);
+  });
+
+  recalcAll();
+}
+
+// ========== INTERACTIONS ==========
+function toggleInclude(idx) {
+  items[idx].included = document.getElementById('incl-'+idx).checked;
+  const row = document.getElementById('row-'+idx);
+  row.className = items[idx].included ? '' : 'excluded';
+  recalcAll();
+}
+
+function setTier(idx, tier) {
+  const d = items[idx].data;
+  const cost = d[tier];
+  if (cost === null) return;
+  items[idx].tier = tier;
+  // Update button states
+  document.getElementById('tc-'+idx).className = 'tier-btn' + (tier==='contractor'?' active':'') + (d.contractor===null?' na':'');
+  document.getElementById('tm-'+idx).className = 'tier-btn' + (tier==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
+  document.getElementById('th-'+idx).className = 'tier-btn' + (tier==='high_end'?' active':'') + (d.high_end===null?' na':'');
+  recalcAll();
+}
+
+function updateQty(idx) {
+  items[idx].qty = parseFloat(document.getElementById('qty-'+idx).value) || 0;
+  recalcAll();
+}
+
+function onPropertyChange() {
+  const sf = num('propSF');
+  const stories = Math.max(1, num('propStories'));
+  document.getElementById('propRoofSF').value = Math.round(sf * 1.15 / stories);
+  // Update auto-populated quantities
+  items.forEach((item, idx) => {
+    const newQty = getAutoQty(item.data);
+    if (newQty > 0) {
+      item.qty = newQty;
+      document.getElementById('qty-'+idx).value = newQty;
+    }
+  });
+  recalcAll();
+}
+
+// ========== RECALCULATE ==========
+function recalcAll() {
+  const catTotals = {};
+  CATEGORIES.forEach((c,i) => catTotals[i] = 0);
+
+  let subtotal = 0;
+  items.forEach((item, idx) => {
+    const cost = item.data[item.tier];
+    let lineTotal = 0;
+    if (item.included && cost !== null) {
+      lineTotal = item.qty * cost;
+    }
+    const el = document.getElementById('lt-'+idx);
+    if (item.included && cost !== null) {
+      el.textContent = fmt(lineTotal);
+      el.className = 'line-total';
+    } else if (item.included && cost === null) {
+      el.textContent = 'N/A';
+      el.className = 'line-total na-text';
+    } else {
+      el.textContent = '$0';
+      el.className = 'line-total';
+    }
+    subtotal += lineTotal;
+    catTotals[item.catIdx] += lineTotal;
+  });
+
+  // Category subtotals
+  CATEGORIES.forEach((c,i) => {
+    document.getElementById('catTotal-'+i).textContent = fmt(catTotals[i]);
+  });
+
+  // Contingency
+  const contPct = parseFloat(document.getElementById('contingencySel').value);
+  const contingency = subtotal * contPct;
+  const total = subtotal + contingency;
+  const sf = num('propSF') || 1;
+
+  document.getElementById('stSubtotal').textContent = fmt(subtotal);
+  document.getElementById('stTotal').textContent = fmt(total);
+  document.getElementById('stPerSF').textContent = fmt(total / sf) + '/SF';
+
+  // Show breakdown and email if there's a total
+  const hasTotal = subtotal > 0;
+  document.getElementById('breakdownCard').style.display = hasTotal ? 'block' : 'none';
+  document.getElementById('emailCard').style.display = hasTotal ? 'block' : 'none';
+
+  // Category bars
+  if (hasTotal) {
+    const maxCat = Math.max(...Object.values(catTotals));
+    let barsHTML = '';
+    CATEGORIES.forEach((c,i) => {
+      if (catTotals[i] > 0) {
+        const pct = maxCat > 0 ? (catTotals[i] / maxCat * 100) : 0;
+        barsHTML += `<div class="cat-bar-row">
+          <span class="cat-bar-label">${c}</span>
+          <div class="cat-bar-track"><div class="cat-bar-fill cat-color-${i}" style="width:${pct}%"></div></div>
+          <span class="cat-bar-val">${fmt(catTotals[i])}</span>
+        </div>`;
+      }
+    });
+    document.getElementById('catBars').innerHTML = barsHTML;
+  }
+}
+
+// ========== PRESET LOGIC ==========
+const PRESETS = {
+  cosmetic: {
+    tier: 'contractor',
+    categories: ['Interior Paint','Flooring','Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
+    items: ['light fixture replacement','appliance package','faucet replacement','general cleaning']
+  },
+  light: {
+    tier: 'contractor',
+    categories: ['Interior Paint','Flooring','Kitchen','Bathroom','Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
+    items: ['light fixture replacement','faucet replacement','toilet replacement','general cleaning','dumpster rental']
+  },
+  medium: {
+    tier: 'mid_range',
+    categories: ['Demolition & Site Prep','Roofing','Exterior','Windows & Doors','Electrical','Plumbing','HVAC',
+      'Drywall & Interior Walls','Interior Paint','Flooring','Kitchen','Bathroom',
+      'Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
+    exclude_categories: ['Structural & Framing','Insulation']
+  },
+  heavy: {
+    tier: 'mid_range',
+    categories: CATEGORIES.filter(c => c !== 'Structural & Framing'),
+    all: true
+  },
+  gut: {
+    tier: 'high_end',
+    categories: CATEGORIES,
+    all: true
+  }
+};
+
+function applyPreset(level) {
+  // Clear active state
+  document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('pre-'+level).classList.add('active');
+
+  const preset = PRESETS[level];
+  const tierPref = preset.tier;
+
+  // First uncheck everything
+  items.forEach((item, idx) => {
+    item.included = false;
+    document.getElementById('incl-'+idx).checked = false;
+    document.getElementById('row-'+idx).className = 'excluded';
+  });
+
+  items.forEach((item, idx) => {
+    const d = item.data;
+    const inCat = preset.categories.includes(d.category);
+    const nameMatch = preset.items ? preset.items.some(n => d.line_item.toLowerCase().includes(n)) : false;
+    const shouldInclude = inCat || nameMatch;
+
+    if (!shouldInclude) return;
+
+    // For medium preset, be selective — skip some expensive/specialty items
+    if (level === 'medium' && !preset.all) {
+      const name = d.line_item.toLowerCase();
+      if (name.includes('metal roofing') || name.includes('wood lap') || name.includes('composite')
+        || name.includes('frameless glass') || name.includes('smart panel')
+        || name.includes('tankless') || name.includes('custom')
+        || name.includes('irrigation') || name.includes('mold')
+        || name.includes('hazardous') || name.includes('sewer line')
+        || name.includes('foundation repair (pier')) return;
+    }
+
+    // Set tier
+    let t = tierPref;
+    if (d[t] === null) {
+      // fall back to nearest available
+      if (t === 'high_end') t = d.mid_range !== null ? 'mid_range' : 'contractor';
+      else if (t === 'contractor') t = d.mid_range !== null ? 'mid_range' : 'high_end';
+      else t = d.contractor !== null ? 'contractor' : 'high_end';
+    }
+    if (d[t] === null) return; // still null, skip
+
+    item.tier = t;
+    item.included = true;
+    document.getElementById('incl-'+idx).checked = true;
+    document.getElementById('row-'+idx).className = '';
+
+    // Update tier buttons
+    document.getElementById('tc-'+idx).className = 'tier-btn' + (t==='contractor'?' active':'') + (d.contractor===null?' na':'');
+    document.getElementById('tm-'+idx).className = 'tier-btn' + (t==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
+    document.getElementById('th-'+idx).className = 'tier-btn' + (t==='high_end'?' active':'') + (d.high_end===null?' na':'');
+
+    // Reset qty from auto
+    const newQty = getAutoQty(d);
+    if (newQty > 0) {
+      item.qty = newQty;
+      document.getElementById('qty-'+idx).value = newQty;
+    } else if (item.qty === 0) {
+      item.qty = 1;
+      document.getElementById('qty-'+idx).value = 1;
+    }
+  });
+
+  recalcAll();
+}
+
+// ========== EMAIL CAPTURE ==========
+function captureEmailSubmit() {
+  const email = document.getElementById('captureEmail').value;
+  if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
+  var body = 'email=' + encodeURIComponent(email) + '&userGroup=rehab_costs&mailingLists=cmndeb7y305hd0iyu3k1sd3n4';
+  var blob = new Blob([body], {type: 'application/x-www-form-urlencoded'});
+  navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6', blob);
+  document.getElementById('captureBtn').textContent = 'Subscribed!';
+  document.getElementById('captureBtn').style.background = '#16a34a';
+  document.getElementById('captureBtn').disabled = true;
+  document.getElementById('captureEmail').disabled = true;
+  document.getElementById('captureMsg').innerHTML = '<span class="email-success">Check your inbox for the latest rehab cost data.</span>';
+}
+
+// ========== INIT ==========
+buildCategories();
+onPropertyChange();
+</script>
+</body>
+</html>
