@@ -40,35 +40,33 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 .preset-btn .cost{color:#3B82F6;font-weight:700;font-size:1rem}
 .preset-btn .desc{color:#718096;font-size:.72rem;margin-top:4px;line-height:1.3}
 
-/* Accordion */
-.accordion{margin-bottom:6px}
-.acc-header{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:14px 18px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;transition:all .15s;user-select:none}
-.acc-header:hover{border-color:#3B82F6}
-.acc-header.open{border-radius:10px 10px 0 0;border-color:#3B82F6;background:#1e2a3e}
-.acc-header .cat-name{font-weight:600;color:#fff;font-size:.95rem}
-.acc-header .cat-total{color:#3B82F6;font-weight:700;font-size:.95rem}
-.acc-header .arrow{color:#718096;transition:transform .2s;font-size:.8rem}
-.acc-header.open .arrow{transform:rotate(180deg)}
-.acc-body{display:none;background:#141820;border:1px solid #2d3748;border-top:none;border-radius:0 0 10px 10px;padding:12px;overflow-x:auto}
-.acc-body.open{display:block}
+/* Spreadsheet table */
+.sheet-wrap{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;overflow-x:auto;margin-bottom:20px}
+.sheet-table{width:100%;border-collapse:collapse;font-size:.78rem;min-width:720px}
+.sheet-table thead th{position:sticky;top:0;z-index:5;background:#151a27;text-align:left;padding:8px 8px;color:#a0aec0;font-weight:600;font-size:.68rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:2px solid #2d3748}
+.sheet-table thead th:last-child{text-align:right}
 
-/* Line items table */
-.items-table{width:100%;border-collapse:collapse;font-size:.82rem;min-width:700px}
-.items-table th{text-align:left;padding:8px 10px;color:#a0aec0;font-weight:600;font-size:.72rem;text-transform:uppercase;letter-spacing:.04em;border-bottom:1px solid #2d3748}
-.items-table td{padding:8px 10px;border-bottom:1px solid #1e2530;vertical-align:middle}
-.items-table tr.excluded td{opacity:.45}
-.items-table .item-name{color:#e2e8f0;min-width:180px}
-.items-table .unit-col{color:#718096;white-space:nowrap}
-.items-table .tier-btns{display:flex;gap:2px}
-.tier-btn{padding:4px 8px;border:1px solid #2d3748;border-radius:5px;background:#0f1117;color:#718096;cursor:pointer;font-size:.72rem;font-weight:600;transition:all .15s;white-space:nowrap}
+/* Category header row */
+.cat-row td{background:#1e2a3e;padding:7px 10px;font-weight:700;color:#e2e8f0;font-size:.82rem;border-bottom:1px solid #334155;border-top:2px solid #334155}
+.cat-row .cat-total-cell{text-align:right;color:#3B82F6;font-weight:700;font-size:.82rem}
+
+/* Item rows */
+.sheet-table tbody td{padding:5px 8px;border-bottom:1px solid #1a2030;vertical-align:middle}
+.sheet-table tbody tr:hover td{background:#1e2535}
+.sheet-table tbody tr.excluded td{opacity:.4}
+.item-name{color:#e2e8f0;font-size:.78rem;line-height:1.3}
+.item-note{font-size:.62rem;color:#596577;display:block;margin-top:1px}
+.unit-col{color:#718096;white-space:nowrap;font-size:.72rem}
+.tier-btns{display:flex;gap:2px}
+.tier-btn{padding:3px 6px;border:1px solid #2d3748;border-radius:4px;background:#0f1117;color:#718096;cursor:pointer;font-size:.68rem;font-weight:600;transition:all .12s;white-space:nowrap}
 .tier-btn:hover{border-color:#3B82F6;color:#e2e8f0}
 .tier-btn.active{background:#3B82F6;border-color:#3B82F6;color:#fff}
-.tier-btn.na{opacity:.35;cursor:default}
+.tier-btn.na{opacity:.3;cursor:default}
 .tier-btn.na:hover{border-color:#2d3748;color:#718096}
-.qty-input{width:70px;background:#0f1117;border:1px solid #2d3748;color:#e2e8f0;padding:5px 8px;border-radius:6px;font-size:.85rem;text-align:right}
+.qty-input{width:60px;background:#0f1117;border:1px solid #2d3748;color:#e2e8f0;padding:4px 6px;border-radius:5px;font-size:.78rem;text-align:right}
 .qty-input:focus{outline:none;border-color:#3B82F6}
-.incl-cb{width:18px;height:18px;accent-color:#3B82F6;cursor:pointer}
-.line-total{text-align:right;font-weight:600;color:#e2e8f0;white-space:nowrap}
+.incl-cb{width:16px;height:16px;accent-color:#3B82F6;cursor:pointer}
+.line-total{text-align:right;font-weight:600;color:#e2e8f0;white-space:nowrap;font-size:.78rem}
 .na-text{color:#4a5568;font-style:italic}
 
 /* Sticky total */
@@ -132,6 +130,8 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .sticky-total .st-value{font-size:1rem}
   .email-row{flex-direction:column}
   .cat-bar-label{width:100px;font-size:.65rem}
+  .sheet-table{font-size:.72rem}
+  .tier-btn{padding:2px 5px;font-size:.62rem}
 }
 @media(max-width:480px){
   .prop-grid{grid-template-columns:1fr}
@@ -145,11 +145,11 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .header h1{color:#111!important}
   .header h1 span{color:#2563EB!important}
   .brand,.brand a{color:#2563EB!important}
-  .card,.accordion,.acc-header,.acc-body,.items-table,.email-card,.cta-card{background:#fff!important;border-color:#ccc!important;color:#111!important}
-  .acc-header .cat-name{color:#111!important}
-  .acc-header .cat-total{color:#2563EB!important}
-  .items-table th{color:#666!important;border-color:#ccc!important}
-  .items-table td{color:#111!important;border-color:#ddd!important}
+  .card,.sheet-wrap,.sheet-table,.email-card,.cta-card{background:#fff!important;border-color:#ccc!important;color:#111!important}
+  .sheet-table thead th{background:#f2f2f2!important;color:#333!important;border-color:#ccc!important}
+  .cat-row td{background:#e8edf3!important;color:#111!important;border-color:#ccc!important}
+  .cat-row .cat-total-cell{color:#2563EB!important}
+  .sheet-table tbody td{color:#111!important;border-color:#ddd!important}
   .item-name{color:#111!important}
   .line-total{color:#111!important}
   .fg label{color:#666!important}
@@ -158,9 +158,6 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .tier-btn.active{background:#2563EB!important;color:#fff!important}
   .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb{display:none!important}
   .presets{display:none!important}
-  .acc-body{display:block!important}
-  .acc-header{cursor:default}
-  .acc-header .arrow{display:none!important}
   .cta-card{display:none!important}
   .footer{color:#888!important;border-color:#ccc!important}
   .footer a{color:#666!important}
@@ -241,8 +238,8 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   </div>
 </div>
 
-<!-- Categories rendered by JS -->
-<div id="categoriesContainer"></div>
+<!-- Spreadsheet table rendered by JS -->
+<div class="sheet-wrap"><div id="categoriesContainer"></div></div>
 
 <!-- Category Breakdown -->
 <div class="card" id="breakdownCard" style="display:none">
@@ -490,32 +487,19 @@ let items = []; // flat array of item state objects
 
 function buildCategories() {
   const container = document.getElementById('categoriesContainer');
-  container.innerHTML = '';
   items = [];
+
+  let html = `<table class="sheet-table"><thead><tr>
+    <th style="width:32px">&#10003;</th><th>Line Item</th><th>Unit</th><th>Contractor</th><th>Mid-Range</th><th>High-End</th><th style="width:65px">Qty</th><th style="text-align:right">Total</th>
+  </tr></thead><tbody>`;
 
   CATEGORIES.forEach((cat, ci) => {
     const catItems = COST_DATA.filter(d => d.category === cat);
-    const acc = document.createElement('div');
-    acc.className = 'accordion';
 
-    // Header
-    const hdr = document.createElement('div');
-    hdr.className = 'acc-header';
-    hdr.innerHTML = `<div><span class="cat-name">${cat}</span></div><div style="display:flex;align-items:center;gap:12px"><span class="cat-total" id="catTotal-${ci}">$0</span><span class="arrow">&#9660;</span></div>`;
-    hdr.onclick = () => {
-      hdr.classList.toggle('open');
-      body.classList.toggle('open');
-    };
+    // Category header row
+    html += `<tr class="cat-row"><td colspan="7">${cat}</td><td class="cat-total-cell" id="catTotal-${ci}">$0</td></tr>`;
 
-    // Body
-    const body = document.createElement('div');
-    body.className = 'acc-body';
-
-    let table = `<table class="items-table"><thead><tr>
-      <th>Include</th><th>Line Item</th><th>Unit</th><th>Tier</th><th>Qty</th><th style="text-align:right">Line Total</th>
-    </tr></thead><tbody>`;
-
-    catItems.forEach((d, li) => {
+    catItems.forEach((d) => {
       const idx = items.length;
       const autoQty = getAutoQty(d);
       const defaultTier = d.contractor !== null ? 'contractor' : (d.mid_range !== null ? 'mid_range' : 'high_end');
@@ -532,28 +516,21 @@ function buildCategories() {
       const mAvail = d.mid_range !== null;
       const hAvail = d.high_end !== null;
 
-      table += `<tr id="row-${idx}" class="excluded">
+      html += `<tr id="row-${idx}" class="excluded">
         <td><input type="checkbox" class="incl-cb" id="incl-${idx}" onchange="toggleInclude(${idx})"></td>
-        <td class="item-name">${d.line_item}<br><span style="font-size:.68rem;color:#718096">${d.notes||''}</span></td>
+        <td class="item-name">${d.line_item}${d.notes ? '<span class="item-note">'+d.notes+'</span>' : ''}</td>
         <td class="unit-col">${d.unit}</td>
-        <td><div class="tier-btns">
-          <button class="tier-btn ${defaultTier==='contractor'?'active':''} ${!cAvail?'na':''}" id="tc-${idx}" onclick="setTier(${idx},'contractor')" ${!cAvail?'disabled':''}>${cAvail ? fmtDec(d.contractor) : 'N/A'}</button>
-          <button class="tier-btn ${defaultTier==='mid_range'?'active':''} ${!mAvail?'na':''}" id="tm-${idx}" onclick="setTier(${idx},'mid_range')" ${!mAvail?'disabled':''}>${mAvail ? fmtDec(d.mid_range) : 'N/A'}</button>
-          <button class="tier-btn ${defaultTier==='high_end'?'active':''} ${!hAvail?'na':''}" id="th-${idx}" onclick="setTier(${idx},'high_end')" ${!hAvail?'disabled':''}>${hAvail ? fmtDec(d.high_end) : 'N/A'}</button>
-        </div></td>
+        <td><button class="tier-btn ${defaultTier==='contractor'?'active':''} ${!cAvail?'na':''}" id="tc-${idx}" onclick="setTier(${idx},'contractor')" ${!cAvail?'disabled':''}>${cAvail ? fmtDec(d.contractor) : '—'}</button></td>
+        <td><button class="tier-btn ${defaultTier==='mid_range'?'active':''} ${!mAvail?'na':''}" id="tm-${idx}" onclick="setTier(${idx},'mid_range')" ${!mAvail?'disabled':''}>${mAvail ? fmtDec(d.mid_range) : '—'}</button></td>
+        <td><button class="tier-btn ${defaultTier==='high_end'?'active':''} ${!hAvail?'na':''}" id="th-${idx}" onclick="setTier(${idx},'high_end')" ${!hAvail?'disabled':''}>${hAvail ? fmtDec(d.high_end) : '—'}</button></td>
         <td><input type="number" class="qty-input" id="qty-${idx}" value="${autoQty}" min="0" oninput="updateQty(${idx})"></td>
         <td class="line-total" id="lt-${idx}">$0</td>
       </tr>`;
     });
-
-    table += '</tbody></table>';
-    body.innerHTML = table;
-
-    acc.appendChild(hdr);
-    acc.appendChild(body);
-    container.appendChild(acc);
   });
 
+  html += '</tbody></table>';
+  container.innerHTML = html;
   recalcAll();
 }
 
