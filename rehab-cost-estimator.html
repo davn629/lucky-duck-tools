@@ -861,9 +861,9 @@ function recalcAll() {
 
   // Show breakdown and email if there's a total
   const hasTotal = subtotal > 0;
+  document.getElementById('grandTotalCard').style.display = 'block';
   document.getElementById('breakdownCard').style.display = hasTotal ? 'block' : 'none';
   document.getElementById('emailCard').style.display = hasTotal ? 'block' : 'none';
-  document.getElementById('grandTotalCard').style.display = hasTotal ? 'block' : 'none';
 
   // Category bars
   if (hasTotal) {
