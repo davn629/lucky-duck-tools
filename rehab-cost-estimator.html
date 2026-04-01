@@ -68,6 +68,9 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 .incl-cb{width:16px;height:16px;accent-color:#3B82F6;cursor:pointer}
 .line-total{text-align:right;font-weight:600;color:#e2e8f0;white-space:nowrap;font-size:.78rem}
 .na-text{color:#4a5568;font-style:italic}
+.add-row-tr td{border-bottom:1px solid #1e2530!important;padding:4px 8px!important}
+.add-row-btn{background:none;border:1px dashed #334155;border-radius:4px;color:#4a6a8a;font-size:.72rem;padding:3px 10px;cursor:pointer;transition:all .15s}
+.add-row-btn:hover{border-color:#3B82F6;color:#3B82F6}
 
 /* Sticky total */
 .sticky-total{position:fixed;bottom:0;left:0;right:0;background:#0F172A;border-top:2px solid #3B82F6;padding:12px 24px;z-index:50;display:flex;align-items:center;justify-content:center;gap:24px;flex-wrap:wrap}
@@ -157,7 +160,7 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .fg input,.fg select,.qty-input{background:#fff!important;color:#111!important;border-color:#ccc!important}
   .tier-btn{background:#fff!important;color:#888!important;border-color:#ccc!important}
   .tier-btn.active{background:#2563EB!important;color:#fff!important}
-  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb{display:none!important}
+  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr{display:none!important}
   .presets{display:none!important}
   .cta-card{display:none!important}
   .footer{color:#888!important;border-color:#ccc!important}
@@ -609,10 +612,59 @@ function buildCategories() {
         <td class="line-total" id="lt-${idx}">$0</td>
       </tr>`;
     });
+
+    // Add Row button at end of each category
+    html += `<tr class="add-row-tr"><td colspan="9"><button class="add-row-btn" onclick="addCustomRow(${ci}, '${cat.replace(/'/g,"\\'")}')">+ Add item</button></td></tr>`;
   });
 
   html += '</tbody></table>';
   container.innerHTML = html;
+  recalcAll();
+}
+
+function addCustomRow(catIdx, catName) {
+  const idx = items.length;
+  items.push({
+    data: { category: catName, line_item: '', unit: 'each', contractor: null, mid_range: null, high_end: null, notes: '' },
+    catIdx: catIdx,
+    tier: 'custom',
+    qty: 1,
+    included: true,
+    customPrice: 0
+  });
+
+  // Find the add-row button for this category and insert before it
+  const rows = document.querySelectorAll('.add-row-tr');
+  let targetRow = null;
+  let count = 0;
+  document.querySelectorAll('.cat-row').forEach((cr, i) => {
+    if (i === catIdx) {
+      // Find the add-row-tr that follows this category's items
+      targetRow = rows[i];
+    }
+  });
+
+  const tr = document.createElement('tr');
+  tr.id = 'row-' + idx;
+  tr.innerHTML = `
+    <td><input type="checkbox" class="incl-cb" id="incl-${idx}" checked onchange="toggleInclude(${idx})"></td>
+    <td><input type="text" class="qty-input" id="name-${idx}" placeholder="Item name" style="width:100%;text-align:left;font-size:.78rem" oninput="items[${idx}].data.line_item=this.value"></td>
+    <td><select class="contingency-sel" id="unit-${idx}" style="font-size:.72rem;padding:3px 4px" onchange="items[${idx}].data.unit=this.value">
+      <option value="each">each</option><option value="per SF">per SF</option><option value="per LF">per LF</option><option value="lump sum">lump sum</option>
+    </select></td>
+    <td><span class="na-text">—</span></td>
+    <td><span class="na-text">—</span></td>
+    <td><span class="na-text">—</span></td>
+    <td><input type="number" class="qty-input" id="custom-${idx}" value="0" step="any" min="0" oninput="setCustomPrice(${idx})" style="width:65px"></td>
+    <td><input type="number" class="qty-input" id="qty-${idx}" value="1" min="0" oninput="updateQty(${idx})"></td>
+    <td class="line-total" id="lt-${idx}">$0</td>
+  `;
+
+  if (targetRow) {
+    targetRow.parentNode.insertBefore(tr, targetRow);
+  } else {
+    document.querySelector('.sheet-table tbody').appendChild(tr);
+  }
   recalcAll();
 }
 
