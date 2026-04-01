@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>QA — Rehab Cost Estimator Preset Analyzer</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#0f1117;color:#e2e8f0;font-family:'Segoe UI',system-ui,sans-serif;padding:24px;line-height:1.5}
+h1{color:#fff;margin-bottom:6px;font-size:1.4rem}
+h2{color:#3B82F6;margin:24px 0 12px;font-size:1.1rem;border-bottom:1px solid #2d3748;padding-bottom:6px}
+h3{color:#fff;margin:16px 0 8px;font-size:.95rem}
+.summary{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:20px;margin:16px 0}
+.summary .big{font-size:2rem;font-weight:700}
+.pass{color:#22c55e}.fail{color:#ef4444}.warn{color:#f59e0b}
+.check{padding:4px 8px;margin:2px 0;font-size:.82rem;border-radius:4px}
+.check.pass-bg{background:#0f2a1a;border-left:3px solid #22c55e}
+.check.fail-bg{background:#2a0f0f;border-left:3px solid #ef4444}
+.check.warn-bg{background:#2a2a0f;border-left:3px solid #f59e0b}
+.detail{color:#94a3b8;font-size:.75rem;margin-left:16px}
+.preset-section{background:#1a1f2e;border:1px solid #2d3748;border-radius:10px;padding:16px;margin:12px 0}
+table.cost-table{width:100%;border-collapse:collapse;font-size:.78rem;margin:8px 0}
+table.cost-table th{text-align:left;padding:6px 8px;background:#151a27;color:#a0aec0;border-bottom:1px solid #2d3748}
+table.cost-table td{padding:5px 8px;border-bottom:1px solid #1a2030}
+table.cost-table tr:hover td{background:#1e2535}
+.run-time{color:#4a5568;font-size:.72rem;margin-top:4px}
+</style>
+</head>
+<body>
+<h1>Rehab Cost Estimator — QA Report</h1>
+<p style="color:#94a3b8;font-size:.85rem">Automated preset validation. Generated <span id="runDate"></span></p>
+
+<div class="summary" id="summaryBox"></div>
+<div id="results"></div>
+
+<script>
+// ==================== COST DATA (copied from estimator) ====================
+const COST_DATA = [
+  {"category":"Demolition & Site Prep","line_item":"General demolition (gut interior)","unit":"per SF","contractor":3.14,"mid_range":4.63,"high_end":7.8,"notes":""},
+  {"category":"Demolition & Site Prep","line_item":"Dumpster rental (20-yard)","unit":"each","contractor":385.86,"mid_range":533.65,"high_end":633.2,"notes":""},
+  {"category":"Demolition & Site Prep","line_item":"Hazardous material abatement (asbestos/lead)","unit":"lump sum","contractor":1647.65,"mid_range":3749.55,"high_end":8035.07,"notes":""},
+  {"category":"Demolition & Site Prep","line_item":"Permit fees","unit":"lump sum","contractor":462.98,"mid_range":1445.59,"high_end":3063.21,"notes":""},
+  {"category":"Structural & Framing","line_item":"Foundation repair (crack sealing)","unit":"per LF","contractor":46.27,"mid_range":95.98,"high_end":210.0,"notes":""},
+  {"category":"Structural & Framing","line_item":"Foundation repair (pier/underpinning)","unit":"each","contractor":1028.99,"mid_range":1446.13,"high_end":2594.63,"notes":""},
+  {"category":"Structural & Framing","line_item":"Framing repair / wall rebuild","unit":"per LF","contractor":16.23,"mid_range":23.03,"high_end":43.25,"notes":""},
+  {"category":"Structural & Framing","line_item":"Structural beam replacement","unit":"each","contractor":1589.44,"mid_range":2964.15,"high_end":4755.48,"notes":""},
+  {"category":"Structural & Framing","line_item":"Subfloor replacement","unit":"per SF","contractor":3.33,"mid_range":4.94,"high_end":7.51,"notes":""},
+  {"category":"Roofing","line_item":"Tear-off existing roof (1 layer)","unit":"per SF","contractor":0.94,"mid_range":1.63,"high_end":2.08,"notes":""},
+  {"category":"Roofing","line_item":"Asphalt shingles (3-tab)","unit":"per SF","contractor":3.78,"mid_range":null,"high_end":null,"notes":""},
+  {"category":"Roofing","line_item":"Asphalt shingles (architectural)","unit":"per SF","contractor":null,"mid_range":4.8,"high_end":6.16,"notes":""},
+  {"category":"Roofing","line_item":"Metal roofing (standing seam)","unit":"per SF","contractor":null,"mid_range":null,"high_end":13.38,"notes":""},
+  {"category":"Roofing","line_item":"Decking repair (plywood)","unit":"per SF","contractor":2.49,"mid_range":3.61,"high_end":4.89,"notes":""},
+  {"category":"Roofing","line_item":"Flashing & drip edge","unit":"per LF","contractor":5.22,"mid_range":8.74,"high_end":12.43,"notes":""},
+  {"category":"Roofing","line_item":"Gutters & downspouts","unit":"per LF","contractor":6.37,"mid_range":9.29,"high_end":17.38,"notes":""},
+  {"category":"Exterior","line_item":"Siding — vinyl","unit":"per SF","contractor":3.91,"mid_range":5.62,"high_end":null,"notes":""},
+  {"category":"Exterior","line_item":"Siding — Hardie fiber cement","unit":"per SF","contractor":null,"mid_range":7.73,"high_end":11.28,"notes":""},
+  {"category":"Exterior","line_item":"Siding — wood lap","unit":"per SF","contractor":null,"mid_range":null,"high_end":9.76,"notes":""},
+  {"category":"Exterior","line_item":"Siding repair (patch/spot)","unit":"per SF","contractor":5.24,"mid_range":7.94,"high_end":11.93,"notes":""},
+  {"category":"Exterior","line_item":"Exterior paint (whole house)","unit":"per SF","contractor":1.44,"mid_range":2.43,"high_end":4.43,"notes":""},
+  {"category":"Exterior","line_item":"Soffit & fascia repair/replace","unit":"per LF","contractor":8.4,"mid_range":14.59,"high_end":20.99,"notes":""},
+  {"category":"Exterior","line_item":"Deck/porch repair","unit":"per SF","contractor":15.99,"mid_range":28.58,"high_end":54.77,"notes":""},
+  {"category":"Exterior","line_item":"Deck — new build (pressure-treated)","unit":"per SF","contractor":20.12,"mid_range":31.44,"high_end":null,"notes":""},
+  {"category":"Exterior","line_item":"Deck — new build (composite)","unit":"per SF","contractor":null,"mid_range":41.26,"high_end":68.7,"notes":""},
+  {"category":"Exterior","line_item":"Concrete flatwork (driveway, walkway)","unit":"per SF","contractor":6.53,"mid_range":10.75,"high_end":17.38,"notes":""},
+  {"category":"Exterior","line_item":"Fencing — wood privacy (6 ft)","unit":"per LF","contractor":18.53,"mid_range":34.41,"high_end":53.55,"notes":""},
+  {"category":"Windows & Doors","line_item":"Window replacement — vinyl double-hung","unit":"each","contractor":336.77,"mid_range":609.72,"high_end":876.22,"notes":""},
+  {"category":"Windows & Doors","line_item":"Window replacement — vinyl slider/casement","unit":"each","contractor":393.17,"mid_range":683.21,"high_end":949.17,"notes":""},
+  {"category":"Windows & Doors","line_item":"Window replacement — wood or fiberglass","unit":"each","contractor":null,"mid_range":882.33,"high_end":1214.12,"notes":""},
+  {"category":"Windows & Doors","line_item":"Sliding glass door","unit":"each","contractor":778.38,"mid_range":1453.99,"high_end":2580.68,"notes":""},
+  {"category":"Windows & Doors","line_item":"Exterior entry door (steel)","unit":"each","contractor":389.02,"mid_range":829.53,"high_end":null,"notes":""},
+  {"category":"Windows & Doors","line_item":"Exterior entry door (fiberglass/wood)","unit":"each","contractor":null,"mid_range":1319.48,"high_end":2499.7,"notes":""},
+  {"category":"Windows & Doors","line_item":"Interior door — hollow core","unit":"each","contractor":144.58,"mid_range":null,"high_end":null,"notes":""},
+  {"category":"Windows & Doors","line_item":"Interior door — solid core","unit":"each","contractor":null,"mid_range":335.85,"high_end":510.95,"notes":""},
+  {"category":"Windows & Doors","line_item":"Interior door — panel/craftsman","unit":"each","contractor":null,"mid_range":null,"high_end":562.91,"notes":""},
+  {"category":"Windows & Doors","line_item":"Garage door (single, 8x7)","unit":"each","contractor":743.54,"mid_range":1130.32,"high_end":2090.98,"notes":""},
+  {"category":"Windows & Doors","line_item":"Garage door (double, 16x7)","unit":"each","contractor":1294.1,"mid_range":1807.98,"high_end":3264.47,"notes":""},
+  {"category":"Windows & Doors","line_item":"Garage door opener","unit":"each","contractor":249.08,"mid_range":391.73,"high_end":512.91,"notes":""},
+  {"category":"Electrical","line_item":"Electrical panel upgrade (100-200 amp)","unit":"each","contractor":1559.9,"mid_range":2184.31,"high_end":2582.43,"notes":""},
+  {"category":"Electrical","line_item":"Full rewire (knob & tube or aluminum)","unit":"per SF","contractor":4.26,"mid_range":7.39,"high_end":10.27,"notes":""},
+  {"category":"Electrical","line_item":"Add circuits (per circuit)","unit":"each","contractor":194.67,"mid_range":314.46,"high_end":424.04,"notes":""},
+  {"category":"Electrical","line_item":"GFCI outlet installation","unit":"each","contractor":100.7,"mid_range":151.61,"high_end":222.15,"notes":""},
+  {"category":"Electrical","line_item":"Light fixture replacement","unit":"each","contractor":82.14,"mid_range":145.9,"high_end":357.04,"notes":""},
+  {"category":"Electrical","line_item":"Recessed lighting (per can)","unit":"each","contractor":143.36,"mid_range":248.07,"high_end":382.94,"notes":""},
+  {"category":"Electrical","line_item":"Ceiling fan installation","unit":"each","contractor":146.95,"mid_range":261.95,"high_end":416.72,"notes":""},
+  {"category":"Electrical","line_item":"Smoke/CO detector (hardwired)","unit":"each","contractor":71.29,"mid_range":128.7,"high_end":179.88,"notes":""},
+  {"category":"Electrical","line_item":"Whole-house smart panel","unit":"each","contractor":null,"mid_range":null,"high_end":5378.63,"notes":""},
+  {"category":"Plumbing","line_item":"Water heater — 40-gal tank (gas)","unit":"each","contractor":923.46,"mid_range":1104.14,"high_end":1575.73,"notes":""},
+  {"category":"Plumbing","line_item":"Water heater — 50-gal tank (gas)","unit":"each","contractor":1016.28,"mid_range":1658.73,"high_end":2191.49,"notes":""},
+  {"category":"Plumbing","line_item":"Water heater — tankless (gas)","unit":"each","contractor":null,"mid_range":2715.83,"high_end":3926.01,"notes":""},
+  {"category":"Plumbing","line_item":"Full re-pipe (PEX)","unit":"per SF","contractor":2.79,"mid_range":5.48,"high_end":8.88,"notes":""},
+  {"category":"Plumbing","line_item":"Main sewer line replacement","unit":"lump sum","contractor":2811.39,"mid_range":5085.99,"high_end":7470.74,"notes":""},
+  {"category":"Plumbing","line_item":"Rough-in new bathroom","unit":"each","contractor":1608.18,"mid_range":2682.92,"high_end":3782.71,"notes":""},
+  {"category":"Plumbing","line_item":"Toilet replacement","unit":"each","contractor":203.01,"mid_range":360.49,"high_end":583.81,"notes":""},
+  {"category":"Plumbing","line_item":"Faucet replacement (per fixture)","unit":"each","contractor":164.17,"mid_range":301.39,"high_end":577.42,"notes":""},
+  {"category":"Plumbing","line_item":"Garbage disposal","unit":"each","contractor":154.18,"mid_range":266.5,"high_end":384.09,"notes":""},
+  {"category":"HVAC","line_item":"Furnace replacement (gas, 80% eff)","unit":"each","contractor":2455.86,"mid_range":3916.6,"high_end":null,"notes":""},
+  {"category":"HVAC","line_item":"Furnace replacement (gas, 96%+ eff)","unit":"each","contractor":null,"mid_range":4724.89,"high_end":6549.53,"notes":""},
+  {"category":"HVAC","line_item":"A/C condenser replacement (2.5-3 ton)","unit":"each","contractor":2558.79,"mid_range":3304.7,"high_end":4824.7,"notes":""},
+  {"category":"HVAC","line_item":"Full HVAC system (furnace + A/C + coil)","unit":"each","contractor":5925.7,"mid_range":9338.96,"high_end":13524.32,"notes":""},
+  {"category":"HVAC","line_item":"Mini-split (single zone)","unit":"each","contractor":1928.09,"mid_range":3269.7,"high_end":5231.1,"notes":""},
+  {"category":"HVAC","line_item":"Ductwork replacement / install","unit":"per SF","contractor":1.93,"mid_range":4.4,"high_end":6.55,"notes":""},
+  {"category":"HVAC","line_item":"Thermostat (programmable/smart)","unit":"each","contractor":70.06,"mid_range":145.14,"high_end":316.14,"notes":""},
+  {"category":"Insulation","line_item":"Attic insulation (blown-in)","unit":"per SF","contractor":0.96,"mid_range":1.66,"high_end":2.77,"notes":""},
+  {"category":"Insulation","line_item":"Wall insulation (blown-in, existing)","unit":"per SF","contractor":1.55,"mid_range":2.54,"high_end":3.77,"notes":""},
+  {"category":"Insulation","line_item":"Spray foam insulation (crawl/rim joist)","unit":"per SF","contractor":1.62,"mid_range":2.4,"high_end":3.76,"notes":""},
+  {"category":"Insulation","line_item":"Crawlspace encapsulation","unit":"lump sum","contractor":3018.63,"mid_range":6028.29,"high_end":10134.05,"notes":""},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall — hang, tape, finish (Level 4)","unit":"per SF","contractor":2.13,"mid_range":2.9,"high_end":3.91,"notes":""},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall — skim coat (Level 5)","unit":"per SF","contractor":2.35,"mid_range":3.25,"high_end":3.95,"notes":""},
+  {"category":"Drywall & Interior Walls","line_item":"Drywall patch/repair","unit":"each","contractor":163.85,"mid_range":242.43,"high_end":383.22,"notes":""},
+  {"category":"Drywall & Interior Walls","line_item":"Texture removal (popcorn ceilings)","unit":"per SF","contractor":1.01,"mid_range":2.01,"high_end":2.93,"notes":""},
+  {"category":"Interior Paint","line_item":"Interior paint — walls only","unit":"per SF","contractor":1.45,"mid_range":2.76,"high_end":4.03,"notes":""},
+  {"category":"Interior Paint","line_item":"Interior paint — walls + trim + ceilings","unit":"per SF","contractor":3.0,"mid_range":4.64,"high_end":6.51,"notes":""},
+  {"category":"Interior Paint","line_item":"Primer (stain-blocking)","unit":"per SF","contractor":0.56,"mid_range":0.82,"high_end":1.11,"notes":""},
+  {"category":"Interior Paint","line_item":"Cabinet painting (kitchen)","unit":"per LF","contractor":33.16,"mid_range":54.49,"high_end":76.26,"notes":""},
+  {"category":"Flooring","line_item":"Flooring removal (carpet, vinyl, tile)","unit":"per SF","contractor":1.02,"mid_range":1.44,"high_end":2.5,"notes":""},
+  {"category":"Flooring","line_item":"LVP (luxury vinyl plank)","unit":"per SF","contractor":2.8,"mid_range":4.98,"high_end":7.82,"notes":""},
+  {"category":"Flooring","line_item":"Laminate","unit":"per SF","contractor":2.43,"mid_range":4.31,"high_end":null,"notes":""},
+  {"category":"Flooring","line_item":"Engineered hardwood","unit":"per SF","contractor":null,"mid_range":6.07,"high_end":10.05,"notes":""},
+  {"category":"Flooring","line_item":"Solid hardwood (sand & refinish)","unit":"per SF","contractor":3.33,"mid_range":5.6,"high_end":7.22,"notes":""},
+  {"category":"Flooring","line_item":"Solid hardwood (new install)","unit":"per SF","contractor":null,"mid_range":8.51,"high_end":13.31,"notes":""},
+  {"category":"Flooring","line_item":"Tile — ceramic","unit":"per SF","contractor":4.9,"mid_range":8.91,"high_end":null,"notes":""},
+  {"category":"Flooring","line_item":"Tile — porcelain","unit":"per SF","contractor":null,"mid_range":10.36,"high_end":15.43,"notes":""},
+  {"category":"Flooring","line_item":"Carpet (bedrooms only)","unit":"per SF","contractor":2.14,"mid_range":3.73,"high_end":7.26,"notes":""},
+  {"category":"Flooring","line_item":"Tile — bathroom floor only","unit":"per bath","contractor":510.29,"mid_range":1090.54,"high_end":1902.97,"notes":""},
+  {"category":"Kitchen","line_item":"Cabinets — stock/RTA","unit":"per LF","contractor":111.22,"mid_range":null,"high_end":null,"notes":""},
+  {"category":"Kitchen","line_item":"Cabinets — semi-custom","unit":"per LF","contractor":null,"mid_range":280.81,"high_end":478.58,"notes":""},
+  {"category":"Kitchen","line_item":"Cabinets — custom","unit":"per LF","contractor":null,"mid_range":null,"high_end":831.21,"notes":""},
+  {"category":"Kitchen","line_item":"Cabinet refacing (new doors)","unit":"per LF","contractor":105.5,"mid_range":169.23,"high_end":235.99,"notes":""},
+  {"category":"Kitchen","line_item":"Countertops — laminate","unit":"per SF","contractor":16.47,"mid_range":24.23,"high_end":null,"notes":""},
+  {"category":"Kitchen","line_item":"Countertops — quartz","unit":"per SF","contractor":null,"mid_range":57.14,"high_end":88.73,"notes":""},
+  {"category":"Kitchen","line_item":"Countertops — granite","unit":"per SF","contractor":null,"mid_range":45.17,"high_end":77.76,"notes":""},
+  {"category":"Kitchen","line_item":"Countertops — butcher block","unit":"per SF","contractor":20.49,"mid_range":44.28,"high_end":null,"notes":""},
+  {"category":"Kitchen","line_item":"Backsplash — ceramic subway tile","unit":"per SF","contractor":7.69,"mid_range":15.95,"high_end":null,"notes":""},
+  {"category":"Kitchen","line_item":"Backsplash — glass/mosaic/designer","unit":"per SF","contractor":null,"mid_range":19.35,"high_end":39.97,"notes":""},
+  {"category":"Kitchen","line_item":"Sink (stainless undermount)","unit":"each","contractor":210.87,"mid_range":343.0,"high_end":589.94,"notes":""},
+  {"category":"Kitchen","line_item":"Appliance package (4 appliances)","unit":"lump sum","contractor":2675.93,"mid_range":4672.54,"high_end":10116.57,"notes":""},
+  {"category":"Kitchen","line_item":"Range hood / vent","unit":"each","contractor":167.95,"mid_range":447.69,"high_end":934.65,"notes":""},
+  {"category":"Bathroom","line_item":"Full bathroom remodel","unit":"each","contractor":4813.15,"mid_range":11676.48,"high_end":27666.3,"notes":""},
+  {"category":"Bathroom","line_item":"Tub/shower — fiberglass insert","unit":"each","contractor":876.94,"mid_range":1315.02,"high_end":null,"notes":""},
+  {"category":"Bathroom","line_item":"Tub/shower — tile surround","unit":"each","contractor":null,"mid_range":2484.76,"high_end":4757.75,"notes":""},
+  {"category":"Bathroom","line_item":"Shower — frameless glass enclosure","unit":"each","contractor":null,"mid_range":null,"high_end":2173.5,"notes":""},
+  {"category":"Bathroom","line_item":"Vanity + top (single)","unit":"each","contractor":318.21,"mid_range":729.63,"high_end":1676.17,"notes":""},
+  {"category":"Bathroom","line_item":"Vanity + top (double)","unit":"each","contractor":525.4,"mid_range":1105.88,"high_end":2708.55,"notes":""},
+  {"category":"Bathroom","line_item":"Bathroom mirror","unit":"each","contractor":48.99,"mid_range":157.9,"high_end":443.11,"notes":""},
+  {"category":"Bathroom","line_item":"Exhaust fan","unit":"each","contractor":94.69,"mid_range":188.62,"high_end":329.49,"notes":""},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Yard cleanup / overgrowth removal","unit":"lump sum","contractor":515.32,"mid_range":974.47,"high_end":2081.93,"notes":""},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Sod installation","unit":"per SF","contractor":0.8,"mid_range":1.2,"high_end":2.09,"notes":""},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Basic landscaping (mulch, shrubs, edging)","unit":"lump sum","contractor":486.4,"mid_range":1526.56,"high_end":3853.74,"notes":""},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Irrigation system","unit":"lump sum","contractor":null,"mid_range":2723.05,"high_end":4692.3,"notes":""},
+  {"category":"Landscaping & Exterior Cleanup","line_item":"Tree removal (per tree)","unit":"each","contractor":401.89,"mid_range":780.27,"high_end":1381.06,"notes":""},
+  {"category":"Miscellaneous & Contingency","line_item":"General cleaning (post-construction)","unit":"lump sum","contractor":322.27,"mid_range":523.71,"high_end":777.91,"notes":""},
+  {"category":"Miscellaneous & Contingency","line_item":"Property survey","unit":"each","contractor":320.47,"mid_range":515.17,"high_end":804.43,"notes":""},
+  {"category":"Miscellaneous & Contingency","line_item":"Termite treatment","unit":"lump sum","contractor":460.97,"mid_range":935.05,"high_end":2193.24,"notes":""},
+  {"category":"Miscellaneous & Contingency","line_item":"Mold remediation","unit":"lump sum","contractor":1100.79,"mid_range":3087.35,"high_end":6521.51,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Building permits (general)","unit":"lump sum","contractor":500,"mid_range":1500,"high_end":3500,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Impact fees (utility/traffic)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":8000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Plan review / expediting","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1500,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Architectural plans","unit":"lump sum","contractor":null,"mid_range":2500,"high_end":8000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Structural engineering","unit":"lump sum","contractor":500,"mid_range":1500,"high_end":4000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"MEP engineering (mechanical/electrical/plumbing)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":5000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Environmental assessment (Phase I)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":4500,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Asbestos/lead testing","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1200,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Survey / boundary survey","unit":"each","contractor":350,"mid_range":600,"high_end":1200,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Title search / lien check","unit":"lump sum","contractor":150,"mid_range":300,"high_end":600,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Insurance (builder's risk / vacancy)","unit":"lump sum","contractor":500,"mid_range":1200,"high_end":2500,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Utility reconnection / deposits","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Project management fee","unit":"lump sum","contractor":null,"mid_range":3000,"high_end":8000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Holding costs (interest + taxes)","unit":"lump sum","contractor":2000,"mid_range":5000,"high_end":12000,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Appraisal (ARV)","unit":"each","contractor":350,"mid_range":500,"high_end":750,"notes":""},
+  {"category":"Administrative & Soft Costs","line_item":"Closing costs (refinance)","unit":"lump sum","contractor":2000,"mid_range":3500,"high_end":6000,"notes":""}
+];
+
+// ==================== PRESET ITEMS (copied from estimator) ====================
+const PRESET_ITEMS = {
+  cosmetic: [
+    { match: 'interior paint — walls + trim + ceilings', tier: 'contractor' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'contractor' },
+    { match: 'light fixture', tier: 'contractor' },
+    { match: 'faucet replacement', tier: 'contractor' },
+    { match: 'appliance package', tier: 'contractor' },
+    { match: 'yard cleanup', tier: 'contractor' },
+    { match: 'general cleaning', tier: 'contractor' },
+  ],
+  light: [
+    { match: 'interior paint — walls + trim + ceilings', tier: 'contractor' },
+    { match: 'cabinet painting', tier: 'contractor' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'contractor' },
+    { match: 'tile — bathroom floor', tier: 'contractor' },
+    { match: 'cabinet refacing', tier: 'contractor' },
+    { match: 'countertops — laminate', tier: 'contractor' },
+    { match: 'backsplash — ceramic subway', tier: 'contractor' },
+    { match: 'sink (stainless', tier: 'contractor' },
+    { match: 'appliance package', tier: 'contractor' },
+    { match: 'range hood', tier: 'contractor' },
+    { match: 'tub/shower — fiberglass', tier: 'contractor' },
+    { match: 'vanity + top (single)', tier: 'contractor' },
+    { match: 'toilet replacement', tier: 'contractor' },
+    { match: 'faucet replacement', tier: 'contractor' },
+    { match: 'bathroom mirror', tier: 'contractor' },
+    { match: 'exhaust fan', tier: 'contractor' },
+    { match: 'light fixture', tier: 'contractor' },
+    { match: 'gfci outlet', tier: 'contractor' },
+    { match: 'smoke/co detector', tier: 'contractor' },
+    { match: 'garbage disposal', tier: 'contractor' },
+    { match: 'yard cleanup', tier: 'contractor' },
+    { match: 'basic landscaping', tier: 'contractor' },
+    { match: 'general cleaning', tier: 'contractor' },
+    { match: 'dumpster rental', tier: 'contractor' },
+  ],
+  medium: [
+    { match: 'dumpster rental', tier: 'mid_range' },
+    { match: 'permit fees', tier: 'mid_range' },
+    { match: 'tear-off existing', tier: 'mid_range' },
+    { match: 'asphalt shingles (architectural)', tier: 'mid_range' },
+    { match: 'flashing', tier: 'mid_range' },
+    { match: 'gutters', tier: 'mid_range' },
+    { match: 'exterior paint', tier: 'mid_range' },
+    { match: 'soffit', tier: 'mid_range' },
+    { match: 'window replacement — vinyl double-hung', tier: 'mid_range' },
+    { match: 'entry door (steel)', tier: 'mid_range' },
+    { match: 'interior door — solid core', tier: 'mid_range' },
+    { match: 'panel upgrade', tier: 'mid_range' },
+    { match: 'add circuits', tier: 'mid_range' },
+    { match: 'gfci outlet', tier: 'mid_range' },
+    { match: 'light fixture', tier: 'mid_range' },
+    { match: 'ceiling fan', tier: 'mid_range' },
+    { match: 'smoke/co detector', tier: 'mid_range' },
+    { match: 'water heater — 40', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'garbage disposal', tier: 'mid_range' },
+    { match: 'a/c condenser', tier: 'mid_range' },
+    { match: 'thermostat', tier: 'mid_range' },
+    { match: 'drywall — hang, tape, finish', tier: 'mid_range' },
+    { match: 'drywall patch', tier: 'mid_range' },
+    { match: 'interior paint — walls + trim + ceilings', tier: 'mid_range' },
+    { match: 'cabinet painting', tier: 'mid_range' },
+    { match: 'flooring removal', tier: 'mid_range' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'mid_range' },
+    { match: 'tile — bathroom floor', tier: 'mid_range' },
+    { match: 'cabinets — semi-custom', tier: 'mid_range' },
+    { match: 'countertops — quartz', tier: 'mid_range' },
+    { match: 'backsplash — ceramic subway', tier: 'mid_range' },
+    { match: 'sink (stainless', tier: 'mid_range' },
+    { match: 'appliance package', tier: 'mid_range' },
+    { match: 'range hood', tier: 'mid_range' },
+    { match: 'tub/shower — tile surround', tier: 'mid_range' },
+    { match: 'vanity + top (single)', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'bathroom mirror', tier: 'mid_range' },
+    { match: 'exhaust fan', tier: 'mid_range' },
+    { match: 'yard cleanup', tier: 'mid_range' },
+    { match: 'basic landscaping', tier: 'mid_range' },
+    { match: 'building permits', tier: 'mid_range' },
+    { match: 'insurance (builder', tier: 'mid_range' },
+    { match: 'holding costs', tier: 'mid_range' },
+    { match: 'appraisal', tier: 'mid_range' },
+    { match: 'general cleaning', tier: 'mid_range' },
+    { match: 'termite treatment', tier: 'mid_range' },
+  ],
+  heavy: [
+    { match: 'general demolition', tier: 'mid_range' },
+    { match: 'dumpster rental', tier: 'mid_range' },
+    { match: 'hazardous material', tier: 'mid_range' },
+    { match: 'permit fees', tier: 'mid_range' },
+    { match: 'tear-off existing', tier: 'mid_range' },
+    { match: 'asphalt shingles (architectural)', tier: 'mid_range' },
+    { match: 'decking repair', tier: 'mid_range' },
+    { match: 'flashing', tier: 'mid_range' },
+    { match: 'gutters', tier: 'mid_range' },
+    { match: 'siding — hardie', tier: 'mid_range' },
+    { match: 'exterior paint', tier: 'mid_range' },
+    { match: 'soffit', tier: 'mid_range' },
+    { match: 'concrete flatwork', tier: 'mid_range' },
+    { match: 'window replacement — vinyl double-hung', tier: 'mid_range' },
+    { match: 'sliding glass door', tier: 'mid_range' },
+    { match: 'entry door (fiberglass', tier: 'mid_range' },
+    { match: 'interior door — solid core', tier: 'mid_range' },
+    { match: 'garage door (single,', tier: 'mid_range' },
+    { match: 'garage door opener', tier: 'mid_range' },
+    { match: 'panel upgrade', tier: 'mid_range' },
+    { match: 'full rewire', tier: 'mid_range' },
+    { match: 'add circuits', tier: 'mid_range' },
+    { match: 'gfci outlet', tier: 'mid_range' },
+    { match: 'light fixture', tier: 'mid_range' },
+    { match: 'recessed lighting', tier: 'mid_range' },
+    { match: 'ceiling fan', tier: 'mid_range' },
+    { match: 'smoke/co detector', tier: 'mid_range' },
+    { match: 'water heater — 50', tier: 'mid_range' },
+    { match: 'full re-pipe', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'garbage disposal', tier: 'mid_range' },
+    { match: 'full hvac system', tier: 'mid_range' },
+    { match: 'ductwork', tier: 'mid_range' },
+    { match: 'thermostat', tier: 'mid_range' },
+    { match: 'attic insulation', tier: 'mid_range' },
+    { match: 'wall insulation', tier: 'mid_range' },
+    { match: 'drywall — hang, tape, finish', tier: 'mid_range' },
+    { match: 'texture removal', tier: 'mid_range' },
+    { match: 'primer (stain', tier: 'mid_range' },
+    { match: 'interior paint — walls + trim + ceilings', tier: 'mid_range' },
+    { match: 'cabinet painting', tier: 'mid_range' },
+    { match: 'flooring removal', tier: 'mid_range' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'mid_range' },
+    { match: 'tile — ceramic', tier: 'mid_range' },
+    { match: 'tile — bathroom floor', tier: 'mid_range' },
+    { match: 'cabinets — semi-custom', tier: 'mid_range' },
+    { match: 'countertops — quartz', tier: 'mid_range' },
+    { match: 'backsplash — ceramic subway', tier: 'mid_range' },
+    { match: 'sink (stainless', tier: 'mid_range' },
+    { match: 'appliance package', tier: 'mid_range' },
+    { match: 'range hood', tier: 'mid_range' },
+    { match: 'tub/shower — tile surround', tier: 'mid_range' },
+    { match: 'vanity + top (single)', tier: 'mid_range' },
+    { match: 'vanity + top (double)', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'bathroom mirror', tier: 'mid_range' },
+    { match: 'exhaust fan', tier: 'mid_range' },
+    { match: 'yard cleanup', tier: 'mid_range' },
+    { match: 'sod installation', tier: 'mid_range' },
+    { match: 'basic landscaping', tier: 'mid_range' },
+    { match: 'building permits', tier: 'mid_range' },
+    { match: 'structural engineering', tier: 'mid_range' },
+    { match: 'insurance (builder', tier: 'mid_range' },
+    { match: 'holding costs', tier: 'mid_range' },
+    { match: 'appraisal', tier: 'mid_range' },
+    { match: 'closing costs', tier: 'mid_range' },
+    { match: 'general cleaning', tier: 'mid_range' },
+    { match: 'termite treatment', tier: 'mid_range' },
+  ],
+  gut: [
+    { match: 'general demolition', tier: 'high_end' },
+    { match: 'dumpster rental', tier: 'high_end' },
+    { match: 'hazardous material', tier: 'high_end' },
+    { match: 'permit fees', tier: 'high_end' },
+    { match: 'foundation repair (crack', tier: 'high_end' },
+    { match: 'framing repair', tier: 'high_end' },
+    { match: 'structural beam', tier: 'high_end' },
+    { match: 'subfloor replacement', tier: 'high_end' },
+    { match: 'tear-off existing', tier: 'high_end' },
+    { match: 'asphalt shingles (architectural)', tier: 'high_end' },
+    { match: 'decking repair', tier: 'high_end' },
+    { match: 'flashing', tier: 'high_end' },
+    { match: 'gutters', tier: 'high_end' },
+    { match: 'siding — hardie', tier: 'high_end' },
+    { match: 'exterior paint', tier: 'high_end' },
+    { match: 'soffit', tier: 'high_end' },
+    { match: 'deck/porch repair', tier: 'high_end' },
+    { match: 'concrete flatwork', tier: 'high_end' },
+    { match: 'fencing', tier: 'high_end' },
+    { match: 'window replacement — vinyl double-hung', tier: 'high_end' },
+    { match: 'sliding glass door', tier: 'high_end' },
+    { match: 'entry door (fiberglass', tier: 'high_end' },
+    { match: 'interior door — solid core', tier: 'high_end' },
+    { match: 'garage door (double,', tier: 'high_end' },
+    { match: 'garage door opener', tier: 'high_end' },
+    { match: 'panel upgrade', tier: 'high_end' },
+    { match: 'full rewire', tier: 'high_end' },
+    { match: 'add circuits', tier: 'high_end' },
+    { match: 'gfci outlet', tier: 'high_end' },
+    { match: 'light fixture', tier: 'high_end' },
+    { match: 'recessed lighting', tier: 'high_end' },
+    { match: 'ceiling fan', tier: 'high_end' },
+    { match: 'smoke/co detector', tier: 'high_end' },
+    { match: 'water heater — tankless', tier: 'high_end' },
+    { match: 'full re-pipe', tier: 'high_end' },
+    { match: 'main sewer line', tier: 'high_end' },
+    { match: 'rough-in new bathroom', tier: 'high_end' },
+    { match: 'toilet replacement', tier: 'high_end' },
+    { match: 'faucet replacement', tier: 'high_end' },
+    { match: 'garbage disposal', tier: 'high_end' },
+    { match: 'full hvac system', tier: 'high_end' },
+    { match: 'ductwork', tier: 'high_end' },
+    { match: 'thermostat', tier: 'high_end' },
+    { match: 'attic insulation', tier: 'high_end' },
+    { match: 'wall insulation', tier: 'high_end' },
+    { match: 'spray foam', tier: 'high_end' },
+    { match: 'drywall — hang, tape, finish', tier: 'high_end' },
+    { match: 'texture removal', tier: 'high_end' },
+    { match: 'primer (stain', tier: 'high_end' },
+    { match: 'interior paint — walls + trim + ceilings', tier: 'high_end' },
+    { match: 'cabinet painting', tier: 'high_end' },
+    { match: 'flooring removal', tier: 'high_end' },
+    { match: 'engineered hardwood', tier: 'high_end' },
+    { match: 'tile — porcelain', tier: 'high_end' },
+    { match: 'tile — bathroom floor', tier: 'high_end' },
+    { match: 'cabinets — semi-custom', tier: 'high_end' },
+    { match: 'countertops — quartz', tier: 'high_end' },
+    { match: 'backsplash — glass/mosaic', tier: 'high_end' },
+    { match: 'sink (stainless', tier: 'high_end' },
+    { match: 'appliance package', tier: 'high_end' },
+    { match: 'range hood', tier: 'high_end' },
+    { match: 'tub/shower — tile surround', tier: 'high_end' },
+    { match: 'shower — frameless glass', tier: 'high_end' },
+    { match: 'vanity + top (double)', tier: 'high_end' },
+    { match: 'toilet replacement', tier: 'high_end' },
+    { match: 'faucet replacement', tier: 'high_end' },
+    { match: 'bathroom mirror', tier: 'high_end' },
+    { match: 'exhaust fan', tier: 'high_end' },
+    { match: 'yard cleanup', tier: 'high_end' },
+    { match: 'sod installation', tier: 'high_end' },
+    { match: 'basic landscaping', tier: 'high_end' },
+    { match: 'irrigation system', tier: 'high_end' },
+    { match: 'tree removal', tier: 'high_end' },
+    { match: 'building permits', tier: 'high_end' },
+    { match: 'architectural plans', tier: 'high_end' },
+    { match: 'structural engineering', tier: 'high_end' },
+    { match: 'environmental assessment', tier: 'high_end' },
+    { match: 'asbestos/lead testing', tier: 'high_end' },
+    { match: 'insurance (builder', tier: 'high_end' },
+    { match: 'holding costs', tier: 'high_end' },
+    { match: 'appraisal', tier: 'high_end' },
+    { match: 'closing costs', tier: 'high_end' },
+    { match: 'general cleaning', tier: 'high_end' },
+    { match: 'termite treatment', tier: 'high_end' },
+    { match: 'mold remediation', tier: 'high_end' },
+  ],
+};
+
+// ==================== AUTO-QTY LOGIC (copied from estimator) ====================
+function getAutoQty(item, sf, bed, bath, stories) {
+  stories = Math.max(1, stories);
+  const roofSF = Math.round(sf * 1.15 / stories);
+  const ceilingHeight = 8;
+  const floorSF = sf / stories;
+  const perim = 4 * Math.sqrt(floorSF);
+  const wallSF = Math.round(perim * ceilingHeight * stories * 0.85);
+  const ceilingSF = sf;
+  const paintableSF = wallSF + ceilingSF;
+  const wallOnlySF = wallSF;
+
+  const cat = item.category;
+  const name = item.line_item.toLowerCase();
+  const unit = item.unit.toLowerCase();
+
+  if (cat === 'Roofing' && unit.includes('sf')) return roofSF;
+  if (cat === 'Interior Paint' && unit.includes('sf')) {
+    if (name.includes('ceiling') || name.includes('trim')) return paintableSF;
+    return wallOnlySF;
+  }
+  if (cat === 'Drywall & Interior Walls' && unit.includes('sf')) {
+    if (name.includes('popcorn') || name.includes('texture') || name.includes('ceiling')) return ceilingSF;
+    return paintableSF;
+  }
+  if (cat === 'Flooring' && unit.includes('sf')) return sf;
+  if (cat === 'Flooring' && unit.includes('bath')) return bath;
+  if (name.includes('interior door')) return bed * 2 + bath + 2;
+  if (cat === 'Bathroom' && unit === 'each') return bath;
+  if (name.includes('toilet')) return bath;
+  if (unit.includes('sf') && (name.includes('rewire') || name.includes('re-pipe') || name.includes('ductwork'))) return sf;
+  if (name.includes('general demolition') && unit.includes('sf')) return sf;
+  if (name.includes('subfloor') && unit.includes('sf')) return sf;
+  if (cat === 'Insulation' && unit.includes('sf')) return Math.round(sf / stories);
+  if (cat === 'Exterior' && unit.includes('sf') && (name.includes('paint') || name.includes('siding'))) return wallOnlySF;
+  if (cat === 'Landscaping & Exterior Cleanup' && unit.includes('sf')) return sf;
+  if (unit === 'each' || unit === 'lump sum') return 1;
+  return 0;
+}
+
+function getPresetQty(name, unit, cat, sf, bed, bath, stories) {
+  stories = Math.max(1, stories);
+  const rooms = bed + bath + 2;
+  const n = name.toLowerCase();
+
+  if (n.includes('light fixture')) return rooms;
+  if (n.includes('recessed lighting')) return rooms * 2;
+  if (n.includes('ceiling fan')) return bed;
+  if (n.includes('smoke') || n.includes('co detector')) return Math.max(rooms, 1);
+  if (n.includes('gfci')) return bath + 1;
+  if (n.includes('faucet')) return bath + 1;
+  if (n.includes('toilet')) return bath;
+  if (n.includes('garbage disposal')) return 1;
+  if (n.includes('exhaust fan')) return bath;
+  if (n.includes('vanity') && n.includes('single')) return bath;
+  if (n.includes('vanity') && n.includes('double')) return Math.max(1, Math.floor(bath / 2));
+  if (n.includes('bathroom mirror')) return bath;
+  if (n.includes('interior door') && n.includes('hollow')) return bed * 2 + bath + 2;
+  if (n.includes('interior door') && n.includes('solid')) return bed * 2 + bath + 2;
+  if (n.includes('window') && unit === 'each') return Math.round(rooms * 1.5);
+  if (n.includes('cabinet painting')) return Math.round(sf * 0.015);
+  if (n.includes('bathroom floor')) return bath;
+  if (n.includes('tile') && n.includes('bathroom')) return bath;
+  if (n.includes('tub') || n.includes('shower')) return bath;
+  if (n.includes('full bathroom remodel')) return bath;
+  if (n.includes('sink') && cat === 'Kitchen') return 1;
+  if (n.includes('range hood')) return 1;
+  if (n.includes('appliance package')) return 1;
+  if (n.includes('thermostat')) return stories;
+  if (n.includes('water heater')) return 1;
+  if (n.includes('entry door')) return 1;
+  if (n.includes('garage door opener')) return 1;
+  if (n.includes('garage door') && n.includes('single')) return 1;
+  if (n.includes('garage door') && n.includes('double')) return 1;
+  if (n.includes('dumpster')) return 2;
+  if (n.includes('panel upgrade')) return 1;
+  if (n.includes('furnace') || n.includes('a/c condenser') || n.includes('full hvac')) return 1;
+  if (n.includes('mini-split')) return 1;
+  if (n.includes('tree removal')) return 2;
+  if (n.includes('appraisal')) return 1;
+  return null;
+}
+
+// ==================== SIMULATION ENGINE ====================
+function simulatePreset(level, sf, bed, bath, stories) {
+  const presetItems = PRESET_ITEMS[level];
+  const result = [];
+
+  COST_DATA.forEach(d => {
+    const nameLC = d.line_item.toLowerCase();
+    const match = presetItems.find(p => nameLC.includes(p.match.toLowerCase()));
+    if (!match) return;
+
+    let t = match.tier;
+    if (d[t] === null) {
+      if (t === 'high_end') t = d.mid_range !== null ? 'mid_range' : 'contractor';
+      else if (t === 'contractor') t = d.mid_range !== null ? 'mid_range' : 'high_end';
+      else t = d.contractor !== null ? 'contractor' : 'high_end';
+    }
+    if (d[t] === null) return;
+
+    const smartQty = getPresetQty(d.line_item, d.unit, d.category, sf, bed, bath, stories);
+    const autoQty = getAutoQty(d, sf, bed, bath, stories);
+    const qty = smartQty !== null ? smartQty : (autoQty > 0 ? autoQty : 1);
+    const cost = d[t];
+    const lineTotal = qty * cost;
+
+    result.push({
+      line_item: d.line_item,
+      category: d.category,
+      unit: d.unit,
+      tier: t,
+      requestedTier: match.tier,
+      qty: qty,
+      unitCost: cost,
+      lineTotal: lineTotal,
+      matchPattern: match.match
+    });
+  });
+
+  return result;
+}
+
+// ==================== TEST RUNNER ====================
+const checks = [];
+let passCount = 0, failCount = 0, warnCount = 0;
+
+function check(category, name, passed, detail, isWarning) {
+  const status = passed ? 'PASS' : (isWarning ? 'WARN' : 'FAIL');
+  if (passed) passCount++;
+  else if (isWarning) warnCount++;
+  else failCount++;
+  checks.push({ category, name, status, detail: detail || '' });
+}
+
+function findMatchedItems(level) {
+  const presetItems = PRESET_ITEMS[level];
+  const matched = [];
+  COST_DATA.forEach(d => {
+    const nameLC = d.line_item.toLowerCase();
+    const match = presetItems.find(p => nameLC.includes(p.match.toLowerCase()));
+    if (match) matched.push(d.line_item);
+  });
+  return matched;
+}
+
+function findItemByMatch(matchStr) {
+  return COST_DATA.filter(d => d.line_item.toLowerCase().includes(matchStr.toLowerCase()));
+}
+
+// ==================== RUN ALL CHECKS ====================
+const SF = 1500, BED = 3, BATH = 2, STORIES = 1;
+const ROOMS = BED + BATH + 2; // 7
+const ROOF_SF = Math.round(SF * 1.15 / STORIES); // 1725
+const FLOOR_SF = SF / STORIES;
+const PERIM = 4 * Math.sqrt(FLOOR_SF);
+const WALL_SF = Math.round(PERIM * 8 * STORIES * 0.85);
+const PAINTABLE_SF = WALL_SF + SF;
+
+const presetLevels = ['cosmetic', 'light', 'medium', 'heavy', 'gut'];
+const presetResults = {};
+const presetMatchedNames = {};
+
+presetLevels.forEach(level => {
+  presetResults[level] = simulatePreset(level, SF, BED, BATH, STORIES);
+  presetMatchedNames[level] = findMatchedItems(level);
+});
+
+// ===== CATEGORY 1: Preset Item Selection Checks =====
+
+// 1a. Every preset match actually finds a COST_DATA item
+presetLevels.forEach(level => {
+  const presetItems = PRESET_ITEMS[level];
+  const orphans = [];
+  presetItems.forEach(p => {
+    const found = COST_DATA.filter(d => d.line_item.toLowerCase().includes(p.match.toLowerCase()));
+    if (found.length === 0) orphans.push(p.match);
+  });
+  check('1. Item Selection', `${level}: All preset matches find COST_DATA items`,
+    orphans.length === 0,
+    orphans.length > 0 ? `Orphan matches: ${orphans.join(', ')}` : `All ${presetItems.length} patterns matched`);
+});
+
+// 1b. No duplicate matches (one pattern matching multiple items)
+presetLevels.forEach(level => {
+  const presetItems = PRESET_ITEMS[level];
+  const dupes = [];
+  presetItems.forEach(p => {
+    const found = COST_DATA.filter(d => d.line_item.toLowerCase().includes(p.match.toLowerCase()));
+    if (found.length > 1) dupes.push({ match: p.match, count: found.length, items: found.map(f => f.line_item) });
+  });
+  check('1. Item Selection', `${level}: No duplicate matches (1 pattern = 1 item)`,
+    dupes.length === 0,
+    dupes.length > 0 ? dupes.map(d => `"${d.match}" matches ${d.count}: ${d.items.join('; ')}`).join(' | ') : 'No duplicates',
+    true); // Warning since some duplicates may be intentional
+});
+
+// 1c. Progressive item counts
+const itemCounts = {};
+presetLevels.forEach(level => {
+  itemCounts[level] = presetResults[level].length;
+});
+check('1. Item Selection', 'Progressive item counts: cosmetic < light < medium < heavy < gut',
+  itemCounts.cosmetic < itemCounts.light &&
+  itemCounts.light < itemCounts.medium &&
+  itemCounts.medium < itemCounts.heavy &&
+  itemCounts.heavy < itemCounts.gut,
+  `Cosmetic: ${itemCounts.cosmetic}, Light: ${itemCounts.light}, Medium: ${itemCounts.medium}, Heavy: ${itemCounts.heavy}, Gut: ${itemCounts.gut}`);
+
+// 1d. Cosmetic is subset of Light
+const cosmeticNames = new Set(presetMatchedNames.cosmetic);
+const lightNames = new Set(presetMatchedNames.light);
+const cosmeticNotInLight = [...cosmeticNames].filter(n => !lightNames.has(n));
+check('1. Item Selection', 'Cosmetic items are subset of Light items',
+  cosmeticNotInLight.length === 0,
+  cosmeticNotInLight.length > 0 ? `Missing from Light: ${cosmeticNotInLight.join(', ')}` : 'All cosmetic items appear in light');
+
+// 1e. Light is rough subset of Medium
+const mediumNames = new Set(presetMatchedNames.medium);
+const lightNotInMedium = [...lightNames].filter(n => !mediumNames.has(n));
+check('1. Item Selection', 'Light items are roughly subset of Medium items',
+  lightNotInMedium.length <= 3,
+  lightNotInMedium.length > 0 ? `Items in Light but not Medium (${lightNotInMedium.length}): ${lightNotInMedium.join(', ')}` : 'All light items appear in medium',
+  lightNotInMedium.length > 0 && lightNotInMedium.length <= 3);
+
+// ===== CATEGORY 2: Quantity Logic Checks =====
+
+function getQtyForItem(level, pattern) {
+  const r = presetResults[level].find(i => i.line_item.toLowerCase().includes(pattern.toLowerCase()));
+  return r ? r.qty : null;
+}
+
+function isIncluded(level, pattern) {
+  return presetResults[level].some(i => i.line_item.toLowerCase().includes(pattern.toLowerCase()));
+}
+
+// Electrical
+check('2. Quantity Logic', 'Light fixtures qty = rooms (7)',
+  getQtyForItem('cosmetic', 'light fixture') === ROOMS,
+  `Expected ${ROOMS}, got ${getQtyForItem('cosmetic', 'light fixture')}`);
+
+check('2. Quantity Logic', 'Recessed lighting qty = rooms*2 = 14 (heavy)',
+  getQtyForItem('heavy', 'recessed lighting') === ROOMS * 2,
+  `Expected ${ROOMS*2}, got ${getQtyForItem('heavy', 'recessed lighting')}`);
+
+check('2. Quantity Logic', 'Recessed lighting NOT in cosmetic/light',
+  !isIncluded('cosmetic', 'recessed lighting') && !isIncluded('light', 'recessed lighting'),
+  `Cosmetic: ${isIncluded('cosmetic','recessed lighting')}, Light: ${isIncluded('light','recessed lighting')}`);
+
+check('2. Quantity Logic', 'Ceiling fans qty = bedrooms = 3 (medium+)',
+  getQtyForItem('medium', 'ceiling fan') === BED,
+  `Expected ${BED}, got ${getQtyForItem('medium', 'ceiling fan')}`);
+
+check('2. Quantity Logic', 'Ceiling fans NOT in cosmetic/light',
+  !isIncluded('cosmetic', 'ceiling fan') && !isIncluded('light', 'ceiling fan'),
+  `Cosmetic: ${isIncluded('cosmetic','ceiling fan')}, Light: ${isIncluded('light','ceiling fan')}`);
+
+check('2. Quantity Logic', 'Smoke/CO detectors qty = rooms = 7',
+  getQtyForItem('light', 'smoke/co detector') === ROOMS,
+  `Expected ${ROOMS}, got ${getQtyForItem('light', 'smoke/co detector')}`);
+
+check('2. Quantity Logic', 'GFCI outlets qty = bath+1 = 3',
+  getQtyForItem('light', 'gfci outlet') === BATH + 1,
+  `Expected ${BATH+1}, got ${getQtyForItem('light', 'gfci outlet')}`);
+
+// Plumbing
+check('2. Quantity Logic', 'Faucets qty = bath+1 = 3',
+  getQtyForItem('light', 'faucet replacement') === BATH + 1,
+  `Expected ${BATH+1}, got ${getQtyForItem('light', 'faucet replacement')}`);
+
+check('2. Quantity Logic', 'Toilets qty = bathrooms = 2',
+  getQtyForItem('light', 'toilet replacement') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'toilet replacement')}`);
+
+check('2. Quantity Logic', 'Garbage disposal qty = 1',
+  getQtyForItem('light', 'garbage disposal') === 1,
+  `Expected 1, got ${getQtyForItem('light', 'garbage disposal')}`);
+
+check('2. Quantity Logic', 'Exhaust fans qty = bathrooms = 2',
+  getQtyForItem('light', 'exhaust fan') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'exhaust fan')}`);
+
+// Interior
+const doorQty = BED * 2 + BATH + 2; // 10
+check('2. Quantity Logic', `Interior doors qty = bed*2+bath+2 = ${doorQty}`,
+  getQtyForItem('medium', 'interior door') === doorQty,
+  `Expected ${doorQty}, got ${getQtyForItem('medium', 'interior door')}`);
+
+const cabinetPaintLF = Math.round(SF * 0.015); // 23
+check('2. Quantity Logic', `Cabinet painting qty = SF*0.015 = ${cabinetPaintLF} LF`,
+  getQtyForItem('light', 'cabinet painting') === cabinetPaintLF,
+  `Expected ${cabinetPaintLF}, got ${getQtyForItem('light', 'cabinet painting')}`);
+
+// Interior paint uses paintable SF
+const paintItem = presetResults.cosmetic.find(i => i.line_item.toLowerCase().includes('walls + trim + ceilings'));
+check('2. Quantity Logic', `Interior paint (walls+trim+ceilings) qty = paintableSF (~${PAINTABLE_SF})`,
+  paintItem && paintItem.qty === PAINTABLE_SF,
+  `Expected ~${PAINTABLE_SF}, got ${paintItem ? paintItem.qty : 'NOT FOUND'}`);
+
+check('2. Quantity Logic', 'Bathroom mirrors qty = bathrooms = 2',
+  getQtyForItem('light', 'bathroom mirror') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'bathroom mirror')}`);
+
+check('2. Quantity Logic', 'Vanity single qty = bathrooms = 2',
+  getQtyForItem('light', 'vanity + top (single)') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'vanity + top (single)')}`);
+
+// Flooring
+check('2. Quantity Logic', 'Cosmetic: only LVP checked, no other flooring types',
+  isIncluded('cosmetic', 'lvp') &&
+  !isIncluded('cosmetic', 'laminate') &&
+  !isIncluded('cosmetic', 'hardwood') &&
+  !isIncluded('cosmetic', 'tile — ceramic') &&
+  !isIncluded('cosmetic', 'carpet'),
+  'Checking LVP-only for cosmetic');
+
+check('2. Quantity Logic', 'Light: LVP + bathroom tile only',
+  isIncluded('light', 'lvp') &&
+  isIncluded('light', 'tile — bathroom floor') &&
+  !isIncluded('light', 'tile — ceramic') &&
+  !isIncluded('light', 'hardwood'),
+  'Checking LVP + bath tile for light');
+
+check('2. Quantity Logic', 'Bathroom floor tile qty = bathrooms = 2',
+  getQtyForItem('light', 'tile — bathroom floor') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'tile — bathroom floor')}`);
+
+check('2. Quantity Logic', 'No preset checks both LVP and hardwood',
+  presetLevels.every(level => !(isIncluded(level, 'lvp') && isIncluded(level, 'engineered hardwood'))),
+  presetLevels.filter(level => isIncluded(level, 'lvp') && isIncluded(level, 'engineered hardwood')).join(', '));
+
+// Kitchen
+check('2. Quantity Logic', 'Appliance package qty = 1',
+  getQtyForItem('cosmetic', 'appliance package') === 1,
+  `Expected 1, got ${getQtyForItem('cosmetic', 'appliance package')}`);
+
+check('2. Quantity Logic', 'Range hood qty = 1 (light)',
+  getQtyForItem('light', 'range hood') === 1,
+  `Expected 1, got ${getQtyForItem('light', 'range hood')}`);
+
+check('2. Quantity Logic', 'Kitchen sink qty = 1',
+  getQtyForItem('light', 'sink') === 1,
+  `Expected 1, got ${getQtyForItem('light', 'sink')}`);
+
+// Countertop uses SF (check unit, not qty=1)
+const counterItem = presetResults.medium.find(i => i.line_item.toLowerCase().includes('countertops'));
+check('2. Quantity Logic', 'Countertop uses per-SF pricing (not qty=1)',
+  counterItem && counterItem.unit === 'per SF',
+  counterItem ? `Unit: ${counterItem.unit}, qty: ${counterItem.qty}` : 'NOT FOUND');
+
+// Bathroom
+check('2. Quantity Logic', 'Tub/shower qty = bathrooms = 2',
+  getQtyForItem('light', 'tub/shower') === BATH,
+  `Expected ${BATH}, got ${getQtyForItem('light', 'tub/shower')}`);
+
+check('2. Quantity Logic', 'Full bathroom remodel NOT in any preset except maybe gut',
+  !isIncluded('cosmetic', 'full bathroom remodel') &&
+  !isIncluded('light', 'full bathroom remodel') &&
+  !isIncluded('medium', 'full bathroom remodel') &&
+  !isIncluded('heavy', 'full bathroom remodel'),
+  presetLevels.filter(l => isIncluded(l, 'full bathroom remodel')).join(', '));
+
+// Roofing (medium+)
+check('2. Quantity Logic', `Roof tear-off uses Roof SF = ${ROOF_SF}`,
+  (() => {
+    const item = presetResults.medium.find(i => i.line_item.toLowerCase().includes('tear-off'));
+    return item && item.qty === ROOF_SF;
+  })(),
+  (() => {
+    const item = presetResults.medium.find(i => i.line_item.toLowerCase().includes('tear-off'));
+    return item ? `Expected ${ROOF_SF}, got ${item.qty}` : 'NOT FOUND';
+  })());
+
+check('2. Quantity Logic', `Shingles use Roof SF = ${ROOF_SF}`,
+  (() => {
+    const item = presetResults.medium.find(i => i.line_item.toLowerCase().includes('shingles'));
+    return item && item.qty === ROOF_SF;
+  })(),
+  (() => {
+    const item = presetResults.medium.find(i => i.line_item.toLowerCase().includes('shingles'));
+    return item ? `Expected ${ROOF_SF}, got ${item.qty}` : 'NOT FOUND';
+  })());
+
+// Exterior paint uses wall SF
+check('2. Quantity Logic', `Exterior paint uses wall SF (~${WALL_SF})`,
+  (() => {
+    const item = presetResults.heavy.find(i => i.line_item.toLowerCase().includes('exterior paint'));
+    return item && item.qty === WALL_SF;
+  })(),
+  (() => {
+    const item = presetResults.heavy.find(i => i.line_item.toLowerCase().includes('exterior paint'));
+    return item ? `Expected ${WALL_SF}, got ${item.qty}` : 'NOT FOUND';
+  })());
+
+// Siding uses wall SF
+check('2. Quantity Logic', `Siding uses wall SF (~${WALL_SF})`,
+  (() => {
+    const item = presetResults.heavy.find(i => i.line_item.toLowerCase().includes('siding'));
+    return item && item.qty === WALL_SF;
+  })(),
+  (() => {
+    const item = presetResults.heavy.find(i => i.line_item.toLowerCase().includes('siding'));
+    return item ? `Expected ${WALL_SF}, got ${item.qty}` : 'NOT FOUND';
+  })());
+
+// Landscaping
+check('2. Quantity Logic', 'Yard cleanup qty = 1 (lump sum)',
+  getQtyForItem('cosmetic', 'yard cleanup') === 1,
+  `Expected 1, got ${getQtyForItem('cosmetic', 'yard cleanup')}`);
+
+check('2. Quantity Logic', 'Tree removal qty = 2 (heavy/gut only)',
+  !isIncluded('cosmetic', 'tree removal') &&
+  !isIncluded('light', 'tree removal') &&
+  !isIncluded('medium', 'tree removal') &&
+  getQtyForItem('gut', 'tree removal') === 2,
+  `Gut tree removal qty: ${getQtyForItem('gut', 'tree removal')}`);
+
+// Sod uses SF
+const sodItem = presetResults.heavy.find(i => i.line_item.toLowerCase().includes('sod'));
+check('2. Quantity Logic', 'Sod installation uses SF-based qty',
+  sodItem && sodItem.qty === SF,
+  sodItem ? `Unit: ${sodItem.unit}, qty: ${sodItem.qty}` : 'NOT FOUND in heavy');
+
+// Misc
+check('2. Quantity Logic', 'Cosmetic: ONLY general cleaning (no termite, mold, survey)',
+  isIncluded('cosmetic', 'general cleaning') &&
+  !isIncluded('cosmetic', 'termite') &&
+  !isIncluded('cosmetic', 'mold') &&
+  !isIncluded('cosmetic', 'survey'),
+  '');
+
+check('2. Quantity Logic', 'Light: general cleaning + dumpster only',
+  isIncluded('light', 'general cleaning') &&
+  isIncluded('light', 'dumpster') &&
+  !isIncluded('light', 'termite') &&
+  !isIncluded('light', 'mold'),
+  '');
+
+check('2. Quantity Logic', 'Medium: cleaning + termite (no mold)',
+  isIncluded('medium', 'general cleaning') &&
+  isIncluded('medium', 'termite') &&
+  !isIncluded('medium', 'mold'),
+  '');
+
+check('2. Quantity Logic', 'Heavy: cleaning + termite (no mold)',
+  isIncluded('heavy', 'general cleaning') &&
+  isIncluded('heavy', 'termite') &&
+  !isIncluded('heavy', 'mold'),
+  '');
+
+check('2. Quantity Logic', 'Gut: cleaning + termite + mold',
+  isIncluded('gut', 'general cleaning') &&
+  isIncluded('gut', 'termite') &&
+  isIncluded('gut', 'mold'),
+  '');
+
+// Admin (medium+)
+check('2. Quantity Logic', 'Admin items in medium+: permits, insurance, holding, appraisal',
+  isIncluded('medium', 'building permits') &&
+  isIncluded('medium', 'insurance') &&
+  isIncluded('medium', 'holding costs') &&
+  isIncluded('medium', 'appraisal'),
+  '');
+
+check('2. Quantity Logic', 'Admin items NOT in cosmetic/light',
+  !isIncluded('cosmetic', 'building permits') &&
+  !isIncluded('cosmetic', 'insurance') &&
+  !isIncluded('light', 'building permits') &&
+  !isIncluded('light', 'insurance'),
+  '');
+
+// ===== CATEGORY 3: Tier Consistency Checks =====
+const expectedTiers = {
+  cosmetic: 'contractor',
+  light: 'contractor',
+  medium: 'mid_range',
+  heavy: 'mid_range',
+  gut: 'high_end'
+};
+
+presetLevels.forEach(level => {
+  const expected = expectedTiers[level];
+  const items = presetResults[level];
+  const wrongTier = items.filter(i => i.requestedTier !== expected);
+  check('3. Tier Consistency', `${level}: all items request '${expected}' tier`,
+    wrongTier.length === 0,
+    wrongTier.length > 0 ? `${wrongTier.length} items with wrong tier: ${wrongTier.slice(0,5).map(i => `${i.line_item}(${i.requestedTier})`).join(', ')}` : `All ${items.length} items use ${expected}`);
+});
+
+// Tier fallback check
+presetLevels.forEach(level => {
+  const items = presetResults[level];
+  const noFallback = items.filter(i => {
+    const d = COST_DATA.find(c => c.line_item === i.line_item);
+    return d && d[i.requestedTier] === null && d[i.tier] === null;
+  });
+  check('3. Tier Consistency', `${level}: fallback tier available when preferred is null`,
+    noFallback.length === 0,
+    noFallback.length > 0 ? noFallback.map(i => i.line_item).join(', ') : 'All fallbacks valid');
+});
+
+// ===== CATEGORY 4: Cost Sanity Checks =====
+const costRanges = {
+  cosmetic: [10, 20],
+  light: [15, 35],
+  medium: [50, 85],
+  heavy: [100, 150],
+  gut: [200, 300]
+};
+
+const presetTotals = {};
+presetLevels.forEach(level => {
+  const items = presetResults[level];
+  const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0);
+  const contingency = subtotal * 0.10;
+  const grand = subtotal + contingency;
+  presetTotals[level] = grand;
+  const perSF = grand / SF;
+  const [lo, hi] = costRanges[level];
+  check('4. Cost Sanity', `${level}: $${lo}-$${hi}/SF range`,
+    perSF >= lo && perSF <= hi,
+    `$${Math.round(perSF)}/SF = $${Math.round(grand).toLocaleString()} total (subtotal $${Math.round(subtotal).toLocaleString()} + 10% contingency)`);
+});
+
+// Each level > previous
+for (let i = 1; i < presetLevels.length; i++) {
+  const prev = presetLevels[i-1];
+  const curr = presetLevels[i];
+  check('4. Cost Sanity', `${curr} total > ${prev} total`,
+    presetTotals[curr] > presetTotals[prev],
+    `${prev}: $${Math.round(presetTotals[prev]).toLocaleString()}, ${curr}: $${Math.round(presetTotals[curr]).toLocaleString()}`);
+}
+
+// ===== CATEGORY 5: Edge Case Checks =====
+
+// 5a. Studio: 0 bed, 1 bath, 800 SF
+const studioConfig = [800, 0, 1, 1];
+let studioError = null;
+try {
+  presetLevels.forEach(level => {
+    const result = simulatePreset(level, ...studioConfig);
+    result.forEach(item => {
+      if (isNaN(item.qty) || !isFinite(item.qty) || item.qty < 0) {
+        throw new Error(`${level}/${item.line_item}: qty=${item.qty}`);
+      }
+      if (isNaN(item.lineTotal) || !isFinite(item.lineTotal)) {
+        throw new Error(`${level}/${item.line_item}: total=${item.lineTotal}`);
+      }
+    });
+  });
+} catch(e) { studioError = e.message; }
+check('5. Edge Cases', '800 SF studio (0 bed, 1 bath): no division by zero',
+  studioError === null,
+  studioError || 'All calculations valid');
+
+// 5b. Large house: 4000 SF, 5 bed, 4 bath, 2 story
+const largeConfig = [4000, 5, 4, 2];
+const largeMedium = simulatePreset('medium', ...largeConfig);
+const largeLightFixtures = largeMedium.find(i => i.line_item.toLowerCase().includes('light fixture'));
+const largeRooms = 5 + 4 + 2; // 11
+check('5. Edge Cases', `4000 SF (5/4, 2 story): light fixtures = rooms (${largeRooms})`,
+  largeLightFixtures && largeLightFixtures.qty === largeRooms,
+  largeLightFixtures ? `Expected ${largeRooms}, got ${largeLightFixtures.qty}` : 'NOT FOUND');
+
+// Roof SF halves with 2 stories
+const largeRoofSF = Math.round(4000 * 1.15 / 2); // 2300
+const largeRoof = largeMedium.find(i => i.line_item.toLowerCase().includes('tear-off'));
+check('5. Edge Cases', `2-story: roof SF = 4000*1.15/2 = ${largeRoofSF}`,
+  largeRoof && largeRoof.qty === largeRoofSF,
+  largeRoof ? `Expected ${largeRoofSF}, got ${largeRoof.qty}` : 'NOT FOUND');
+
+// Door count increases with more bedrooms
+const largeDoors = largeMedium.find(i => i.line_item.toLowerCase().includes('interior door'));
+const largeDoorQty = 5*2 + 4 + 2; // 16
+check('5. Edge Cases', `5 bed/4 bath: interior doors = ${largeDoorQty}`,
+  largeDoors && largeDoors.qty === largeDoorQty,
+  largeDoors ? `Expected ${largeDoorQty}, got ${largeDoors.qty}` : 'NOT FOUND');
+
+// Studio door count
+const studioMedium = simulatePreset('medium', ...studioConfig);
+const studioDoors = studioMedium.find(i => i.line_item.toLowerCase().includes('interior door'));
+const studioDoorQty = 0*2 + 1 + 2; // 3
+check('5. Edge Cases', `Studio (0 bed, 1 bath): interior doors = ${studioDoorQty}`,
+  studioDoors && studioDoors.qty === studioDoorQty,
+  studioDoors ? `Expected ${studioDoorQty}, got ${studioDoors.qty}` : 'NOT FOUND');
+
+// ==================== RENDER RESULTS ====================
+document.getElementById('runDate').textContent = new Date().toLocaleString();
+
+const total = passCount + failCount + warnCount;
+const summaryBox = document.getElementById('summaryBox');
+const allPass = failCount === 0;
+summaryBox.innerHTML = `
+  <div class="big ${allPass ? 'pass' : 'fail'}">${passCount}/${total} checks passed</div>
+  <div style="margin-top:8px;font-size:.9rem">
+    <span class="pass">${passCount} passed</span> &middot;
+    <span class="fail">${failCount} failed</span> &middot;
+    <span class="warn">${warnCount} warnings</span>
+  </div>
+  <div style="margin-top:12px">
+    <strong>Preset totals (1500 SF, 3/2, 1 story, 10% contingency, no tax, national avg):</strong><br>
+    ${presetLevels.map(l => `${l.charAt(0).toUpperCase()+l.slice(1)}: <strong>$${Math.round(presetTotals[l]).toLocaleString()}</strong> ($${Math.round(presetTotals[l]/SF)}/SF)`).join(' &middot; ')}
+  </div>
+  <div style="margin-top:8px;font-size:.82rem;color:#94a3b8">
+    <strong>Item counts:</strong> ${presetLevels.map(l => `${l}: ${presetResults[l].length}`).join(', ')}
+  </div>
+`;
+
+// Group checks by category
+const categories = [...new Set(checks.map(c => c.category))];
+const resultsDiv = document.getElementById('results');
+let html = '';
+
+categories.forEach(cat => {
+  const catChecks = checks.filter(c => c.category === cat);
+  const catFails = catChecks.filter(c => c.status === 'FAIL').length;
+  const catWarns = catChecks.filter(c => c.status === 'WARN').length;
+  html += `<h2>${cat} ${catFails > 0 ? `<span class="fail">(${catFails} failed)</span>` : catWarns > 0 ? `<span class="warn">(${catWarns} warnings)</span>` : '<span class="pass">(all pass)</span>'}</h2>`;
+  html += '<div class="preset-section">';
+  catChecks.forEach(c => {
+    const cls = c.status === 'PASS' ? 'pass-bg' : c.status === 'WARN' ? 'warn-bg' : 'fail-bg';
+    const icon = c.status === 'PASS' ? '&#10003;' : c.status === 'WARN' ? '&#9888;' : '&#10007;';
+    const colorCls = c.status === 'PASS' ? 'pass' : c.status === 'WARN' ? 'warn' : 'fail';
+    html += `<div class="check ${cls}">
+      <span class="${colorCls}">${icon}</span> ${c.name}
+      ${c.detail ? `<div class="detail">${c.detail}</div>` : ''}
+    </div>`;
+  });
+  html += '</div>';
+});
+
+// Add detailed preset item tables
+html += '<h2>Appendix: Preset Item Detail</h2>';
+presetLevels.forEach(level => {
+  const items = presetResults[level];
+  const total = items.reduce((s, i) => s + i.lineTotal, 0);
+  html += `<h3>${level.charAt(0).toUpperCase()+level.slice(1)} (${items.length} items, subtotal $${Math.round(total).toLocaleString()})</h3>`;
+  html += `<table class="cost-table"><thead><tr><th>Line Item</th><th>Category</th><th>Tier</th><th>Qty</th><th>Unit Cost</th><th>Line Total</th></tr></thead><tbody>`;
+  items.forEach(i => {
+    html += `<tr>
+      <td>${i.line_item}</td>
+      <td style="color:#94a3b8;font-size:.72rem">${i.category}</td>
+      <td>${i.tier}${i.tier !== i.requestedTier ? ' <span class="warn">(fallback)</span>' : ''}</td>
+      <td style="text-align:right">${i.qty}</td>
+      <td style="text-align:right">$${i.unitCost.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})}</td>
+      <td style="text-align:right;font-weight:600">$${Math.round(i.lineTotal).toLocaleString()}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+});
+
+resultsDiv.innerHTML = html;
+
+// ==================== EXPORT RESULTS FOR MD REPORT ====================
+window.QA_RESULTS = { checks, passCount, failCount, warnCount, presetTotals, presetResults, itemCounts };
+</script>
+</body>
+</html>

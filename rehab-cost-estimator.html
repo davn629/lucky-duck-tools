@@ -793,6 +793,9 @@ function getAutoQty(item) {
   // Exterior paint & siding: exterior wall surface area
   if (cat === 'Exterior' && unit.includes('sf') && (name.includes('paint') || name.includes('siding'))) return wallOnlySF;
 
+  // Landscaping: sod uses living SF (yard ≈ floor area as rough estimate)
+  if (cat === 'Landscaping & Exterior Cleanup' && unit.includes('sf')) return sf;
+
   // Default: 1 for each/lump sum, 0 for per SF/LF
   if (unit === 'each' || unit === 'lump sum') return 1;
   return 0;
@@ -1135,7 +1138,7 @@ const PRESET_ITEMS = {
     // Kitchen
     { match: 'cabinet refacing', tier: 'contractor' },
     { match: 'countertops — laminate', tier: 'contractor' },
-    { match: 'backsplash — subway tile', tier: 'contractor' },
+    { match: 'backsplash — ceramic subway', tier: 'contractor' },
     { match: 'sink (stainless', tier: 'contractor' },
     { match: 'appliance package', tier: 'contractor' },
     { match: 'range hood', tier: 'contractor' },
@@ -1172,7 +1175,7 @@ const PRESET_ITEMS = {
     { match: 'exterior paint', tier: 'mid_range' },
     { match: 'soffit', tier: 'mid_range' },
     // Windows — standard replacement
-    { match: 'window — vinyl double-hung', tier: 'mid_range' },
+    { match: 'window replacement — vinyl double-hung', tier: 'mid_range' },
     { match: 'entry door (steel)', tier: 'mid_range' },
     { match: 'interior door — solid core', tier: 'mid_range' },
     // Electrical
@@ -1203,7 +1206,7 @@ const PRESET_ITEMS = {
     // Kitchen
     { match: 'cabinets — semi-custom', tier: 'mid_range' },
     { match: 'countertops — quartz', tier: 'mid_range' },
-    { match: 'backsplash — subway tile', tier: 'mid_range' },
+    { match: 'backsplash — ceramic subway', tier: 'mid_range' },
     { match: 'sink (stainless', tier: 'mid_range' },
     { match: 'appliance package', tier: 'mid_range' },
     { match: 'range hood', tier: 'mid_range' },
@@ -1244,11 +1247,11 @@ const PRESET_ITEMS = {
     { match: 'soffit', tier: 'mid_range' },
     { match: 'concrete flatwork', tier: 'mid_range' },
     // Windows
-    { match: 'window — vinyl double-hung', tier: 'mid_range' },
+    { match: 'window replacement — vinyl double-hung', tier: 'mid_range' },
     { match: 'sliding glass door', tier: 'mid_range' },
     { match: 'entry door (fiberglass', tier: 'mid_range' },
     { match: 'interior door — solid core', tier: 'mid_range' },
-    { match: 'garage door (single)', tier: 'mid_range' },
+    { match: 'garage door (single,', tier: 'mid_range' },
     { match: 'garage door opener', tier: 'mid_range' },
     // Electrical — full
     { match: 'panel upgrade', tier: 'mid_range' },
@@ -1270,13 +1273,13 @@ const PRESET_ITEMS = {
     { match: 'ductwork', tier: 'mid_range' },
     { match: 'thermostat', tier: 'mid_range' },
     // Insulation
-    { match: 'attic (blown-in)', tier: 'mid_range' },
-    { match: 'wall (blown-in', tier: 'mid_range' },
+    { match: 'attic insulation', tier: 'mid_range' },
+    { match: 'wall insulation', tier: 'mid_range' },
     // Drywall — full
     { match: 'drywall — hang, tape, finish', tier: 'mid_range' },
     { match: 'texture removal', tier: 'mid_range' },
     // Paint
-    { match: 'stain-blocking primer', tier: 'mid_range' },
+    { match: 'primer (stain', tier: 'mid_range' },
     { match: 'interior paint — walls + trim + ceilings', tier: 'mid_range' },
     { match: 'cabinet painting', tier: 'mid_range' },
     // Flooring
@@ -1287,7 +1290,7 @@ const PRESET_ITEMS = {
     // Kitchen
     { match: 'cabinets — semi-custom', tier: 'mid_range' },
     { match: 'countertops — quartz', tier: 'mid_range' },
-    { match: 'backsplash — subway tile', tier: 'mid_range' },
+    { match: 'backsplash — ceramic subway', tier: 'mid_range' },
     { match: 'sink (stainless', tier: 'mid_range' },
     { match: 'appliance package', tier: 'mid_range' },
     { match: 'range hood', tier: 'mid_range' },
@@ -1339,11 +1342,11 @@ const PRESET_ITEMS = {
     { match: 'concrete flatwork', tier: 'high_end' },
     { match: 'fencing', tier: 'high_end' },
     // Windows — all
-    { match: 'window — vinyl double-hung', tier: 'high_end' },
+    { match: 'window replacement — vinyl double-hung', tier: 'high_end' },
     { match: 'sliding glass door', tier: 'high_end' },
     { match: 'entry door (fiberglass', tier: 'high_end' },
     { match: 'interior door — solid core', tier: 'high_end' },
-    { match: 'garage door (double)', tier: 'high_end' },
+    { match: 'garage door (double,', tier: 'high_end' },
     { match: 'garage door opener', tier: 'high_end' },
     // Electrical — full
     { match: 'panel upgrade', tier: 'high_end' },
@@ -1367,14 +1370,14 @@ const PRESET_ITEMS = {
     { match: 'ductwork', tier: 'high_end' },
     { match: 'thermostat', tier: 'high_end' },
     // Insulation — full
-    { match: 'attic (blown-in)', tier: 'high_end' },
-    { match: 'wall (blown-in', tier: 'high_end' },
+    { match: 'attic insulation', tier: 'high_end' },
+    { match: 'wall insulation', tier: 'high_end' },
     { match: 'spray foam', tier: 'high_end' },
     // Drywall — full
     { match: 'drywall — hang, tape, finish', tier: 'high_end' },
     { match: 'texture removal', tier: 'high_end' },
     // Paint
-    { match: 'stain-blocking primer', tier: 'high_end' },
+    { match: 'primer (stain', tier: 'high_end' },
     { match: 'interior paint — walls + trim + ceilings', tier: 'high_end' },
     { match: 'cabinet painting', tier: 'high_end' },
     // Flooring
