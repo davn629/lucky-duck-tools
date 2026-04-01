@@ -934,81 +934,406 @@ function recalcAll() {
   }
 }
 
-// ========== PRESET LOGIC ==========
-const PRESETS = {
-  cosmetic: {
-    tier: 'contractor',
-    categories: ['Interior Paint','Flooring','Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
-    items: ['light fixture replacement','appliance package','faucet replacement','general cleaning']
-  },
-  light: {
-    tier: 'contractor',
-    categories: ['Interior Paint','Flooring','Kitchen','Bathroom','Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
-    items: ['light fixture replacement','faucet replacement','toilet replacement','general cleaning','dumpster rental']
-  },
-  medium: {
-    tier: 'mid_range',
-    categories: ['Demolition & Site Prep','Roofing','Exterior','Windows & Doors','Electrical','Plumbing','HVAC',
-      'Drywall & Interior Walls','Interior Paint','Flooring','Kitchen','Bathroom',
-      'Landscaping & Exterior Cleanup','Miscellaneous & Contingency'],
-    exclude_categories: ['Structural & Framing','Insulation']
-  },
-  heavy: {
-    tier: 'mid_range',
-    categories: CATEGORIES.filter(c => c !== 'Structural & Framing'),
-    all: true
-  },
-  gut: {
-    tier: 'high_end',
-    categories: CATEGORIES,
-    all: true
-  }
+// ========== SMART PRESET LOGIC ==========
+// Each preset explicitly defines which items to include and how to calculate quantities.
+// Uses property info (SF, bed, bath, stories) for contextual quantities.
+
+function getPresetQty(name, unit, cat) {
+  const sf = num('propSF');
+  const bed = num('propBed');
+  const bath = num('propBath');
+  const stories = Math.max(1, num('propStories'));
+  const rooms = bed + bath + 2; // bedrooms + bathrooms + kitchen + living
+  const n = name.toLowerCase();
+
+  // Fixtures: per room or per bathroom
+  if (n.includes('light fixture')) return rooms;
+  if (n.includes('recessed lighting')) return rooms * 2;
+  if (n.includes('ceiling fan')) return bed; // bedrooms only
+  if (n.includes('smoke') || n.includes('co detector')) return Math.max(rooms, 1);
+  if (n.includes('gfci')) return bath + 1; // bathrooms + kitchen
+  if (n.includes('faucet')) return bath + 1; // bathroom faucets + kitchen
+  if (n.includes('toilet')) return bath;
+  if (n.includes('garbage disposal')) return 1;
+  if (n.includes('exhaust fan')) return bath;
+  if (n.includes('vanity') && n.includes('single')) return bath;
+  if (n.includes('vanity') && n.includes('double')) return Math.max(1, Math.floor(bath / 2));
+  if (n.includes('bathroom mirror')) return bath;
+  if (n.includes('interior door') && n.includes('hollow')) return bed * 2 + bath + 2;
+  if (n.includes('interior door') && n.includes('solid')) return bed * 2 + bath + 2;
+  if (n.includes('window') && unit === 'each') return Math.round(rooms * 1.5);
+  if (n.includes('cabinet painting')) return Math.round(sf * 0.015); // ~15 LF per 1000 SF kitchen
+  if (n.includes('bathroom floor')) return bath;
+  if (n.includes('tile') && n.includes('bathroom')) return bath;
+  if (n.includes('tub') || n.includes('shower')) return bath;
+  if (n.includes('full bathroom remodel')) return bath;
+  if (n.includes('sink') && cat === 'Kitchen') return 1;
+  if (n.includes('range hood')) return 1;
+  if (n.includes('appliance package')) return 1;
+  if (n.includes('thermostat')) return stories;
+  if (n.includes('water heater')) return 1;
+  if (n.includes('entry door')) return 1;
+  if (n.includes('garage door opener')) return 1;
+  if (n.includes('garage door') && n.includes('single')) return 1;
+  if (n.includes('garage door') && n.includes('double')) return 1;
+  if (n.includes('dumpster')) return 2;
+  if (n.includes('panel upgrade')) return 1;
+  if (n.includes('furnace') || n.includes('a/c condenser') || n.includes('full hvac')) return 1;
+  if (n.includes('mini-split')) return 1;
+  if (n.includes('tree removal')) return 2;
+  if (n.includes('appraisal')) return 1;
+
+  // Per-SF items handled by getAutoQty
+  return null; // signal to use getAutoQty
+}
+
+// Preset definitions: explicit item patterns per level
+// Each entry: { match: string to find in line_item, tier: preferred tier }
+const PRESET_ITEMS = {
+  cosmetic: [
+    // Paint
+    { match: 'interior paint — walls + trim + ceilings', tier: 'contractor' },
+    // Flooring — one main flooring type
+    { match: 'lvp (luxury vinyl plank)', tier: 'contractor' },
+    // Fixtures
+    { match: 'light fixture', tier: 'contractor' },
+    { match: 'faucet replacement', tier: 'contractor' },
+    // Appliances
+    { match: 'appliance package', tier: 'contractor' },
+    // Landscaping
+    { match: 'yard cleanup', tier: 'contractor' },
+    // Misc
+    { match: 'general cleaning', tier: 'contractor' },
+  ],
+  light: [
+    // Paint
+    { match: 'interior paint — walls + trim + ceilings', tier: 'contractor' },
+    { match: 'cabinet painting', tier: 'contractor' },
+    // Flooring
+    { match: 'lvp (luxury vinyl plank)', tier: 'contractor' },
+    { match: 'tile — bathroom floor', tier: 'contractor' },
+    // Kitchen
+    { match: 'cabinet refacing', tier: 'contractor' },
+    { match: 'countertops — laminate', tier: 'contractor' },
+    { match: 'backsplash — subway tile', tier: 'contractor' },
+    { match: 'sink (stainless', tier: 'contractor' },
+    { match: 'appliance package', tier: 'contractor' },
+    { match: 'range hood', tier: 'contractor' },
+    // Bathroom
+    { match: 'tub/shower — fiberglass', tier: 'contractor' },
+    { match: 'vanity + top (single)', tier: 'contractor' },
+    { match: 'toilet replacement', tier: 'contractor' },
+    { match: 'faucet replacement', tier: 'contractor' },
+    { match: 'bathroom mirror', tier: 'contractor' },
+    { match: 'exhaust fan', tier: 'contractor' },
+    // Electrical
+    { match: 'light fixture', tier: 'contractor' },
+    { match: 'gfci outlet', tier: 'contractor' },
+    { match: 'smoke/co detector', tier: 'contractor' },
+    // Plumbing
+    { match: 'garbage disposal', tier: 'contractor' },
+    // Landscaping
+    { match: 'yard cleanup', tier: 'contractor' },
+    { match: 'basic landscaping', tier: 'contractor' },
+    // Misc
+    { match: 'general cleaning', tier: 'contractor' },
+    { match: 'dumpster rental', tier: 'contractor' },
+  ],
+  medium: [
+    // Demo
+    { match: 'dumpster rental', tier: 'mid_range' },
+    { match: 'permit fees', tier: 'mid_range' },
+    // Roofing
+    { match: 'tear-off existing', tier: 'mid_range' },
+    { match: 'asphalt shingles (architectural)', tier: 'mid_range' },
+    { match: 'flashing', tier: 'mid_range' },
+    { match: 'gutters', tier: 'mid_range' },
+    // Exterior
+    { match: 'exterior paint', tier: 'mid_range' },
+    { match: 'soffit', tier: 'mid_range' },
+    // Windows — standard replacement
+    { match: 'window — vinyl double-hung', tier: 'mid_range' },
+    { match: 'entry door (steel)', tier: 'mid_range' },
+    { match: 'interior door — solid core', tier: 'mid_range' },
+    // Electrical
+    { match: 'panel upgrade', tier: 'mid_range' },
+    { match: 'add circuits', tier: 'mid_range' },
+    { match: 'gfci outlet', tier: 'mid_range' },
+    { match: 'light fixture', tier: 'mid_range' },
+    { match: 'ceiling fan', tier: 'mid_range' },
+    { match: 'smoke/co detector', tier: 'mid_range' },
+    // Plumbing
+    { match: 'water heater — 40', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'garbage disposal', tier: 'mid_range' },
+    // HVAC
+    { match: 'a/c condenser', tier: 'mid_range' },
+    { match: 'thermostat', tier: 'mid_range' },
+    // Drywall
+    { match: 'drywall — hang, tape, finish', tier: 'mid_range' },
+    { match: 'drywall patch', tier: 'mid_range' },
+    // Paint
+    { match: 'interior paint — walls + trim + ceilings', tier: 'mid_range' },
+    { match: 'cabinet painting', tier: 'mid_range' },
+    // Flooring
+    { match: 'flooring removal', tier: 'mid_range' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'mid_range' },
+    { match: 'tile — bathroom floor', tier: 'mid_range' },
+    // Kitchen
+    { match: 'cabinets — semi-custom', tier: 'mid_range' },
+    { match: 'countertops — quartz', tier: 'mid_range' },
+    { match: 'backsplash — subway tile', tier: 'mid_range' },
+    { match: 'sink (stainless', tier: 'mid_range' },
+    { match: 'appliance package', tier: 'mid_range' },
+    { match: 'range hood', tier: 'mid_range' },
+    // Bathroom
+    { match: 'tub/shower — tile surround', tier: 'mid_range' },
+    { match: 'vanity + top (single)', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'bathroom mirror', tier: 'mid_range' },
+    { match: 'exhaust fan', tier: 'mid_range' },
+    // Landscaping
+    { match: 'yard cleanup', tier: 'mid_range' },
+    { match: 'basic landscaping', tier: 'mid_range' },
+    // Admin
+    { match: 'building permits', tier: 'mid_range' },
+    { match: 'insurance (builder', tier: 'mid_range' },
+    { match: 'holding costs', tier: 'mid_range' },
+    { match: 'appraisal', tier: 'mid_range' },
+    // Misc
+    { match: 'general cleaning', tier: 'mid_range' },
+    { match: 'termite treatment', tier: 'mid_range' },
+  ],
+  heavy: [
+    // Everything in medium PLUS structural, insulation, full systems
+    // Demo
+    { match: 'general demolition', tier: 'mid_range' },
+    { match: 'dumpster rental', tier: 'mid_range' },
+    { match: 'hazardous material', tier: 'mid_range' },
+    { match: 'permit fees', tier: 'mid_range' },
+    // Roofing
+    { match: 'tear-off existing', tier: 'mid_range' },
+    { match: 'asphalt shingles (architectural)', tier: 'mid_range' },
+    { match: 'decking repair', tier: 'mid_range' },
+    { match: 'flashing', tier: 'mid_range' },
+    { match: 'gutters', tier: 'mid_range' },
+    // Exterior
+    { match: 'siding — hardie', tier: 'mid_range' },
+    { match: 'exterior paint', tier: 'mid_range' },
+    { match: 'soffit', tier: 'mid_range' },
+    { match: 'concrete flatwork', tier: 'mid_range' },
+    // Windows
+    { match: 'window — vinyl double-hung', tier: 'mid_range' },
+    { match: 'sliding glass door', tier: 'mid_range' },
+    { match: 'entry door (fiberglass', tier: 'mid_range' },
+    { match: 'interior door — solid core', tier: 'mid_range' },
+    { match: 'garage door (single)', tier: 'mid_range' },
+    { match: 'garage door opener', tier: 'mid_range' },
+    // Electrical — full
+    { match: 'panel upgrade', tier: 'mid_range' },
+    { match: 'full rewire', tier: 'mid_range' },
+    { match: 'add circuits', tier: 'mid_range' },
+    { match: 'gfci outlet', tier: 'mid_range' },
+    { match: 'light fixture', tier: 'mid_range' },
+    { match: 'recessed lighting', tier: 'mid_range' },
+    { match: 'ceiling fan', tier: 'mid_range' },
+    { match: 'smoke/co detector', tier: 'mid_range' },
+    // Plumbing — full
+    { match: 'water heater — 50', tier: 'mid_range' },
+    { match: 'full re-pipe', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'garbage disposal', tier: 'mid_range' },
+    // HVAC — full system
+    { match: 'full hvac system', tier: 'mid_range' },
+    { match: 'ductwork', tier: 'mid_range' },
+    { match: 'thermostat', tier: 'mid_range' },
+    // Insulation
+    { match: 'attic (blown-in)', tier: 'mid_range' },
+    { match: 'wall (blown-in', tier: 'mid_range' },
+    // Drywall — full
+    { match: 'drywall — hang, tape, finish', tier: 'mid_range' },
+    { match: 'texture removal', tier: 'mid_range' },
+    // Paint
+    { match: 'stain-blocking primer', tier: 'mid_range' },
+    { match: 'interior paint — walls + trim + ceilings', tier: 'mid_range' },
+    { match: 'cabinet painting', tier: 'mid_range' },
+    // Flooring
+    { match: 'flooring removal', tier: 'mid_range' },
+    { match: 'lvp (luxury vinyl plank)', tier: 'mid_range' },
+    { match: 'tile — ceramic', tier: 'mid_range' },
+    { match: 'tile — bathroom floor', tier: 'mid_range' },
+    // Kitchen
+    { match: 'cabinets — semi-custom', tier: 'mid_range' },
+    { match: 'countertops — quartz', tier: 'mid_range' },
+    { match: 'backsplash — subway tile', tier: 'mid_range' },
+    { match: 'sink (stainless', tier: 'mid_range' },
+    { match: 'appliance package', tier: 'mid_range' },
+    { match: 'range hood', tier: 'mid_range' },
+    // Bathroom
+    { match: 'tub/shower — tile surround', tier: 'mid_range' },
+    { match: 'vanity + top (single)', tier: 'mid_range' },
+    { match: 'vanity + top (double)', tier: 'mid_range' },
+    { match: 'toilet replacement', tier: 'mid_range' },
+    { match: 'faucet replacement', tier: 'mid_range' },
+    { match: 'bathroom mirror', tier: 'mid_range' },
+    { match: 'exhaust fan', tier: 'mid_range' },
+    // Landscaping
+    { match: 'yard cleanup', tier: 'mid_range' },
+    { match: 'sod installation', tier: 'mid_range' },
+    { match: 'basic landscaping', tier: 'mid_range' },
+    // Admin
+    { match: 'building permits', tier: 'mid_range' },
+    { match: 'structural engineering', tier: 'mid_range' },
+    { match: 'insurance (builder', tier: 'mid_range' },
+    { match: 'holding costs', tier: 'mid_range' },
+    { match: 'appraisal', tier: 'mid_range' },
+    { match: 'closing costs', tier: 'mid_range' },
+    // Misc
+    { match: 'general cleaning', tier: 'mid_range' },
+    { match: 'termite treatment', tier: 'mid_range' },
+  ],
+  gut: [
+    // Demo — full
+    { match: 'general demolition', tier: 'high_end' },
+    { match: 'dumpster rental', tier: 'high_end' },
+    { match: 'hazardous material', tier: 'high_end' },
+    { match: 'permit fees', tier: 'high_end' },
+    // Structural
+    { match: 'foundation repair (crack', tier: 'high_end' },
+    { match: 'framing repair', tier: 'high_end' },
+    { match: 'structural beam', tier: 'high_end' },
+    { match: 'subfloor replacement', tier: 'high_end' },
+    // Roofing — full
+    { match: 'tear-off existing', tier: 'high_end' },
+    { match: 'asphalt shingles (architectural)', tier: 'high_end' },
+    { match: 'decking repair', tier: 'high_end' },
+    { match: 'flashing', tier: 'high_end' },
+    { match: 'gutters', tier: 'high_end' },
+    // Exterior — full
+    { match: 'siding — hardie', tier: 'high_end' },
+    { match: 'exterior paint', tier: 'high_end' },
+    { match: 'soffit', tier: 'high_end' },
+    { match: 'deck/porch repair', tier: 'high_end' },
+    { match: 'concrete flatwork', tier: 'high_end' },
+    { match: 'fencing', tier: 'high_end' },
+    // Windows — all
+    { match: 'window — vinyl double-hung', tier: 'high_end' },
+    { match: 'sliding glass door', tier: 'high_end' },
+    { match: 'entry door (fiberglass', tier: 'high_end' },
+    { match: 'interior door — solid core', tier: 'high_end' },
+    { match: 'garage door (double)', tier: 'high_end' },
+    { match: 'garage door opener', tier: 'high_end' },
+    // Electrical — full
+    { match: 'panel upgrade', tier: 'high_end' },
+    { match: 'full rewire', tier: 'high_end' },
+    { match: 'add circuits', tier: 'high_end' },
+    { match: 'gfci outlet', tier: 'high_end' },
+    { match: 'light fixture', tier: 'high_end' },
+    { match: 'recessed lighting', tier: 'high_end' },
+    { match: 'ceiling fan', tier: 'high_end' },
+    { match: 'smoke/co detector', tier: 'high_end' },
+    // Plumbing — full
+    { match: 'water heater — tankless', tier: 'high_end' },
+    { match: 'full re-pipe', tier: 'high_end' },
+    { match: 'main sewer line', tier: 'high_end' },
+    { match: 'rough-in new bathroom', tier: 'high_end' },
+    { match: 'toilet replacement', tier: 'high_end' },
+    { match: 'faucet replacement', tier: 'high_end' },
+    { match: 'garbage disposal', tier: 'high_end' },
+    // HVAC — full
+    { match: 'full hvac system', tier: 'high_end' },
+    { match: 'ductwork', tier: 'high_end' },
+    { match: 'thermostat', tier: 'high_end' },
+    // Insulation — full
+    { match: 'attic (blown-in)', tier: 'high_end' },
+    { match: 'wall (blown-in', tier: 'high_end' },
+    { match: 'spray foam', tier: 'high_end' },
+    // Drywall — full
+    { match: 'drywall — hang, tape, finish', tier: 'high_end' },
+    { match: 'texture removal', tier: 'high_end' },
+    // Paint
+    { match: 'stain-blocking primer', tier: 'high_end' },
+    { match: 'interior paint — walls + trim + ceilings', tier: 'high_end' },
+    { match: 'cabinet painting', tier: 'high_end' },
+    // Flooring
+    { match: 'flooring removal', tier: 'high_end' },
+    { match: 'engineered hardwood', tier: 'high_end' },
+    { match: 'tile — porcelain', tier: 'high_end' },
+    { match: 'tile — bathroom floor', tier: 'high_end' },
+    // Kitchen — full high end
+    { match: 'cabinets — semi-custom', tier: 'high_end' },
+    { match: 'countertops — quartz', tier: 'high_end' },
+    { match: 'backsplash — glass/mosaic', tier: 'high_end' },
+    { match: 'sink (stainless', tier: 'high_end' },
+    { match: 'appliance package', tier: 'high_end' },
+    { match: 'range hood', tier: 'high_end' },
+    // Bathroom — full
+    { match: 'tub/shower — tile surround', tier: 'high_end' },
+    { match: 'shower — frameless glass', tier: 'high_end' },
+    { match: 'vanity + top (double)', tier: 'high_end' },
+    { match: 'toilet replacement', tier: 'high_end' },
+    { match: 'faucet replacement', tier: 'high_end' },
+    { match: 'bathroom mirror', tier: 'high_end' },
+    { match: 'exhaust fan', tier: 'high_end' },
+    // Landscaping — full
+    { match: 'yard cleanup', tier: 'high_end' },
+    { match: 'sod installation', tier: 'high_end' },
+    { match: 'basic landscaping', tier: 'high_end' },
+    { match: 'irrigation system', tier: 'high_end' },
+    { match: 'tree removal', tier: 'high_end' },
+    // Admin — full
+    { match: 'building permits', tier: 'high_end' },
+    { match: 'architectural plans', tier: 'high_end' },
+    { match: 'structural engineering', tier: 'high_end' },
+    { match: 'environmental assessment', tier: 'high_end' },
+    { match: 'asbestos/lead testing', tier: 'high_end' },
+    { match: 'insurance (builder', tier: 'high_end' },
+    { match: 'holding costs', tier: 'high_end' },
+    { match: 'appraisal', tier: 'high_end' },
+    { match: 'closing costs', tier: 'high_end' },
+    // Misc — full
+    { match: 'general cleaning', tier: 'high_end' },
+    { match: 'termite treatment', tier: 'high_end' },
+    { match: 'mold remediation', tier: 'high_end' },
+  ],
 };
 
 function applyPreset(level) {
   activePreset = level;
-  // Clear active state
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('pre-'+level).classList.add('active');
 
-  const preset = PRESETS[level];
-  const tierPref = preset.tier;
+  const presetItems = PRESET_ITEMS[level];
 
-  // First uncheck everything
+  // First uncheck everything and clear custom prices
   items.forEach((item, idx) => {
     item.included = false;
+    item.customPrice = null;
     document.getElementById('incl-'+idx).checked = false;
     document.getElementById('row-'+idx).className = 'excluded';
+    const ce = document.getElementById('custom-'+idx);
+    if (ce) ce.value = '';
   });
 
+  // Match each preset item to the data
   items.forEach((item, idx) => {
     const d = item.data;
-    const inCat = preset.categories.includes(d.category);
-    const nameMatch = preset.items ? preset.items.some(n => d.line_item.toLowerCase().includes(n)) : false;
-    const shouldInclude = inCat || nameMatch;
+    const nameLC = d.line_item.toLowerCase();
 
-    if (!shouldInclude) return;
+    // Find if this item matches any preset entry
+    const match = presetItems.find(p => nameLC.includes(p.match.toLowerCase()));
+    if (!match) return;
 
-    // For medium preset, be selective — skip some expensive/specialty items
-    if (level === 'medium' && !preset.all) {
-      const name = d.line_item.toLowerCase();
-      if (name.includes('metal roofing') || name.includes('wood lap') || name.includes('composite')
-        || name.includes('frameless glass') || name.includes('smart panel')
-        || name.includes('tankless') || name.includes('custom')
-        || name.includes('irrigation') || name.includes('mold')
-        || name.includes('hazardous') || name.includes('sewer line')
-        || name.includes('foundation repair (pier')) return;
-    }
-
-    // Set tier
-    let t = tierPref;
+    // Set tier — use preferred, fall back if null
+    let t = match.tier;
     if (d[t] === null) {
-      // fall back to nearest available
       if (t === 'high_end') t = d.mid_range !== null ? 'mid_range' : 'contractor';
       else if (t === 'contractor') t = d.mid_range !== null ? 'mid_range' : 'high_end';
       else t = d.contractor !== null ? 'contractor' : 'high_end';
     }
-    if (d[t] === null) return; // still null, skip
+    if (d[t] === null) return;
 
     item.tier = t;
     item.included = true;
@@ -1020,15 +1345,12 @@ function applyPreset(level) {
     document.getElementById('tm-'+idx).className = 'tier-btn' + (t==='mid_range'?' active':'') + (d.mid_range===null?' na':'');
     document.getElementById('th-'+idx).className = 'tier-btn' + (t==='high_end'?' active':'') + (d.high_end===null?' na':'');
 
-    // Reset qty from auto
-    const newQty = getAutoQty(d);
-    if (newQty > 0) {
-      item.qty = newQty;
-      document.getElementById('qty-'+idx).value = newQty;
-    } else if (item.qty === 0) {
-      item.qty = 1;
-      document.getElementById('qty-'+idx).value = 1;
-    }
+    // Smart quantity — use contextual qty, then auto qty, then 1
+    const smartQty = getPresetQty(d.line_item, d.unit, d.category);
+    const autoQty = getAutoQty(d);
+    const qty = smartQty !== null ? smartQty : (autoQty > 0 ? autoQty : 1);
+    item.qty = qty;
+    document.getElementById('qty-'+idx).value = qty;
   });
 
   recalcAll();
