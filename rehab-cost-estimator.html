@@ -117,6 +117,7 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 .cat-color-9{background:#6366f1}.cat-color-10{background:#14b8a6}.cat-color-11{background:#e879f9}
 .cat-color-12{background:#fb923c}.cat-color-13{background:#38bdf8}.cat-color-14{background:#a3e635}
 .cat-color-15{background:#f472b6}
+.cat-color-16{background:#818cf8}
 
 /* Responsive */
 @media(max-width:768px){
@@ -201,6 +202,47 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
       <label>Roof SF (auto)</label>
       <input type="number" id="propRoofSF" value="1725" readonly style="opacity:.7">
       <span class="calc">= Living SF &times; 1.15 / Stories</span>
+    </div>
+    <div class="fg">
+      <label>Region</label>
+      <select id="propRegion" onchange="onPropertyChange()">
+        <option value="1.00">National Average (1.00x)</option>
+        <optgroup label="Northeast">
+          <option value="1.25">New York City (1.25x)</option>
+          <option value="1.18">Boston / NE Metro (1.18x)</option>
+          <option value="1.10">Philadelphia / Mid-Atlantic (1.10x)</option>
+          <option value="1.05">Rural Northeast (1.05x)</option>
+        </optgroup>
+        <optgroup label="Southeast">
+          <option value="0.90">Florida — Cape Coral / SW FL (0.90x)</option>
+          <option value="0.92">Florida — Orlando / Tampa (0.92x)</option>
+          <option value="0.95">Florida — Miami / SE FL (0.95x)</option>
+          <option value="0.88">Atlanta / GA (0.88x)</option>
+          <option value="0.85">Carolinas / Tennessee (0.85x)</option>
+          <option value="0.82">Alabama / Mississippi (0.82x)</option>
+        </optgroup>
+        <optgroup label="Midwest">
+          <option value="0.95">Chicago / IL (0.95x)</option>
+          <option value="0.88">Ohio / Michigan / Indiana (0.88x)</option>
+          <option value="0.85">Kansas City / Midwest Rural (0.85x)</option>
+        </optgroup>
+        <optgroup label="Southwest">
+          <option value="0.95">Dallas / Houston / TX (0.95x)</option>
+          <option value="0.98">Austin / San Antonio (0.98x)</option>
+          <option value="0.92">Phoenix / AZ (0.92x)</option>
+          <option value="0.90">New Mexico / Oklahoma (0.90x)</option>
+        </optgroup>
+        <optgroup label="West">
+          <option value="1.30">San Francisco / Bay Area (1.30x)</option>
+          <option value="1.20">Los Angeles / SoCal (1.20x)</option>
+          <option value="1.15">San Diego / Sacramento (1.15x)</option>
+          <option value="1.10">Seattle / Portland (1.10x)</option>
+          <option value="1.05">Denver / CO (1.05x)</option>
+          <option value="1.08">Las Vegas / NV (1.08x)</option>
+          <option value="1.25">Hawaii (1.25x)</option>
+        </optgroup>
+      </select>
+      <span class="calc">RSMeans regional cost index</span>
     </div>
   </div>
 </div>
@@ -416,7 +458,23 @@ const COST_DATA = [
   {"category":"Miscellaneous & Contingency","line_item":"General cleaning (post-construction)","unit":"lump sum","contractor":322.27,"mid_range":523.71,"high_end":777.91,"notes":"Final cleaning before photos/listing"},
   {"category":"Miscellaneous & Contingency","line_item":"Property survey","unit":"each","contractor":320.47,"mid_range":515.17,"high_end":804.43,"notes":"If boundary questions exist"},
   {"category":"Miscellaneous & Contingency","line_item":"Termite treatment","unit":"lump sum","contractor":460.97,"mid_range":935.05,"high_end":2193.24,"notes":"If active or previous infestation"},
-  {"category":"Miscellaneous & Contingency","line_item":"Mold remediation","unit":"lump sum","contractor":1100.79,"mid_range":3087.35,"high_end":6521.51,"notes":"Bathroom, basement, crawlspace"}
+  {"category":"Miscellaneous & Contingency","line_item":"Mold remediation","unit":"lump sum","contractor":1100.79,"mid_range":3087.35,"high_end":6521.51,"notes":"Bathroom, basement, crawlspace"},
+  {"category":"Administrative & Soft Costs","line_item":"Building permits (general)","unit":"lump sum","contractor":500,"mid_range":1500,"high_end":3500,"notes":"Varies by municipality. Budget higher for full gut."},
+  {"category":"Administrative & Soft Costs","line_item":"Impact fees (utility/traffic)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":8000,"notes":"Required for additions or change of use. Check local code."},
+  {"category":"Administrative & Soft Costs","line_item":"Plan review / expediting","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1500,"notes":"Faster permit processing in some jurisdictions"},
+  {"category":"Administrative & Soft Costs","line_item":"Architectural plans","unit":"lump sum","contractor":null,"mid_range":2500,"high_end":8000,"notes":"Required for structural changes, additions, layout reconfiguration"},
+  {"category":"Administrative & Soft Costs","line_item":"Structural engineering","unit":"lump sum","contractor":500,"mid_range":1500,"high_end":4000,"notes":"Load-bearing wall removal, foundation work, beam sizing"},
+  {"category":"Administrative & Soft Costs","line_item":"MEP engineering (mechanical/electrical/plumbing)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":5000,"notes":"Required for major system rework or commercial conversion"},
+  {"category":"Administrative & Soft Costs","line_item":"Environmental assessment (Phase I)","unit":"lump sum","contractor":null,"mid_range":2000,"high_end":4500,"notes":"Required by some lenders. Gas stations, dry cleaners, industrial nearby."},
+  {"category":"Administrative & Soft Costs","line_item":"Asbestos/lead testing","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1200,"notes":"Required pre-1978 homes before disturbance. Separate from abatement."},
+  {"category":"Administrative & Soft Costs","line_item":"Survey / boundary survey","unit":"each","contractor":350,"mid_range":600,"high_end":1200,"notes":"ALTA survey for lender, boundary survey for fencing/additions"},
+  {"category":"Administrative & Soft Costs","line_item":"Title search / lien check","unit":"lump sum","contractor":150,"mid_range":300,"high_end":600,"notes":"Verify clear title before closing"},
+  {"category":"Administrative & Soft Costs","line_item":"Insurance (builder's risk / vacancy)","unit":"lump sum","contractor":500,"mid_range":1200,"high_end":2500,"notes":"Per 6-month policy. Required during active rehab."},
+  {"category":"Administrative & Soft Costs","line_item":"Utility reconnection / deposits","unit":"lump sum","contractor":200,"mid_range":500,"high_end":1000,"notes":"Water, electric, gas reconnect fees + deposits"},
+  {"category":"Administrative & Soft Costs","line_item":"Project management fee","unit":"lump sum","contractor":null,"mid_range":3000,"high_end":8000,"notes":"If using a GC or project manager — typically 10-15% of hard costs"},
+  {"category":"Administrative & Soft Costs","line_item":"Holding costs (interest + taxes)","unit":"lump sum","contractor":2000,"mid_range":5000,"high_end":12000,"notes":"Per 6 months. Hard money interest + property tax + insurance."},
+  {"category":"Administrative & Soft Costs","line_item":"Appraisal (ARV)","unit":"each","contractor":350,"mid_range":500,"high_end":750,"notes":"Required by lender for refinance. Order 2-3 weeks before completion."},
+  {"category":"Administrative & Soft Costs","line_item":"Closing costs (refinance)","unit":"lump sum","contractor":2000,"mid_range":3500,"high_end":6000,"notes":"Title, origination, recording. Budget 2-3% of loan amount."}
 ];
 
 // ========== CATEGORY ORDER ==========
@@ -424,7 +482,8 @@ const CATEGORIES = [
   "Demolition & Site Prep","Structural & Framing","Roofing","Exterior",
   "Windows & Doors","Electrical","Plumbing","HVAC","Insulation",
   "Drywall & Interior Walls","Interior Paint","Flooring","Kitchen",
-  "Bathroom","Landscaping & Exterior Cleanup","Miscellaneous & Contingency"
+  "Bathroom","Landscaping & Exterior Cleanup","Administrative & Soft Costs",
+  "Miscellaneous & Contingency"
 ];
 
 // ========== AUTO-POPULATE RULES ==========
@@ -623,6 +682,7 @@ function onPropertyChange() {
 
 // ========== RECALCULATE ==========
 function recalcAll() {
+  const regionMult = parseFloat(document.getElementById('propRegion').value) || 1.0;
   const catTotals = {};
   CATEGORIES.forEach((c,i) => catTotals[i] = 0);
 
@@ -631,7 +691,9 @@ function recalcAll() {
     const cost = item.customPrice !== null ? item.customPrice : item.data[item.tier];
     let lineTotal = 0;
     if (item.included && cost !== null) {
-      lineTotal = item.qty * cost;
+      // Apply regional multiplier (skip for custom prices — user entered their own local rate)
+      const adjCost = item.customPrice !== null ? cost : cost * regionMult;
+      lineTotal = item.qty * adjCost;
     }
     const el = document.getElementById('lt-'+idx);
     if (item.included && cost !== null) {
