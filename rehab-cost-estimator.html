@@ -153,6 +153,30 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .presets{grid-template-columns:1fr}
 }
 
+/* Save Project */
+.save-card{background:#0F172A;border:1px solid #2d3748;border-radius:12px;padding:28px;margin-bottom:20px}
+.save-card h3{color:#fff;font-size:1.1rem;margin-bottom:4px}
+.save-card .save-sub{color:#94a3b8;font-size:.85rem;margin-bottom:16px}
+.save-input{width:100%;padding:12px 14px;background:#0f1117;border:1px solid #2d3748;border-radius:8px;color:#e2e8f0;font-size:.95rem;margin-bottom:10px;box-sizing:border-box}
+.save-input:focus{outline:none;border-color:#3B82F6}
+.save-btn{width:100%;padding:14px;background:#3B82F6;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.95rem;transition:background .2s}
+.save-btn:hover{background:#2563EB}
+.save-btn:disabled{background:#334155;cursor:not-allowed}
+.save-btn.update{background:#7c3aed}
+.save-btn.update:hover{background:#6d28d9}
+.save-success{background:#0f2a1a;border:1px solid #166534;border-radius:8px;padding:16px;margin-top:14px}
+.save-success .save-url-label{color:#22c55e;font-weight:600;font-size:.85rem;margin-bottom:6px}
+.save-url-row{display:flex;gap:8px;align-items:center}
+.save-url-row input{flex:1;padding:10px 12px;background:#0f1117;border:1px solid #2d3748;border-radius:8px;color:#e2e8f0;font-size:.85rem;font-family:monospace}
+.save-url-row button{padding:10px 18px;background:#22c55e;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.82rem;white-space:nowrap;transition:background .2s}
+.save-url-row button:hover{background:#16a34a}
+.save-error{color:#ef4444;font-size:.85rem;margin-top:8px}
+.loaded-banner{background:#1e3a5f;border:1px solid #3B82F6;border-radius:12px;padding:16px 20px;margin-bottom:20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.loaded-banner .lb-icon{font-size:1.2rem}
+.loaded-banner .lb-text{color:#e2e8f0;font-size:.9rem}
+.loaded-banner .lb-text strong{color:#fff}
+.loaded-banner .lb-date{color:#94a3b8;font-size:.78rem}
+
 /* Print */
 @media print{
   body{background:#fff!important;color:#111!important;padding-bottom:0}
@@ -171,7 +195,7 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
   .fg input,.fg select,.qty-input{background:#fff!important;color:#111!important;border-color:#ccc!important}
   .tier-btn{background:#fff!important;color:#888!important;border-color:#ccc!important}
   .tier-btn.active{background:#2563EB!important;color:#fff!important}
-  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr{display:none!important}
+  .preset-btn,.sticky-total,.email-card,.email-row,.incl-cb,.add-row-tr,.save-card,.loaded-banner{display:none!important}
   #grandTotalCard{display:block!important;border:2px solid #333!important}
   .gt-label{color:#333!important}
   .gt-value{color:#111!important}
@@ -200,6 +224,15 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
 </div>
 
 <div class="container">
+
+<!-- Loaded Project Banner (hidden by default) -->
+<div class="loaded-banner" id="loadedBanner" style="display:none">
+  <span class="lb-icon">&#128194;</span>
+  <div>
+    <div class="lb-text">Loaded project: <strong id="loadedName">—</strong></div>
+    <div class="lb-date" id="loadedDate"></div>
+  </div>
+</div>
 
 <!-- Property Info -->
 <div class="card">
@@ -391,6 +424,23 @@ a{color:#3B82F6;text-decoration:none}a:hover{text-decoration:underline}
       <span class="gt-value" id="gtRegion" style="font-size:.85rem">National Average (1.00x)</span>
     </div>
   </div>
+</div>
+
+<!-- Save Project -->
+<div class="save-card" id="saveCard" style="display:none">
+  <h3>Save This Estimate</h3>
+  <p class="save-sub">Save your work and get a unique link to return to it anytime.</p>
+  <input type="text" class="save-input" id="projectName" placeholder="e.g. 123 Main St Rehab" maxlength="120">
+  <input type="email" class="save-input" id="saveEmail" placeholder="your@email.com">
+  <button class="save-btn" id="saveBtn" onclick="saveProject()">Save Project</button>
+  <div id="saveSuccessBox" style="display:none" class="save-success">
+    <div class="save-url-label">Your project link:</div>
+    <div class="save-url-row">
+      <input type="text" id="shareUrl" readonly>
+      <button onclick="copyShareUrl()">Copy Link</button>
+    </div>
+  </div>
+  <div id="saveError" class="save-error" style="display:none"></div>
 </div>
 </div>
 
@@ -864,6 +914,7 @@ function recalcAll() {
   document.getElementById('grandTotalCard').style.display = 'block';
   document.getElementById('breakdownCard').style.display = hasTotal ? 'block' : 'none';
   document.getElementById('emailCard').style.display = hasTotal ? 'block' : 'none';
+  document.getElementById('saveCard').style.display = hasTotal ? 'block' : 'none';
 
   // Category bars
   if (hasTotal) {
@@ -915,6 +966,7 @@ const PRESETS = {
 };
 
 function applyPreset(level) {
+  activePreset = level;
   // Clear active state
   document.querySelectorAll('.preset-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('pre-'+level).classList.add('active');
@@ -986,19 +1038,409 @@ function applyPreset(level) {
 function captureEmailSubmit() {
   const email = document.getElementById('captureEmail').value;
   if (!email || !email.includes('@')) { alert('Please enter a valid email.'); return; }
-  var body = 'email=' + encodeURIComponent(email) + '&userGroup=rehab_costs&mailingLists=cmndeb7y305hd0iyu3k1sd3n4';
-  var blob = new Blob([body], {type: 'application/x-www-form-urlencoded'});
-  navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6', blob);
+  sendToLoops(email);
   document.getElementById('captureBtn').textContent = 'Subscribed!';
   document.getElementById('captureBtn').style.background = '#16a34a';
   document.getElementById('captureBtn').disabled = true;
   document.getElementById('captureEmail').disabled = true;
   document.getElementById('captureMsg').innerHTML = '<span class="email-success">Check your inbox for the latest rehab cost data.</span>';
+  // Sync email to save card
+  var saveEmailEl = document.getElementById('saveEmail');
+  if (saveEmailEl && !saveEmailEl.value) {
+    saveEmailEl.value = email;
+  }
+}
+
+function sendToLoops(email) {
+  var body = 'email=' + encodeURIComponent(email) + '&userGroup=rehab_costs&mailingLists=cmndeb7y305hd0iyu3k1sd3n4';
+  var blob = new Blob([body], {type: 'application/x-www-form-urlencoded'});
+  navigator.sendBeacon('https://app.loops.so/api/newsletter-form/cmnd7zpbc004n0hzky2vvtxc6', blob);
+}
+
+// ========== SAVE PROJECT SYSTEM ==========
+const SUPABASE_URL = 'https://hsghbdcfhstbbxceneyc.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhzZ2hiZGNmaHN0YmJ4Y2VuZXljIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NTA0MTAsImV4cCI6MjA4OTMyNjQxMH0.NkWWlVZRpsejIH5tXT7OLETttiloH4okqFUX_Uu9ZJo';
+
+let currentProjectId = null;
+let activePreset = null;
+
+function generateId() {
+  const chars = 'abcdefghijkmnpqrstuvwxyz23456789';
+  let id = '';
+  for (let i = 0; i < 8; i++) id += chars[Math.floor(Math.random() * chars.length)];
+  return id;
+}
+
+function getUTMParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    utm_source: params.get('utm_source') || null,
+    utm_medium: params.get('utm_medium') || null,
+    utm_campaign: params.get('utm_campaign') || null
+  };
+}
+
+function collectCalculatorState() {
+  return {
+    items: items.map(function(item) {
+      return {
+        line_item: item.data.line_item,
+        category: item.data.category,
+        included: item.included,
+        tier: item.tier,
+        qty: item.qty,
+        customPrice: item.customPrice,
+        unit: item.data.unit
+      };
+    }),
+    contingencyPct: parseFloat(document.getElementById('contingencySel').value),
+    taxRate: parseFloat(document.getElementById('taxSel').value),
+    presetUsed: activePreset
+  };
+}
+
+function getGrandTotal() {
+  var regionMult = parseFloat(document.getElementById('propRegion').value) || 1.0;
+  var subtotal = 0;
+  items.forEach(function(item) {
+    var cost = item.customPrice !== null ? item.customPrice : item.data[item.tier];
+    if (item.included && cost !== null) {
+      var adjCost = item.customPrice !== null ? cost : cost * regionMult;
+      subtotal += item.qty * adjCost;
+    }
+  });
+  var contPct = parseFloat(document.getElementById('contingencySel').value);
+  var contingency = subtotal * contPct;
+  var afterContingency = subtotal + contingency;
+  var taxRate = parseFloat(document.getElementById('taxSel').value) || 0;
+  var tax = afterContingency * 0.50 * taxRate;
+  return afterContingency + tax;
+}
+
+function getTopCategories() {
+  var regionMult = parseFloat(document.getElementById('propRegion').value) || 1.0;
+  var catTotals = {};
+  items.forEach(function(item) {
+    var cost = item.customPrice !== null ? item.customPrice : item.data[item.tier];
+    if (item.included && cost !== null) {
+      var adjCost = item.customPrice !== null ? cost : cost * regionMult;
+      var cat = item.data.category;
+      catTotals[cat] = (catTotals[cat] || 0) + item.qty * adjCost;
+    }
+  });
+  return Object.entries(catTotals)
+    .sort(function(a, b) { return b[1] - a[1]; })
+    .slice(0, 3)
+    .map(function(e) { return e[0]; });
+}
+
+async function saveProject() {
+  var emailEl = document.getElementById('saveEmail');
+  var email = emailEl.value.trim();
+  if (!email || !email.includes('@')) {
+    showSaveError('Please enter a valid email address.');
+    return;
+  }
+
+  var projectNameEl = document.getElementById('projectName');
+  var saveBtn = document.getElementById('saveBtn');
+  saveBtn.disabled = true;
+  saveBtn.textContent = 'Saving...';
+  hideSaveError();
+
+  var state = collectCalculatorState();
+  var grandTotal = getGrandTotal();
+  var sf = num('propSF') || 1;
+  var regionSel = document.getElementById('propRegion');
+  var projectId = currentProjectId || generateId();
+  var isUpdate = !!currentProjectId;
+  var utmParams = getUTMParams();
+
+  var body = {
+    id: projectId,
+    calculator_type: 'rehab_estimator',
+    email: email,
+    project_name: projectNameEl.value.trim() || 'Untitled',
+    property_sf: num('propSF'),
+    bedrooms: num('propBed'),
+    bathrooms: num('propBath'),
+    stories: num('propStories'),
+    region: regionSel.options[regionSel.selectedIndex].text,
+    region_multiplier: parseFloat(regionSel.value),
+    calculator_state: state,
+    total_estimate: Math.round(grandTotal * 100) / 100,
+    contingency_pct: state.contingencyPct,
+    tax_rate: state.taxRate,
+    cost_per_sf: Math.round((grandTotal / sf) * 100) / 100,
+    item_count: items.filter(function(i) { return i.included; }).length,
+    top_categories: getTopCategories(),
+    preset_used: activePreset,
+    updated_at: new Date().toISOString()
+  };
+
+  if (!isUpdate) {
+    body.referrer_url = document.referrer || null;
+    body.utm_source = utmParams.utm_source;
+    body.utm_medium = utmParams.utm_medium;
+    body.utm_campaign = utmParams.utm_campaign;
+  }
+
+  var method = isUpdate ? 'PATCH' : 'POST';
+  var url = isUpdate
+    ? SUPABASE_URL + '/rest/v1/calculator_projects?id=eq.' + projectId
+    : SUPABASE_URL + '/rest/v1/calculator_projects';
+
+  try {
+    var res = await fetch(url, {
+      method: method,
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify(body)
+    });
+
+    if (res.ok) {
+      currentProjectId = projectId;
+
+      // Send email to Loops for nurture sequence
+      sendToLoops(email);
+
+      // Show success
+      var shareBase = window.location.origin + window.location.pathname;
+      var shareUrl = shareBase + '?project=' + projectId;
+      document.getElementById('shareUrl').value = shareUrl;
+      document.getElementById('saveSuccessBox').style.display = 'block';
+
+      // Switch button to Update mode
+      saveBtn.textContent = 'Update Project';
+      saveBtn.className = 'save-btn update';
+      saveBtn.disabled = false;
+
+      // Disable email field after first save
+      emailEl.disabled = true;
+
+      // Update URL without reload
+      if (window.history.replaceState) {
+        window.history.replaceState(null, '', shareUrl);
+      }
+    } else {
+      var errText = await res.text();
+      showSaveError('Save failed. Please try again. (' + res.status + ')');
+      saveBtn.textContent = isUpdate ? 'Update Project' : 'Save Project';
+      saveBtn.disabled = false;
+    }
+  } catch (e) {
+    showSaveError('Network error. Please check your connection and try again.');
+    saveBtn.textContent = isUpdate ? 'Update Project' : 'Save Project';
+    saveBtn.disabled = false;
+  }
+}
+
+function showSaveError(msg) {
+  var el = document.getElementById('saveError');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+
+function hideSaveError() {
+  document.getElementById('saveError').style.display = 'none';
+}
+
+function copyShareUrl() {
+  var input = document.getElementById('shareUrl');
+  input.select();
+  input.setSelectionRange(0, 99999);
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(input.value);
+  } else {
+    document.execCommand('copy');
+  }
+  var btn = input.nextElementSibling;
+  btn.textContent = 'Copied!';
+  setTimeout(function() { btn.textContent = 'Copy Link'; }, 2000);
+}
+
+async function loadProject(projectId) {
+  try {
+    var res = await fetch(
+      SUPABASE_URL + '/rest/v1/calculator_projects?id=eq.' + encodeURIComponent(projectId) + '&select=*',
+      {
+        headers: {
+          'apikey': SUPABASE_KEY,
+          'Authorization': 'Bearer ' + SUPABASE_KEY
+        }
+      }
+    );
+    var data = await res.json();
+    if (!data || data.length === 0) return;
+    var project = data[0];
+
+    currentProjectId = project.id;
+
+    // Set property info
+    document.getElementById('propSF').value = project.property_sf || 1500;
+    document.getElementById('propBed').value = project.bedrooms || 3;
+    document.getElementById('propBath').value = project.bathrooms || 2;
+    document.getElementById('propStories').value = project.stories || 1;
+
+    // Set region dropdown
+    if (project.region_multiplier) {
+      var regionSel = document.getElementById('propRegion');
+      var targetVal = String(project.region_multiplier);
+      for (var i = 0; i < regionSel.options.length; i++) {
+        if (regionSel.options[i].value === targetVal) {
+          regionSel.selectedIndex = i;
+          break;
+        }
+      }
+    }
+
+    // Update roof SF
+    onPropertyChange();
+
+    // Restore calculator state
+    var state = project.calculator_state;
+    if (state) {
+      // Set contingency
+      if (state.contingencyPct !== undefined) {
+        var contSel = document.getElementById('contingencySel');
+        for (var i = 0; i < contSel.options.length; i++) {
+          if (parseFloat(contSel.options[i].value) === state.contingencyPct) {
+            contSel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+
+      // Set tax rate
+      if (state.taxRate !== undefined) {
+        var taxSel = document.getElementById('taxSel');
+        for (var i = 0; i < taxSel.options.length; i++) {
+          if (parseFloat(taxSel.options[i].value) === state.taxRate) {
+            taxSel.selectedIndex = i;
+            break;
+          }
+        }
+      }
+
+      // Restore each item
+      if (state.items && state.items.length > 0) {
+        state.items.forEach(function(savedItem) {
+          // Find matching item in our items array by line_item + category
+          for (var idx = 0; idx < items.length; idx++) {
+            var item = items[idx];
+            if (item.data.line_item === savedItem.line_item && item.data.category === savedItem.category) {
+              // Set included
+              item.included = !!savedItem.included;
+              var cb = document.getElementById('incl-' + idx);
+              if (cb) cb.checked = item.included;
+              var row = document.getElementById('row-' + idx);
+              if (row) row.className = item.included ? '' : 'excluded';
+
+              // Set tier
+              if (savedItem.tier && savedItem.tier !== 'custom') {
+                if (item.data[savedItem.tier] !== null) {
+                  item.tier = savedItem.tier;
+                  var d = item.data;
+                  var tcEl = document.getElementById('tc-' + idx);
+                  var tmEl = document.getElementById('tm-' + idx);
+                  var thEl = document.getElementById('th-' + idx);
+                  if (tcEl) tcEl.className = 'tier-btn' + (savedItem.tier === 'contractor' ? ' active' : '') + (d.contractor === null ? ' na' : '');
+                  if (tmEl) tmEl.className = 'tier-btn' + (savedItem.tier === 'mid_range' ? ' active' : '') + (d.mid_range === null ? ' na' : '');
+                  if (thEl) thEl.className = 'tier-btn' + (savedItem.tier === 'high_end' ? ' active' : '') + (d.high_end === null ? ' na' : '');
+                }
+              }
+
+              // Set custom price
+              if (savedItem.customPrice !== null && savedItem.customPrice !== undefined) {
+                item.customPrice = savedItem.customPrice;
+                item.tier = 'custom';
+                var customEl = document.getElementById('custom-' + idx);
+                if (customEl) customEl.value = savedItem.customPrice;
+                var d = item.data;
+                var tcEl = document.getElementById('tc-' + idx);
+                var tmEl = document.getElementById('tm-' + idx);
+                var thEl = document.getElementById('th-' + idx);
+                if (tcEl) tcEl.className = 'tier-btn' + (d.contractor === null ? ' na' : '');
+                if (tmEl) tmEl.className = 'tier-btn' + (d.mid_range === null ? ' na' : '');
+                if (thEl) thEl.className = 'tier-btn' + (d.high_end === null ? ' na' : '');
+              }
+
+              // Set quantity
+              if (savedItem.qty !== undefined) {
+                item.qty = savedItem.qty;
+                var qtyEl = document.getElementById('qty-' + idx);
+                if (qtyEl) qtyEl.value = savedItem.qty;
+              }
+
+              break;
+            }
+          }
+        });
+      }
+
+      activePreset = state.presetUsed || null;
+    }
+
+    // Populate save card with project info
+    document.getElementById('projectName').value = project.project_name || '';
+    document.getElementById('saveEmail').value = project.email || '';
+    document.getElementById('saveEmail').disabled = true;
+
+    // Set save button to Update mode
+    var saveBtn = document.getElementById('saveBtn');
+    saveBtn.textContent = 'Update Project';
+    saveBtn.className = 'save-btn update';
+
+    // Show share URL
+    var shareBase = window.location.origin + window.location.pathname;
+    var shareUrl = shareBase + '?project=' + project.id;
+    document.getElementById('shareUrl').value = shareUrl;
+    document.getElementById('saveSuccessBox').style.display = 'block';
+
+    // Show loaded banner
+    document.getElementById('loadedName').textContent = project.project_name || 'Untitled';
+    var dateStr = project.updated_at ? new Date(project.updated_at).toLocaleDateString('en-US', {
+      year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit'
+    }) : '';
+    document.getElementById('loadedDate').textContent = dateStr ? 'Last saved ' + dateStr : '';
+    document.getElementById('loadedBanner').style.display = 'flex';
+
+    // Recalculate
+    recalcAll();
+
+    // Update last_viewed_at
+    fetch(SUPABASE_URL + '/rest/v1/calculator_projects?id=eq.' + projectId, {
+      method: 'PATCH',
+      headers: {
+        'apikey': SUPABASE_KEY,
+        'Authorization': 'Bearer ' + SUPABASE_KEY,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=minimal'
+      },
+      body: JSON.stringify({ last_viewed_at: new Date().toISOString() })
+    });
+
+  } catch (e) {
+    console.error('Failed to load project:', e);
+  }
 }
 
 // ========== INIT ==========
 buildCategories();
 onPropertyChange();
+
+// Check for project in URL
+(function() {
+  var params = new URLSearchParams(window.location.search);
+  var projectId = params.get('project');
+  if (projectId) {
+    loadProject(projectId);
+  }
+})();
 </script>
 </body>
 </html>
