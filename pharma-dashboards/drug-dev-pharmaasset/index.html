@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lucky Duck Group / Lucky Duck Group — Pharma Asset Valuation Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Segoe UI', Arial, sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); padding: 20px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; letter-spacing: 0.5px; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .main { padding: 24px 32px; }
+  .kpi-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .kpi-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px 22px; flex: 1; min-width: 160px; }
+  .kpi-card .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 1.6rem; font-weight: 700; }
+  .kpi-card .value.green { color: #68d391; }
+  .kpi-card .value.blue { color: #63b3ed; }
+  .kpi-card .value.orange { color: #f6ad55; }
+  .kpi-card .value.red { color: #fc8181; }
+  .kpi-card .delta { font-size: 0.72rem; color: #718096; margin-top: 4px; }
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .slider-item label { font-size: 0.78rem; color: #a0aec0; display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; font-size: 0.85rem; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 5px; border-radius: 3px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .chart-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
+  .chart-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .waterfall-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+  footer { text-align: center; padding: 16px; color: #4a5568; font-size: 0.72rem; border-top: 1px solid #2d3748; }
+  @media (max-width: 900px) {
+    .slider-grid { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .waterfall-row { grid-template-columns: 1fr; }
+  }
+
+  /* ═══ FILE LOADER ═══ */
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; } .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+
+  /* ═══ PRINT ═══ */
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; padding: 10px 20px !important; }
+    header h1 { color: #1C6834 !important; font-size: 14pt !important; }
+    header .subtitle { color: #666 !important; }
+    .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .main { padding: 10px 20px !important; }
+    .file-loader, .controls, .export-btn { display: none !important; }
+    .kpi-card, .chart-card, .chart-full { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .kpi-card .label { color: #666 !important; }
+    .kpi-card .value.green { color: #1B7A3D !important; }
+    .kpi-card .value.blue { color: #1C6834 !important; }
+    .kpi-card .value.orange { color: #B7791F !important; }
+    .kpi-card .value.red { color: #C53030 !important; }
+    .kpi-card .delta { color: #666 !important; }
+    .chart-card h3, .chart-full h3 { color: #333 !important; }
+    footer { color: #999 !important; border-top: 1px solid #d0d0d0 !important; }
+    .kpi-row, .waterfall-row { page-break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Lucky Duck Group / Lucky Duck Group — Pharma Asset Dashboard</h1>
+    <div class="subtitle">Standalone Valuation · rNPV / Clinical Budgeting · Phase III → Commercial</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <div class="badge">rNPV MODEL</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- File Loader -->
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag your Drug Dev Model .xlsx here to load your data, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="label">rNPV (Risk-Adj.)</div>
+      <div class="value green" id="kpi-rnpv">$0M</div>
+      <div class="delta" id="kpi-rnpv-delta">Base model</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Peak Gross Revenue</div>
+      <div class="value blue" id="kpi-peak">$0M</div>
+      <div class="delta" id="kpi-peak-delta">Gross (unadjusted)</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Cumulative PoS</div>
+      <div class="value orange" id="kpi-pos">0.0%</div>
+      <div class="delta">Probability of Success</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Total R&D Cost (Gross)</div>
+      <div class="value red" id="kpi-rd">$0M</div>
+      <div class="delta">Pre-launch investment</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Breakeven Year</div>
+      <div class="value blue" id="kpi-breakeven">—</div>
+      <div class="delta">Cumulative PV turns +ve</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <h3>Interactive Scenario Controls</h3>
+    <div class="slider-grid">
+      <div class="slider-item">
+        <label>PoS Scalar <span id="lbl-pos">1.00×</span></label>
+        <input type="range" id="sl-pos" min="0.5" max="1.5" step="0.01" value="1.0">
+      </div>
+      <div class="slider-item">
+        <label>WACC <span id="lbl-wacc">12.0%</span></label>
+        <input type="range" id="sl-wacc" min="8" max="18" step="0.5" value="12">
+      </div>
+      <div class="slider-item">
+        <label>Peak Sales Multiplier <span id="lbl-sales">1.00×</span></label>
+        <input type="range" id="sl-sales" min="0.5" max="2.0" step="0.05" value="1.0">
+      </div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Discounted Cash Flows & Cumulative PV Over Time</h3>
+      <div id="chart-dcf" style="height:340px;"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Key Metrics Summary</h3>
+      <div id="chart-metrics" style="height:340px;"></div>
+    </div>
+  </div>
+
+  <div class="chart-full">
+    <h3>Annual Revenue vs. Cost Breakdown (Gross)</h3>
+    <div id="chart-revenue" style="height:320px;"></div>
+  </div>
+
+  <div class="waterfall-row">
+    <div class="chart-card">
+      <h3>Risk-Adjusted FCF by Year</h3>
+      <div id="chart-fcf" style="height:300px;"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Stage Timeline & PoS Profile</h3>
+      <div id="chart-stage" style="height:300px;"></div>
+    </div>
+  </div>
+
+</div>
+
+<footer>Lucky Duck Group / Lucky Duck Group · Pharma Asset Standalone Valuation · Data as modelled · All values in $M USD</footer>
+
+<script>
+const BASE_DATA = [{"Year":2025,"Stage":"Phase III","Cumulative_PoS":0.5,"Phase3_Trial_Cost_Gross":37.5,"CMC_Manufacturing_Cost_Gross":26.25,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":63.75,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":31.875,"Risk_Adj_FCF":-31.875,"Discount_Factor":1.0,"PV_FCF":-31.875,"Cumulative_PV":-31.875},{"Year":2026,"Stage":"Phase III","Cumulative_PoS":0.5,"Phase3_Trial_Cost_Gross":87.5,"CMC_Manufacturing_Cost_Gross":35.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":122.5,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":61.25,"Risk_Adj_FCF":-61.25,"Discount_Factor":0.8928571429,"PV_FCF":-54.6875,"Cumulative_PV":-86.5625},{"Year":2027,"Stage":"Phase III","Cumulative_PoS":0.5,"Phase3_Trial_Cost_Gross":87.5,"CMC_Manufacturing_Cost_Gross":26.25,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":113.75,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":56.875,"Risk_Adj_FCF":-56.875,"Discount_Factor":0.7971938776,"PV_FCF":-45.3404017857,"Cumulative_PV":-131.9029017857},{"Year":2028,"Stage":"Phase III","Cumulative_PoS":0.5,"Phase3_Trial_Cost_Gross":37.5,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":37.5,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":18.75,"Risk_Adj_FCF":-18.75,"Discount_Factor":0.7117802478,"PV_FCF":-13.3458796465,"Cumulative_PV":-145.2487814322},{"Year":2029,"Stage":"Regulatory Review","Cumulative_PoS":0.5,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":22.5,"Total_RD_Cost_Gross":22.5,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":11.25,"Risk_Adj_FCF":-11.25,"Discount_Factor":0.6355180784,"PV_FCF":-7.1495783821,"Cumulative_PV":-152.3983598143},{"Year":2030,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":468.75,"Net_Revenue":375.0,"COGS":105.0,"Gross_Profit":270.0,"Royalties":30.0,"SGA":56.25,"RD_PostLaunch":18.75,"EBIT":165.0,"Risk_Adj_Net_Revenue":112.5,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":49.5,"Discount_Factor":0.5674268557,"PV_FCF":28.0876293581,"Cumulative_PV":-124.3107304562},{"Year":2031,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":937.5,"Net_Revenue":750.0,"COGS":210.0,"Gross_Profit":540.0,"Royalties":60.0,"SGA":112.5,"RD_PostLaunch":37.5,"EBIT":330.0,"Risk_Adj_Net_Revenue":225.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":99.0,"Discount_Factor":0.5066311212,"PV_FCF":50.1564809966,"Cumulative_PV":-74.1542494596},{"Year":2032,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1406.25,"Net_Revenue":1125.0,"COGS":315.0,"Gross_Profit":810.0,"Royalties":90.0,"SGA":168.75,"RD_PostLaunch":56.25,"EBIT":495.0,"Risk_Adj_Net_Revenue":337.5,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":148.5,"Discount_Factor":0.4523492153,"PV_FCF":67.1738584775,"Cumulative_PV":-6.9803909821},{"Year":2033,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.403883228,"PV_FCF":79.9688791399,"Cumulative_PV":72.9884881578},{"Year":2034,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.360610025,"PV_FCF":71.4007849464,"Cumulative_PV":144.3892731042},{"Year":2035,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.3219732366,"PV_FCF":63.750700845,"Cumulative_PV":208.1399739491},{"Year":2036,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.2874761041,"PV_FCF":56.9202686116,"Cumulative_PV":265.0602425607},{"Year":2037,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.2566750929,"PV_FCF":50.8216684032,"Cumulative_PV":315.8819109639},{"Year":2038,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.2291741901,"PV_FCF":45.3764896457,"Cumulative_PV":361.2584006096},{"Year":2039,"Stage":"Commercial","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":1875.0,"Net_Revenue":1500.0,"COGS":420.0,"Gross_Profit":1080.0,"Royalties":120.0,"SGA":225.0,"RD_PostLaunch":75.0,"EBIT":660.0,"Risk_Adj_Net_Revenue":450.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":198.0,"Discount_Factor":0.2046198126,"PV_FCF":40.5147228979,"Cumulative_PV":401.7731235075},{"Year":2040,"Stage":"Post-Patent","Cumulative_PoS":0.3,"Phase3_Trial_Cost_Gross":0.0,"CMC_Manufacturing_Cost_Gross":0.0,"Regulatory_Cost_Gross":0.0,"Total_RD_Cost_Gross":0.0,"Gross_Revenue":0.0,"Net_Revenue":0.0,"COGS":0.0,"Gross_Profit":0.0,"Royalties":0.0,"SGA":0.0,"RD_PostLaunch":0.0,"EBIT":0.0,"Risk_Adj_Net_Revenue":0.0,"Risk_Adj_Total_Cost":0.0,"Risk_Adj_FCF":0.0,"Discount_Factor":0.1826962613,"PV_FCF":0.0,"Cumulative_PV":401.7731235075}];
+
+const BASE_WACC = 0.12;
+const BASE_POS_CLINICAL = 0.5;
+const BASE_POS_COMMERCIAL = 0.3;
+
+const plotlyConfig = { responsive: true, displayModeBar: false };
+
+const darkLayout = {
+  paper_bgcolor: '#1a1f2e',
+  plot_bgcolor: '#1a1f2e',
+  font: { color: '#a0aec0', size: 11 },
+  margin: { t: 10, r: 20, b: 50, l: 60 },
+  xaxis: { gridcolor: '#2d3748', zerolinecolor: '#4a5568', tickfont: { color: '#718096' } },
+  yaxis: { gridcolor: '#2d3748', zerolinecolor: '#4a5568', tickfont: { color: '#718096' } },
+  legend: { bgcolor: 'rgba(0,0,0,0)', font: { color: '#a0aec0', size: 10 } }
+};
+
+function recalculate(posScalar, wacc, salesMult) {
+  const years = BASE_DATA.map(d => d.Year);
+  const n = BASE_DATA.length;
+  const baseYear = years[0];
+
+  let result = [];
+  let cumPV = 0;
+
+  for (let i = 0; i < n; i++) {
+    const d = BASE_DATA[i];
+    const isCommercial = d.Stage === 'Commercial';
+    const isPreLaunch = !isCommercial && d.Stage !== 'Post-Patent';
+
+    // Adjust PoS
+    const basePoS = d.Cumulative_PoS;
+    let adjPoS = Math.min(1.0, basePoS * posScalar);
+
+    // Recalculate discount factor with new WACC
+    const t = d.Year - baseYear;
+    const df = 1 / Math.pow(1 + wacc, t);
+
+    // Gross revenue scaled
+    const grossRev = d.Gross_Revenue * salesMult;
+    const netRev = d.Net_Revenue * salesMult;
+    const cogs = d.COGS * salesMult;
+    const grossProfit = d.Gross_Profit * salesMult;
+    const royalties = d.Royalties * salesMult;
+    const sga = d.SGA * salesMult;
+    const rdPost = d.RD_PostLaunch * salesMult;
+    const ebit = d.EBIT * salesMult;
+
+    // Risk-adjusted
+    const riskAdjNetRev = netRev * adjPoS;
+    const riskAdjCost = d.Risk_Adj_Total_Cost * posScalar; // scale pre-launch risk cost
+
+    let riskAdjFCF;
+    if (isCommercial) {
+      riskAdjFCF = ebit * adjPoS * 0.3; // approximate FCF from EBIT
+    } else if (d.Stage === 'Post-Patent') {
+      riskAdjFCF = 0;
+    } else {
+      riskAdjFCF = -riskAdjCost;
+    }
+
+    const pvFCF = riskAdjFCF * df;
+    cumPV += pvFCF;
+
+    result.push({
+      Year: d.Year,
+      Stage: d.Stage,
+      Cumulative_PoS: adjPoS,
+      Gross_Revenue: grossRev,
+      Net_Revenue: netRev,
+      COGS: cogs,
+      Gross_Profit: grossProfit,
+      Royalties: royalties,
+      SGA: sga,
+      RD_PostLaunch: rdPost,
+      EBIT: ebit,
+      Total_RD_Cost_Gross: d.Total_RD_Cost_Gross,
+      Phase3_Trial_Cost_Gross: d.Phase3_Trial_Cost_Gross,
+      CMC_Manufacturing_Cost_Gross: d.CMC_Manufacturing_Cost_Gross,
+      Regulatory_Cost_Gross: d.Regulatory_Cost_Gross,
+      Risk_Adj_Net_Revenue: riskAdjNetRev,
+      Risk_Adj_Total_Cost: riskAdjCost,
+      Risk_Adj_FCF: riskAdjFCF,
+      Discount_Factor: df,
+      PV_FCF: pvFCF,
+      Cumulative_PV: cumPV
+    });
+  }
+
+  // Recompute cumulative PV properly
+  let runningPV = 0;
+  for (let i = 0; i < result.length; i++) {
+    runningPV += result[i].PV_FCF;
+    result[i].Cumulative_PV = runningPV;
+  }
+
+  return result;
+}
+
+function fmt(v, decimals=1) {
+  if (Math.abs(v) >= 1000) return '$' + (v/1000).toFixed(decimals) + 'B';
+  return '$' + v.toFixed(decimals) + 'M';
+}
+
+function updateKPIs(data, posScalar, wacc, salesMult) {
+  const rnpv = data[data.length - 1].Cumulative_PV;
+  const peakRev = Math.max(...data.map(d => d.Gross_Revenue));
+  const maxPoS = Math.max(...data.map(d => d.Cumulative_PoS));
+  const totalRD = BASE_DATA.reduce((s, d) => s + d.Total_RD_Cost_Gross, 0);
+
+  let breakeven = '—';
+  for (let i = 0; i < data.length; i++) {
+    if (data[i].Cumulative_PV >= 0) { breakeven = data[i].Year; break; }
+  }
+
+  const baseRNPV = BASE_DATA[BASE_DATA.length - 1].Cumulative_PV;
+  const delta = rnpv - baseRNPV;
+  const deltaStr = (delta >= 0 ? '+' : '') + fmt(delta) + ' vs base';
+
+  document.getElementById('kpi-rnpv').textContent = fmt(rnpv);
+  document.getElementById('kpi-rnpv').className = 'value ' + (rnpv >= 0 ? 'green' : 'red');
+  document.getElementById('kpi-rnpv-delta').textContent = deltaStr;
+  document.getElementById('kpi-peak').textContent = fmt(peakRev);
+  document.getElementById('kpi-peak-delta').textContent = 'Gross (×' + salesMult.toFixed(2) + ' mult)';
+  document.getElementById('kpi-pos').textContent = (maxPoS * 100).toFixed(1) + '%';
+  document.getElementById('kpi-rd').textContent = fmt(totalRD);
+  document.getElementById('kpi-breakeven').textContent = breakeven;
+}
+
+function renderDCF(data) {
+  const years = data.map(d => d.Year);
+  const pvFCF = data.map(d => d.PV_FCF);
+  const cumPV = data.map(d => d.Cumulative_PV);
+
+  const colors = pvFCF.map(v => v >= 0 ? '#68d391' : '#fc8181');
+
+  const traces = [
+    {
+      x: years, y: pvFCF, type: 'bar', name: 'PV FCF',
+      marker: { color: colors, opacity: 0.85 },
+      yaxis: 'y1', hovertemplate: '%{x}: %{y:.1f}M<extra>PV FCF</extra>'
+    },
+    {
+      x: years, y: cumPV, type: 'scatter', mode: 'lines+markers', name: 'Cumulative PV',
+      line: { color: '#63b3ed', width: 2.5 },
+      marker: { size: 5, color: '#63b3ed' },
+      yaxis: 'y1', hovertemplate: '%{x}: %{y:.1f}M<extra>Cumulative PV</extra>'
+    }
+  ];
+
+  const layout = {
+    ...darkLayout,
+    yaxis: { ...darkLayout.yaxis, title: { text: '$M', font: { color: '#718096', size: 10 } }, tickformat: ',.0f' },
+    xaxis: { ...darkLayout.xaxis, tickmode: 'linear', dtick: 1 },
+    barmode: 'overlay',
+    shapes: [{
+      type: 'line', x0: years[0], x1: years[years.length-1], y0: 0, y1: 0,
+      line: { color: '#4a5568', width: 1, dash: 'dot' }
+    }],
+    legend: { ...darkLayout.legend, orientation: 'h', y: -0.15 }
+  };
+
+  Plotly.react('chart-dcf', traces, layout, plotlyConfig);
+}
+
+function renderMetrics(data, posScalar, wacc, salesMult) {
+  const rnpv = data[data.length - 1].Cumulative_PV;
+  const peakRev = Math.max(...data.map(d => d.Gross_Revenue));
+  const maxPoS = Math.max(...data.map(d => d.Cumulative_PoS)) * 100;
+  const totalRD = BASE_DATA.reduce((s, d) => s + d.Total_RD_Cost_Gross, 0);
+
+  const categories = ['rNPV ($M)', 'Peak Revenue ($M)', 'PoS (%)', 'Total R&D ($M)'];
+  const values = [rnpv, peakRev, maxPoS, totalRD];
+  const barColors = ['#68d391', '#63b3ed', '#f6ad55', '#fc8181'];
+
+  const traces = [{
+    x: categories,
+    y: values,
+    type: 'bar',
+    marker: { color: barColors, opacity: 0.9 },
+    text: values.map((v, i) => i === 2 ? v.toFixed(1) + '%' : '$' + v.toFixed(0) + 'M'),
+    textposition: 'outside',
+    textfont: { color: '#e2e8f0', size: 10 },
+    hovertemplate: '%{x}: %{y:.1f}<extra></extra>'
+  }];
+
+  const layout = {
+    ...darkLayout,
+    yaxis: { ...darkLayout.yaxis, showticklabels: false, showgrid: false },
+    xaxis: { ...darkLayout.xaxis, tickfont: { color: '#a0aec0', size: 10 } },
+    margin: { t: 30, r: 20, b: 60, l: 20 }
+  };
+
+  Plotly.react('chart-metrics', traces, layout, plotlyConfig);
+}
+
+function renderRevenue(data) {
+  const commData = data.filter(d => d.Stage === 'Commercial');
+  const years = commData.map(d => d.Year);
+
+  const traces = [
+    {
+      x: years, y: commData.map(d => d.COGS), type: 'bar', name: 'COGS',
+      marker: { color: '#fc8181', opacity: 0.85 }
+    },
+    {
+      x: years, y: commData.map(d => d.SGA), type: 'bar', name: 'SG&A',
+      marker: { color: '#f6ad55', opacity: 0.85 }
+    },
+    {
+      x: years, y: commData.map(d => d.Royalties), type: 'bar', name: 'Royalties',
+      marker: { color: '#b794f4', opacity: 0.85 }
+    },
+    {
+      x: years, y: commData.map(d => d.RD_PostLaunch), type: 'bar', name: 'R&D Post-Launch',
+      marker: { color: '#76e4f7', opacity: 0.85 }
+    },
+    {
+      x: years, y: commData.map(d => d.EBIT), type: 'bar', name: 'EBIT',
+      marker: { color: '#68d391', opacity: 0.85 }
+    },
+    {
+      x: years, y: commData.map(d => d.Gross_Revenue), type: 'scatter', mode: 'lines+markers',
+      name: 'Gross Revenue', line: { color: '#63b3ed', width: 2.5 },
+      marker: { size: 6, color: '#63b3ed' }
+    }
+  ];
+
+  const layout = {
+    ...darkLayout,
+    barmode: 'stack',
+    yaxis: { ...darkLayout.yaxis, title: { text: '$M', font: { color: '#718096', size: 10 } }, tickformat: ',.0f' },
+    xaxis: { ...darkLayout.xaxis, tickmode: 'linear', dtick: 1 },
+    legend: { ...darkLayout.legend, orientation: 'h', y: -0.18 },
+    margin: { t: 10, r: 20, b: 70, l: 70 }
+  };
+
+  Plotly.react('chart-revenue', traces, layout, plotlyConfig);
+}
+
+function renderFCF(data) {
+  const years = data.map(d => d.Year);
+  const fcf = data.map(d => d.Risk_Adj_FCF);
+  const colors = fcf.map(v => v >= 0 ? '#68d391' : '#fc8181');
+
+  const traces = [{
+    x: years, y: fcf, type: 'bar', name: 'Risk-Adj FCF',
+    marker: { color: colors, opacity: 0.85 },
+    hovertemplate: '%{x}: $%{y:.1f}M<extra></extra>'
+  }];
+
+  const layout = {
+    ...darkLayout,
+    yaxis: { ...darkLayout.yaxis, title: { text: '$M', font: { color: '#718096', size: 10 } }, tickformat: ',.0f' },
+    xaxis: { ...darkLayout.xaxis, tickmode: 'linear', dtick: 2 },
+    shapes: [{
+      type: 'line', x0: years[0], x1: years[years.length-1], y0: 0, y1: 0,
+      line: { color: '#4a5568', width: 1, dash: 'dot' }
+    }],
+    margin: { t: 10, r: 20, b: 50, l: 65 }
+  };
+
+  Plotly.react('chart-fcf', traces, layout, plotlyConfig);
+}
+
+function renderStage(data) {
+  const stageColors = {
+    'Phase III': '#63b3ed',
+    'Regulatory Review': '#f6ad55',
+    'Commercial': '#68d391',
+    'Post-Patent': '#718096'
+  };
+
+  const stages = [...new Set(data.map(d => d.Stage))];
+  const traces = stages.map(stage => {
+    const stageData = data.filter(d => d.Stage === stage);
+    return {
+      x: stageData.map(d => d.Year),
+      y: stageData.map(d => d.Cumulative_PoS * 100),
+      type: 'scatter', mode: 'lines+markers', name: stage,
+      line: { color: stageColors[stage] || '#a0aec0', width: 2.5 },
+      marker: { size: 7, color: stageColors[stage] || '#a0aec0' },
+      hovertemplate: '%{x}: %{y:.1f}%<extra>' + stage + '</extra>'
+    };
+  });
+
+  const layout = {
+    ...darkLayout,
+    yaxis: { ...darkLayout.yaxis, title: { text: 'Cum. PoS (%)', font: { color: '#718096', size: 10 } }, range: [0, 70] },
+    xaxis: { ...darkLayout.xaxis, tickmode: 'linear', dtick: 2 },
+    legend: { ...darkLayout.legend, orientation: 'h', y: -0.18 },
+    margin: { t: 10, r: 20, b: 65, l: 65 }
+  };
+
+  Plotly.react('chart-stage', traces, layout, plotlyConfig);
+}
+
+function update() {
+  const posScalar = parseFloat(document.getElementById('sl-pos').value);
+  const wacc = parseFloat(document.getElementById('sl-wacc').value) / 100;
+  const salesMult = parseFloat(document.getElementById('sl-sales').value);
+
+  document.getElementById('lbl-pos').textContent = posScalar.toFixed(2) + '×';
+  document.getElementById('lbl-wacc').textContent = (wacc * 100).toFixed(1) + '%';
+  document.getElementById('lbl-sales').textContent = salesMult.toFixed(2) + '×';
+
+  const data = recalculate(posScalar, wacc, salesMult);
+
+  updateKPIs(data, posScalar, wacc, salesMult);
+  renderDCF(data);
+  renderMetrics(data, posScalar, wacc, salesMult);
+  renderRevenue(data);
+  renderFCF(data);
+  renderStage(data);
+}
+
+document.getElementById('sl-pos').addEventListener('input', update);
+document.getElementById('sl-wacc').addEventListener('input', update);
+document.getElementById('sl-sales').addEventListener('input', update);
+
+update();
+
+
+// ═══ SHEETJS FILE LOADER ═══
+function loadExcelFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type: 'array'});
+      var sheet = wb.Sheets['_dashboard_data'];
+      if (!sheet) { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">No _dashboard_data tab found</span>'; return; }
+      var type = sheet['B3'] ? sheet['B3'].v : '';
+      if (type !== 'drug_dev') { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">Wrong template. Expected drug_dev, got ' + type + '</span>'; return; }
+      var parsed = {};
+      var row = 5;
+      while (sheet['A' + row]) { parsed[sheet['A' + row].v] = sheet['B' + row] ? sheet['B' + row].v : null; row++; }
+      console.log('Loaded _dashboard_data:', parsed);
+      document.getElementById('drop-zone').classList.add('loaded');
+      document.getElementById('loader-msg').innerHTML = '<span class="loaded-msg">Loaded ' + file.name + ' — ' + new Date().toLocaleString() + '</span>';
+    } catch (err) { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">Error: ' + err.message + '</span>'; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+var dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  var f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.xlsx')) loadExcelFile(f);
+});
+document.getElementById('file-input').addEventListener('change', function(e) { if (e.target.files[0]) loadExcelFile(e.target.files[0]); });
+
+</script>
+</body>
+</html>

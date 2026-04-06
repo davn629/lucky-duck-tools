@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Oncology ADC — rNPV Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); border-bottom: 1px solid #2d3748; padding: 20px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; letter-spacing: 0.02em; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .main { padding: 24px 32px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 24px; }
+  .kpi { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 18px 20px; }
+  .kpi .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 6px; }
+  .kpi .value { font-size: 1.6rem; font-weight: 700; }
+  .kpi .delta { font-size: 0.75rem; margin-top: 4px; color: #718096; }
+  .kpi.positive .value { color: #68d391; }
+  .kpi.negative .value { color: #fc8181; }
+  .kpi.neutral .value { color: #63b3ed; }
+  .kpi.warn .value { color: #f6ad55; }
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h2 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .slider-item label { display: flex; justify-content: space-between; font-size: 0.8rem; color: #a0aec0; margin-bottom: 8px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; font-size: 0.85rem; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 4px; border-radius: 2px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; border: 2px solid #1a1f2e; cursor: pointer; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; border: 2px solid #1a1f2e; cursor: pointer; }
+  .charts-row { display: grid; grid-template-columns: 1.6fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .chart-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
+  .chart-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  .table-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; overflow-x: auto; }
+  .table-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 12px; }
+  table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+  th { color: #718096; font-weight: 600; text-align: right; padding: 6px 10px; border-bottom: 1px solid #2d3748; white-space: nowrap; }
+  th:first-child { text-align: left; }
+  td { padding: 6px 10px; text-align: right; border-bottom: 1px solid #1e2535; color: #cbd5e0; white-space: nowrap; }
+  td:first-child { text-align: left; color: #a0aec0; }
+  tr:hover td { background: #1e2535; }
+  .pos-cell { color: #f6ad55; }
+  .green { color: #68d391; }
+  .red { color: #fc8181; }
+
+  /* ═══ FILE LOADER ═══ */
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; } .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+
+  /* ═══ PRINT ═══ */
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; padding: 10px 20px !important; }
+    header h1 { color: #1C6834 !important; font-size: 14pt !important; }
+    header .subtitle { color: #666 !important; }
+    .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .main { padding: 10px 20px !important; }
+    .file-loader, .controls, .export-btn { display: none !important; }
+    .kpi-card, .chart-card, .chart-full { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .kpi-card .label { color: #666 !important; }
+    .kpi-card .value.green { color: #1B7A3D !important; }
+    .kpi-card .value.blue { color: #1C6834 !important; }
+    .kpi-card .value.orange { color: #B7791F !important; }
+    .kpi-card .value.red { color: #C53030 !important; }
+    .kpi-card .delta { color: #666 !important; }
+    .chart-card h3, .chart-full h3 { color: #333 !important; }
+    footer { color: #999 !important; border-top: 1px solid #d0d0d0 !important; }
+    .kpi-row, .waterfall-row { page-break-inside: avoid; }
+  }
+
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>Oncology ADC — Risk-Adjusted NPV Model</h1>
+    <div class="subtitle">Phase II → Phase III Transition · Antibody-Drug Conjugate</div>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <span class="badge">rNPV Valuation</span>
+    <span class="badge" style="background:#276749;color:#c6f6d5;">Clinical Budgeting</span>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- File Loader -->
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag your Drug Dev Model .xlsx here to load your data, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi neutral" id="kpi-rnpv">
+      <div class="label">Base rNPV</div>
+      <div class="value" id="kpi-rnpv-val">—</div>
+      <div class="delta" id="kpi-rnpv-delta">Adjusted value</div>
+    </div>
+    <div class="kpi warn" id="kpi-peak">
+      <div class="label">Peak Gross Revenue</div>
+      <div class="value" id="kpi-peak-val">—</div>
+      <div class="delta" id="kpi-peak-delta">Adjusted peak</div>
+    </div>
+    <div class="kpi positive" id="kpi-pos">
+      <div class="label">Cumulative PoS (Phase III)</div>
+      <div class="value" id="kpi-pos-val">—</div>
+      <div class="delta">Probability of Success</div>
+    </div>
+    <div class="kpi negative" id="kpi-rd">
+      <div class="label">Total R&D Investment</div>
+      <div class="value" id="kpi-rd-val">—</div>
+      <div class="delta">Phase III + CMC</div>
+    </div>
+  </div>
+
+  <!-- Sliders -->
+  <div class="controls">
+    <h2>Scenario Controls — Live Recalculation</h2>
+    <div class="slider-grid">
+      <div class="slider-item">
+        <label>PoS Scalar <span id="pos-label">1.00×</span></label>
+        <input type="range" id="pos-slider" min="0.5" max="1.5" step="0.01" value="1.0">
+      </div>
+      <div class="slider-item">
+        <label>WACC <span id="wacc-label">12.0%</span></label>
+        <input type="range" id="wacc-slider" min="8" max="18" step="0.5" value="12">
+      </div>
+      <div class="slider-item">
+        <label>Peak Sales Multiplier <span id="peak-label">1.00×</span></label>
+        <input type="range" id="peak-slider" min="0.5" max="2.0" step="0.01" value="1.0">
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row -->
+  <div class="charts-row">
+    <div class="chart-card">
+      <h3>Discounted Cash Flows &amp; Cumulative rNPV Over Time</h3>
+      <div id="chart-dcf" style="height:340px;"></div>
+    </div>
+    <div class="chart-card">
+      <h3>Key Metrics Summary</h3>
+      <div id="chart-metrics" style="height:340px;"></div>
+    </div>
+  </div>
+
+  <!-- Waterfall -->
+  <div class="chart-full">
+    <h3>Cumulative rNPV Waterfall — Year by Year</h3>
+    <div id="chart-waterfall" style="height:300px;"></div>
+  </div>
+
+  <!-- Revenue Breakdown -->
+  <div class="chart-full">
+    <h3>Revenue &amp; Cost Profile (Nominal, Risk-Adjusted)</h3>
+    <div id="chart-revenue" style="height:300px;"></div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-card">
+    <h3>Detailed Model Output</h3>
+    <table id="data-table">
+      <thead>
+        <tr>
+          <th>Stage</th>
+          <th>Year</th>
+          <th>Gross Revenue</th>
+          <th>Total R&D Cost</th>
+          <th>Net Cash Flow</th>
+          <th>Cum. PoS</th>
+          <th>Risk-Adj CF</th>
+          <th>Discount Factor</th>
+          <th>PV Risk-Adj CF</th>
+          <th>Cumulative rNPV</th>
+        </tr>
+      </thead>
+      <tbody id="table-body"></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+const BASE_DATA = [{"Year":0,"Stage":"Phase III - Year 1","Gross_Revenue":0,"Net_Revenue":0,"COGS":0,"Gross_Profit":0,"Operating_Expenses":0,"EBIT":0,"Tax":0,"NOPAT":0,"Phase3_Trial_Cost":-60000000,"CMC_Cost":-10500000,"Total_RD_Cost":-70500000,"Net_Cash_Flow":-70500000,"Cumulative_PoS":0.5,"Risk_Adjusted_CF":-35250000,"Discount_Factor":1.0,"PV_Risk_Adjusted_CF":-35250000,"Cumulative_rNPV":-35250000},{"Year":1,"Stage":"Phase III - Year 2","Gross_Revenue":0,"Net_Revenue":0,"COGS":0,"Gross_Profit":0,"Operating_Expenses":0,"EBIT":0,"Tax":0,"NOPAT":0,"Phase3_Trial_Cost":-80000000,"CMC_Cost":-14000000,"Total_RD_Cost":-94000000,"Net_Cash_Flow":-94000000,"Cumulative_PoS":0.5,"Risk_Adjusted_CF":-47000000,"Discount_Factor":0.8928571429,"PV_Risk_Adjusted_CF":-41964285.714285709,"Cumulative_rNPV":-77214285.7142857015},{"Year":2,"Stage":"Phase III - Year 3","Gross_Revenue":0,"Net_Revenue":0,"COGS":0,"Gross_Profit":0,"Operating_Expenses":0,"EBIT":0,"Tax":0,"NOPAT":0,"Phase3_Trial_Cost":-60000000,"CMC_Cost":-10500000,"Total_RD_Cost":-70500000,"Net_Cash_Flow":-70500000,"Cumulative_PoS":0.5,"Risk_Adjusted_CF":-35250000,"Discount_Factor":0.7971938776,"PV_Risk_Adjusted_CF":-28101084.1836734675,"Cumulative_rNPV":-105315369.8979591727},{"Year":3,"Stage":"NDA/BLA Submission","Gross_Revenue":0,"Net_Revenue":0,"COGS":0,"Gross_Profit":0,"Operating_Expenses":0,"EBIT":0,"Tax":0,"NOPAT":0,"Phase3_Trial_Cost":0,"CMC_Cost":-5000000,"Total_RD_Cost":-5000000,"Net_Cash_Flow":-5000000,"Cumulative_PoS":0.3,"Risk_Adjusted_CF":-1500000,"Discount_Factor":0.7117802478,"PV_Risk_Adjusted_CF":-1067670.3717201164,"Cumulative_rNPV":-106383040.269679293},{"Year":4,"Stage":"Launch (Year 0 post-launch)","Gross_Revenue":0,"Net_Revenue":0,"COGS":0,"Gross_Profit":0,"Operating_Expenses":0,"EBIT":0,"Tax":0,"NOPAT":0,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":0,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":0,"Discount_Factor":0.6355180784,"PV_Risk_Adjusted_CF":0,"Cumulative_rNPV":-106383040.269679293},{"Year":5,"Stage":"Commercial Ramp (Year 1 post-launch)","Gross_Revenue":75000000,"Net_Revenue":72750000,"COGS":-18187500,"Gross_Profit":54562500,"Operating_Expenses":-18187500,"EBIT":36375000,"Tax":-7638750,"NOPAT":28736250,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":28736250,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":7586370,"Discount_Factor":0.5674268557,"PV_Risk_Adjusted_CF":4304710.0754179098,"Cumulative_rNPV":-102078330.194261387},{"Year":6,"Stage":"Commercial Ramp (Year 2 post-launch)","Gross_Revenue":225000000,"Net_Revenue":218250000,"COGS":-54562500,"Gross_Profit":163687500,"Operating_Expenses":-54562500,"EBIT":109125000,"Tax":-22916250,"NOPAT":86208750,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":86208750,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":22759110,"Discount_Factor":0.5066311212,"PV_Risk_Adjusted_CF":11530473.4162979685,"Cumulative_rNPV":-90547856.7779634148},{"Year":7,"Stage":"Commercial Ramp (Year 3 post-launch)","Gross_Revenue":450000000,"Net_Revenue":436500000,"COGS":-109125000,"Gross_Profit":327375000,"Operating_Expenses":-109125000,"EBIT":218250000,"Tax":-45832500,"NOPAT":172417500,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":172417500,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":45518220,"Discount_Factor":0.4523492153,"PV_Risk_Adjusted_CF":20590131.1005320884,"Cumulative_rNPV":-69957725.6774313301},{"Year":8,"Stage":"Commercial Ramp (Year 4 post-launch)","Gross_Revenue":825000000,"Net_Revenue":800250000,"COGS":-200062500,"Gross_Profit":600187500,"Operating_Expenses":-200062500,"EBIT":400125000,"Tax":-84026250,"NOPAT":316098750,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":316098750,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":83450070,"Discount_Factor":0.403883228,"PV_Risk_Adjusted_CF":33704083.6467043161,"Cumulative_rNPV":-36253642.0307270139},{"Year":9,"Stage":"Commercial Ramp (Year 5 post-launch)","Gross_Revenue":1125000000,"Net_Revenue":1091250000,"COGS":-272812500,"Gross_Profit":818437500,"Operating_Expenses":-272812500,"EBIT":545625000,"Tax":-114581250,"NOPAT":431043750,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":431043750,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":113795550,"Discount_Factor":0.360610025,"PV_Risk_Adjusted_CF":41035816.1282925755,"Cumulative_rNPV":4782174.0975655615},{"Year":10,"Stage":"Peak Sales (Year 6 post-launch)","Gross_Revenue":1500000000,"Net_Revenue":1455000000,"COGS":-363750000,"Gross_Profit":1091250000,"Operating_Expenses":-363750000,"EBIT":727500000,"Tax":-152775000,"NOPAT":574725000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":574725000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":151727400,"Discount_Factor":0.3219732366,"PV_Risk_Adjusted_CF":48852162.0574911609,"Cumulative_rNPV":53634336.1550567225},{"Year":11,"Stage":"Peak Sales (Year 7 post-launch)","Gross_Revenue":1500000000,"Net_Revenue":1455000000,"COGS":-363750000,"Gross_Profit":1091250000,"Operating_Expenses":-363750000,"EBIT":727500000,"Tax":-152775000,"NOPAT":574725000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":574725000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":151727400,"Discount_Factor":0.2874761041,"PV_Risk_Adjusted_CF":43618001.8370456696,"Cumulative_rNPV":97252337.9921023846},{"Year":12,"Stage":"Peak Sales (Year 8 post-launch)","Gross_Revenue":1500000000,"Net_Revenue":1455000000,"COGS":-363750000,"Gross_Profit":1091250000,"Operating_Expenses":-363750000,"EBIT":727500000,"Tax":-152775000,"NOPAT":574725000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":574725000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":151727400,"Discount_Factor":0.2566750929,"PV_Risk_Adjusted_CF":38944644.4973621964,"Cumulative_rNPV":136196982.489464581},{"Year":13,"Stage":"Peak Sales (Year 9 post-launch)","Gross_Revenue":1500000000,"Net_Revenue":1455000000,"COGS":-363750000,"Gross_Profit":1091250000,"Operating_Expenses":-363750000,"EBIT":727500000,"Tax":-152775000,"NOPAT":574725000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":574725000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":151727400,"Discount_Factor":0.2291741901,"PV_Risk_Adjusted_CF":34772004.0155019611,"Cumulative_rNPV":170968986.504966557},{"Year":14,"Stage":"Post-LOE Erosion (Year 10 post-launch)","Gross_Revenue":300000000,"Net_Revenue":291000000,"COGS":-72750000,"Gross_Profit":218250000,"Operating_Expenses":-72750000,"EBIT":145500000,"Tax":-30555000,"NOPAT":114945000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":114945000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":30345480,"Discount_Factor":0.2046198126,"PV_Risk_Adjusted_CF":6209286.4313396355,"Cumulative_rNPV":177178272.9363061786},{"Year":15,"Stage":"Post-LOE Erosion (Year 11 post-launch)","Gross_Revenue":270000000,"Net_Revenue":261900000,"COGS":-65475000,"Gross_Profit":196425000,"Operating_Expenses":-65475000,"EBIT":130950000,"Tax":-27499500,"NOPAT":103450500,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":103450500,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":27310932,"Discount_Factor":0.1826962613,"PV_Risk_Adjusted_CF":4989605.1680407794,"Cumulative_rNPV":182167878.1043469608},{"Year":16,"Stage":"Post-LOE Erosion (Year 12 post-launch)","Gross_Revenue":240000000,"Net_Revenue":232800000,"COGS":-58200000,"Gross_Profit":174600000,"Operating_Expenses":-58200000,"EBIT":116400000,"Tax":-24444000,"NOPAT":91956000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":91956000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":24276384,"Discount_Factor":0.1631216618,"PV_Risk_Adjusted_CF":3960004.1016196646,"Cumulative_rNPV":186127882.2059666216},{"Year":17,"Stage":"Post-LOE Erosion (Year 13 post-launch)","Gross_Revenue":210000000,"Net_Revenue":203700000,"COGS":-50925000,"Gross_Profit":152775000,"Operating_Expenses":-50925000,"EBIT":101850000,"Tax":-21388500,"NOPAT":80461500,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":80461500,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":21241836,"Discount_Factor":0.1456443409,"PV_Risk_Adjusted_CF":3093753.2043903642,"Cumulative_rNPV":189221635.4103569984},{"Year":18,"Stage":"Post-LOE Erosion (Year 14 post-launch)","Gross_Revenue":180000000,"Net_Revenue":174600000,"COGS":-43650000,"Gross_Profit":130950000,"Operating_Expenses":-43650000,"EBIT":87300000,"Tax":-18333000,"NOPAT":68967000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":68967000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":18207288,"Discount_Factor":0.1300395901,"PV_Risk_Adjusted_CF":2367668.2686660937,"Cumulative_rNPV":191589303.679023087},{"Year":19,"Stage":"Post-LOE Erosion (Year 15 post-launch)","Gross_Revenue":150000000,"Net_Revenue":145500000,"COGS":-36375000,"Gross_Profit":109125000,"Operating_Expenses":-36375000,"EBIT":72750000,"Tax":-15277500,"NOPAT":57472500,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":57472500,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":15172740,"Discount_Factor":0.1161067769,"PV_Risk_Adjusted_CF":1761657.9379956052,"Cumulative_rNPV":193350961.6170186996},{"Year":20,"Stage":"Post-LOE Erosion (Year 16 post-launch)","Gross_Revenue":120000000,"Net_Revenue":116400000,"COGS":-29100000,"Gross_Profit":87300000,"Operating_Expenses":-29100000,"EBIT":58200000,"Tax":-12222000,"NOPAT":45978000,"Phase3_Trial_Cost":0,"CMC_Cost":0,"Total_RD_Cost":0,"Net_Cash_Flow":45978000,"Cumulative_PoS":0.264,"Risk_Adjusted_CF":12138192,"Discount_Factor":0.1036667651,"PV_Risk_Adjusted_CF":1258327.0985682898,"Cumulative_rNPV":194609288.7155869901}];
+
+const BASE_POS_PHASE3 = 0.5;
+const BASE_POS_NDA = 0.3;
+const BASE_POS_COMMERCIAL = 0.264;
+const BASE_PEAK_REVENUE = 1500000000;
+const TAX_RATE = 0.21;
+const GROSS_TO_NET = 0.97;
+const COGS_RATIO = 0.25;
+const OPEX_RATIO = 0.25;
+
+const plotlyConfig = { responsive: true, displayModeBar: false };
+const darkLayout = {
+  paper_bgcolor: '#1a1f2e',
+  plot_bgcolor: '#1a1f2e',
+  font: { color: '#a0aec0', size: 11 },
+  margin: { t: 10, r: 20, b: 60, l: 70 },
+  xaxis: { gridcolor: '#2d3748', zerolinecolor: '#4a5568', tickfont: { size: 10 } },
+  yaxis: { gridcolor: '#2d3748', zerolinecolor: '#4a5568', tickfont: { size: 10 } },
+  legend: { bgcolor: 'rgba(0,0,0,0)', font: { size: 10 } }
+};
+
+function fmt(v, decimals=1) {
+  const abs = Math.abs(v);
+  const sign = v < 0 ? '-' : '';
+  if (abs >= 1e9) return sign + '$' + (abs/1e9).toFixed(decimals) + 'B';
+  if (abs >= 1e6) return sign + '$' + (abs/1e6).toFixed(decimals) + 'M';
+  if (abs >= 1e3) return sign + '$' + (abs/1e3).toFixed(decimals) + 'K';
+  return sign + '$' + abs.toFixed(0);
+}
+
+function fmtPct(v) { return (v*100).toFixed(1) + '%'; }
+
+function recalculate(posScalar, wacc, peakMult) {
+  const waccRate = wacc / 100;
+  const data = BASE_DATA.map((row, i) => {
+    const r = Object.assign({}, row);
+
+    // Adjust PoS
+    let adjPoS;
+    if (r.Year <= 2) adjPoS = Math.min(1, BASE_POS_PHASE3 * posScalar);
+    else if (r.Year === 3) adjPoS = Math.min(1, BASE_POS_NDA * posScalar);
+    else adjPoS = Math.min(1, BASE_POS_COMMERCIAL * posScalar);
+    r.Cumulative_PoS = adjPoS;
+
+    // Adjust Revenue
+    if (r.Gross_Revenue > 0) {
+      r.Gross_Revenue = row.Gross_Revenue * peakMult;
+      r.Net_Revenue = r.Gross_Revenue * GROSS_TO_NET;
+      r.COGS = -r.Net_Revenue * COGS_RATIO;
+      r.Gross_Profit = r.Net_Revenue + r.COGS;
+      r.Operating_Expenses = -r.Net_Revenue * OPEX_RATIO;
+      r.EBIT = r.Gross_Profit + r.Operating_Expenses;
+      r.Tax = r.EBIT * (-TAX_RATE);
+      r.NOPAT = r.EBIT + r.Tax;
+      r.Net_Cash_Flow = r.NOPAT;
+    }
+
+    // Discount factor
+    r.Discount_Factor = 1 / Math.pow(1 + waccRate, r.Year);
+
+    // Risk adjusted CF
+    r.Risk_Adjusted_CF = r.Net_Cash_Flow * adjPoS;
+
+    // PV
+    r.PV_Risk_Adjusted_CF = r.Risk_Adjusted_CF * r.Discount_Factor;
+
+    return r;
+  });
+
+  // Cumulative rNPV
+  let cum = 0;
+  data.forEach(r => {
+    cum += r.PV_Risk_Adjusted_CF;
+    r.Cumulative_rNPV = cum;
+  });
+
+  return data;
+}
+
+function updateKPIs(data, posScalar, peakMult) {
+  const finalRNPV = data[data.length - 1].Cumulative_rNPV;
+  const baseRNPV = BASE_DATA[BASE_DATA.length - 1].Cumulative_rNPV;
+  const peakRevRow = data.reduce((a, b) => b.Gross_Revenue > a.Gross_Revenue ? b : a);
+  const totalRD = data.reduce((s, r) => s + r.Total_RD_Cost, 0);
+  const avgPoS = data[0].Cumulative_PoS;
+
+  document.getElementById('kpi-rnpv-val').textContent = fmt(finalRNPV);
+  const delta = finalRNPV - baseRNPV;
+  document.getElementById('kpi-rnpv-delta').textContent = (delta >= 0 ? '+' : '') + fmt(delta) + ' vs base';
+  document.getElementById('kpi-rnpv').className = 'kpi ' + (finalRNPV >= 0 ? 'neutral' : 'negative');
+
+  document.getElementById('kpi-peak-val').textContent = fmt(peakRevRow.Gross_Revenue);
+  document.getElementById('kpi-peak-delta').textContent = peakMult.toFixed(2) + '× base peak';
+
+  document.getElementById('kpi-pos-val').textContent = fmtPct(avgPoS);
+
+  document.getElementById('kpi-rd-val').textContent = fmt(totalRD);
+}
+
+function renderDCFChart(data) {
+  const years = data.map(d => 'Y' + d.Year);
+  const pvCF = data.map(d => d.PV_Risk_Adjusted_CF / 1e6);
+  const cumRNPV = data.map(d => d.Cumulative_rNPV / 1e6);
+  const colors = pvCF.map(v => v >= 0 ? '#68d391' : '#fc8181');
+
+  const traces = [
+    {
+      type: 'bar',
+      name: 'PV Risk-Adj CF ($M)',
+      x: years, y: pvCF,
+      marker: { color: colors, opacity: 0.85 },
+      yaxis: 'y'
+    },
+    {
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Cumulative rNPV ($M)',
+      x: years, y: cumRNPV,
+      line: { color: '#63b3ed', width: 2.5 },
+      marker: { size: 5, color: '#63b3ed' },
+      yaxis: 'y2'
+    }
+  ];
+
+  const layout = Object.assign({}, darkLayout, {
+    margin: { t: 10, r: 60, b: 60, l: 70 },
+    yaxis: { title: 'PV CF ($M)', gridcolor: '#2d3748', zerolinecolor: '#4a5568' },
+    yaxis2: { title: 'Cum. rNPV ($M)', overlaying: 'y', side: 'right', gridcolor: 'transparent', zerolinecolor: '#4a5568' },
+    barmode: 'relative',
+    legend: { orientation: 'h', y: -0.18, bgcolor: 'rgba(0,0,0,0)', font: { size: 10 } }
+  });
+
+  Plotly.react('chart-dcf', traces, layout, plotlyConfig);
+}
+
+function renderMetricsChart(data, posScalar, wacc, peakMult) {
+  const finalRNPV = data[data.length - 1].Cumulative_rNPV / 1e6;
+  const peakRevRow = data.reduce((a, b) => b.Gross_Revenue > a.Gross_Revenue ? b : a);
+  const peakRev = peakRevRow.Gross_Revenue / 1e6;
+  const totalRD = Math.abs(data.reduce((s, r) => s + r.Total_RD_Cost, 0)) / 1e6;
+  const avgPoS = data[0].Cumulative_PoS * 100;
+
+  const traces = [
+    {
+      type: 'bar',
+      x: ['rNPV ($M)', 'Peak Revenue ($M)', 'R&D Cost ($M)', 'PoS Ph3 (%)'],
+      y: [finalRNPV, peakRev, totalRD, avgPoS],
+      marker: {
+        color: [
+          finalRNPV >= 0 ? '#63b3ed' : '#fc8181',
+          '#f6ad55',
+          '#fc8181',
+          '#68d391'
+        ],
+        opacity: 0.9
+      },
+      text: [fmt(finalRNPV*1e6), fmt(peakRev*1e6), fmt(-totalRD*1e6), fmtPct(avgPoS/100)],
+      textposition: 'outside',
+      textfont: { color: '#e2e8f0', size: 10 }
+    }
+  ];
+
+  const layout = Object.assign({}, darkLayout, {
+    margin: { t: 30, r: 20, b: 60, l: 60 },
+    yaxis: { gridcolor: '#2d3748', zerolinecolor: '#4a5568' },
+    showlegend: false
+  });
+
+  Plotly.react('chart-metrics', traces, layout, plotlyConfig);
+}
+
+function renderWaterfallChart(data) {
+  const years = data.map(d => 'Y' + d.Year);
+  const pvCF = data.map(d => d.PV_Risk_Adjusted_CF / 1e6);
+
+  const measure = pvCF.map((v, i) => i === pvCF.length - 1 ? 'total' : 'relative');
+  const values = [...pvCF];
+  values[values.length - 1] = data[data.length - 1].Cumulative_rNPV / 1e6;
+
+  const traces = [{
+    type: 'waterfall',
+    x: years,
+    y: values,
+    measure: measure,
+    connector: { line: { color: '#4a5568', width: 1 } },
+    increasing: { marker: { color: '#68d391' } },
+    decreasing: { marker: { color: '#fc8181' } },
+    totals: { marker: { color: '#63b3ed' } },
+    textposition: 'outside',
+    text: values.map(v => (v >= 0 ? '+' : '') + v.toFixed(0)),
+    textfont: { size: 9, color: '#a0aec0' }
+  }];
+
+  const layout = Object.assign({}, darkLayout, {
+    margin: { t: 10, r: 20, b: 60, l: 70 },
+    yaxis: { title: '$M', gridcolor: '#2d3748', zerolinecolor: '#4a5568' }
+  });
+
+  Plotly.react('chart-waterfall', traces, layout, plotlyConfig);
+}
+
+function renderRevenueChart(data) {
+  const years = data.map(d => 'Y' + d.Year);
+  const grossRev = data.map(d => d.Gross_Revenue / 1e6);
+  const rdCost = data.map(d => d.Total_RD_Cost / 1e6);
+  const riskAdjCF = data.map(d => d.Risk_Adjusted_CF / 1e6);
+
+  const traces = [
+    {
+      type: 'bar',
+      name: 'Gross Revenue ($M)',
+      x: years, y: grossRev,
+      marker: { color: '#4299e1', opacity: 0.7 }
+    },
+    {
+      type: 'bar',
+      name: 'R&D Cost ($M)',
+      x: years, y: rdCost,
+      marker: { color: '#fc8181', opacity: 0.8 }
+    },
+    {
+      type: 'scatter',
+      mode: 'lines+markers',
+      name: 'Risk-Adj CF ($M)',
+      x: years, y: riskAdjCF,
+      line: { color: '#f6ad55', width: 2 },
+      marker: { size: 4 }
+    }
+  ];
+
+  const layout = Object.assign({}, darkLayout, {
+    margin: { t: 10, r: 20, b: 60, l: 70 },
+    barmode: 'overlay',
+    yaxis: { title: '$M', gridcolor: '#2d3748', zerolinecolor: '#4a5568' },
+    legend: { orientation: 'h', y: -0.2, bgcolor: 'rgba(0,0,0,0)', font: { size: 10 } }
+  });
+
+  Plotly.react('chart-revenue', traces, layout, plotlyConfig);
+}
+
+function renderTable(data) {
+  const tbody = document.getElementById('table-body');
+  tbody.innerHTML = '';
+  data.forEach(r => {
+    const tr = document.createElement('tr');
+    const ncfClass = r.Net_Cash_Flow >= 0 ? 'green' : 'red';
+    const pvClass = r.PV_Risk_Adjusted_CF >= 0 ? 'green' : 'red';
+    const cumClass = r.Cumulative_rNPV >= 0 ? 'green' : 'red';
+    tr.innerHTML = `
+      <td>${r.Stage}</td>
+      <td>${r.Year}</td>
+      <td>${r.Gross_Revenue > 0 ? fmt(r.Gross_Revenue) : '—'}</td>
+      <td class="red">${r.Total_RD_Cost < 0 ? fmt(r.Total_RD_Cost) : '—'}</td>
+      <td class="${ncfClass}">${fmt(r.Net_Cash_Flow)}</td>
+      <td class="pos-cell">${fmtPct(r.Cumulative_PoS)}</td>
+      <td class="${pvClass}">${fmt(r.Risk_Adjusted_CF)}</td>
+      <td>${r.Discount_Factor.toFixed(4)}</td>
+      <td class="${pvClass}">${fmt(r.PV_Risk_Adjusted_CF)}</td>
+      <td class="${cumClass}">${fmt(r.Cumulative_rNPV)}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+}
+
+function update() {
+  const posScalar = parseFloat(document.getElementById('pos-slider').value);
+  const wacc = parseFloat(document.getElementById('wacc-slider').value);
+  const peakMult = parseFloat(document.getElementById('peak-slider').value);
+
+  document.getElementById('pos-label').textContent = posScalar.toFixed(2) + '×';
+  document.getElementById('wacc-label').textContent = wacc.toFixed(1) + '%';
+  document.getElementById('peak-label').textContent = peakMult.toFixed(2) + '×';
+
+  const data = recalculate(posScalar, wacc, peakMult);
+
+  updateKPIs(data, posScalar, peakMult);
+  renderDCFChart(data);
+  renderMetricsChart(data, posScalar, wacc, peakMult);
+  renderWaterfallChart(data);
+  renderRevenueChart(data);
+  renderTable(data);
+}
+
+document.getElementById('pos-slider').addEventListener('input', update);
+document.getElementById('wacc-slider').addEventListener('input', update);
+document.getElementById('peak-slider').addEventListener('input', update);
+
+update();
+
+
+// ═══ SHEETJS FILE LOADER ═══
+function loadExcelFile(file) {
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      var wb = XLSX.read(e.target.result, {type: 'array'});
+      var sheet = wb.Sheets['_dashboard_data'];
+      if (!sheet) { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">No _dashboard_data tab found</span>'; return; }
+      var type = sheet['B3'] ? sheet['B3'].v : '';
+      if (type !== 'drug_dev_adc') { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">Wrong template. Expected drug_dev_adc, got ' + type + '</span>'; return; }
+      var parsed = {};
+      var row = 5;
+      while (sheet['A' + row]) { parsed[sheet['A' + row].v] = sheet['B' + row] ? sheet['B' + row].v : null; row++; }
+      console.log('Loaded _dashboard_data:', parsed);
+      document.getElementById('drop-zone').classList.add('loaded');
+      document.getElementById('loader-msg').innerHTML = '<span class="loaded-msg">Loaded ' + file.name + ' — ' + new Date().toLocaleString() + '</span>';
+    } catch (err) { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">Error: ' + err.message + '</span>'; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+var dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', function(e) { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', function() { dropZone.classList.remove('drag-over'); });
+dropZone.addEventListener('drop', function(e) {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  var f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.xlsx')) loadExcelFile(f);
+});
+document.getElementById('file-input').addEventListener('change', function(e) { if (e.target.files[0]) loadExcelFile(e.target.files[0]); });
+
+</script>
+</body>
+</html>

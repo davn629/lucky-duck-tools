@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Regulatory Timeline Tracker — Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); padding: 20px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; } .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+  .kpi-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .kpi-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px 22px; flex: 1; min-width: 150px; }
+  .kpi-card .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 1.5rem; font-weight: 700; }
+  .kpi-card .value.green { color: #68d391; } .kpi-card .value.blue { color: #63b3ed; }
+  .kpi-card .value.orange { color: #f6ad55; } .kpi-card .value.red { color: #fc8181; }
+  .kpi-card .delta { font-size: 0.72rem; color: #718096; margin-top: 4px; }
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .slider-item label { font-size: 0.78rem; color: #a0aec0; display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 5px; border-radius: 3px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  footer { text-align: center; padding: 20px; color: #4a5568; font-size: 0.72rem; border-top: 1px solid #2d3748; margin-top: 40px; }
+  footer a { color: #63b3ed; text-decoration: none; }
+  @media (max-width: 900px) { .slider-grid { grid-template-columns: 1fr; } }
+
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; }
+    header h1 { color: #1C6834 !important; } .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .file-loader, .controls, .export-btn { display: none !important; }
+    .kpi-card, .chart-full { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .kpi-card .label { color: #666 !important; } .kpi-card .delta { color: #666 !important; }
+    .kpi-card .value.green { color: #1B7A3D !important; } .kpi-card .value.blue { color: #1C6834 !important; }
+    .kpi-card .value.orange { color: #B7791F !important; } .kpi-card .value.red { color: #C53030 !important; }
+    .chart-full h3 { color: #333 !important; }
+    footer { color: #999 !important; } footer a { color: #1C6834 !important; }
+    .kpi-row { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Regulatory Timeline Tracker</h1><div class="subtitle">Lucky Duck Group &middot; FDA Regulatory Milestone Planning</div></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <div class="badge">REG TIMELINE</div>
+  </div>
+</header>
+<div class="main">
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag your Regulatory Timeline .xlsx here, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="label">Next Milestone</div><div class="value blue" id="kpi-next" style="font-size:1.1rem">—</div><div class="delta" id="kpi-days">—</div></div>
+    <div class="kpi-card"><div class="label">Projected NDA Date</div><div class="value orange" id="kpi-nda">—</div><div class="delta">Submission date</div></div>
+    <div class="kpi-card"><div class="label">Projected Launch</div><div class="value green" id="kpi-launch">—</div><div class="delta">PDUFA + approval</div></div>
+    <div class="kpi-card"><div class="label">Total Cost to Launch</div><div class="value red" id="kpi-cost">—</div><div class="delta" id="kpi-burn">—</div></div>
+    <div class="kpi-card"><div class="label">Completion</div><div class="value green" id="kpi-pct">—</div><div class="delta" id="kpi-done">—</div></div>
+  </div>
+
+  <div class="controls">
+    <h3>Delay Impact Analysis</h3>
+    <div class="slider-grid">
+      <div class="slider-item"><label>Phase I Delay (months) <span id="sv-ph1">0</span></label><input type="range" id="sl-ph1" min="0" max="24" step="1" value="0"></div>
+      <div class="slider-item"><label>Phase II Delay (months) <span id="sv-ph2">0</span></label><input type="range" id="sl-ph2" min="0" max="24" step="1" value="0"></div>
+      <div class="slider-item"><label>Phase III Delay (months) <span id="sv-ph3">0</span></label><input type="range" id="sl-ph3" min="0" max="24" step="1" value="0"></div>
+    </div>
+  </div>
+
+  <div class="chart-full">
+    <h3>Visual Timeline (Gantt)</h3>
+    <div id="chart-gantt" style="height: 500px;"></div>
+  </div>
+
+  <div class="chart-full">
+    <h3>Burn Rate Impact</h3>
+    <div id="chart-burn" style="height: 300px;"></div>
+  </div>
+</div>
+<footer>Built by Lucky Duck Group &middot; <a href="https://davenova3.gumroad.com">davenova3.gumroad.com</a></footer>
+
+<script>
+const MILESTONES = [
+  {name:'Pre-IND Meeting', offset:0, duration:1, phase:'pre'},
+  {name:'IND Filing', offset:6, duration:1, phase:'ind'},
+  {name:'Phase I', offset:8, duration:12, phase:'ph1'},
+  {name:'EOP1 Meeting', offset:22, duration:2, phase:'ph1'},
+  {name:'Phase II', offset:24, duration:24, phase:'ph2'},
+  {name:'EOP2 Meeting', offset:50, duration:2, phase:'ph2'},
+  {name:'Phase III', offset:52, duration:36, phase:'ph3'},
+  {name:'Pre-NDA Meeting', offset:90, duration:2, phase:'nda'},
+  {name:'NDA Submission', offset:94, duration:4, phase:'nda'},
+  {name:'PDUFA / Approval', offset:104, duration:2, phase:'nda'},
+];
+
+let anchorDate = new Date(2025, 5, 1);
+let burnRate = 500000;
+let completedCount = 0;
+
+function addMonths(d, m) { const r = new Date(d); r.setMonth(r.getMonth() + m); return r; }
+const fmt$ = v => '$' + Math.round(v).toLocaleString();
+const fmt$M = v => '$' + (v/1e6).toFixed(0) + 'M';
+const fmtDate = d => d.toLocaleDateString('en-US', {month:'short', year:'numeric'});
+
+function getDelays() {
+  return {
+    ph1: parseInt(document.getElementById('sl-ph1').value),
+    ph2: parseInt(document.getElementById('sl-ph2').value),
+    ph3: parseInt(document.getElementById('sl-ph3').value),
+  };
+}
+
+function getDelayForPhase(phase, delays) {
+  let d = 0;
+  if (['ph1','ph2','ph3','nda'].includes(phase)) d += delays.ph1;
+  if (['ph2','ph3','nda'].includes(phase)) d += delays.ph2;
+  if (['ph3','nda'].includes(phase)) d += delays.ph3;
+  return d;
+}
+
+function update() {
+  const delays = getDelays();
+  const totalDelay = delays.ph1 + delays.ph2 + delays.ph3;
+  const totalMonths = 106 + totalDelay;
+  const totalCost = totalMonths * burnRate;
+
+  // KPIs
+  document.getElementById('kpi-next').textContent = MILESTONES[completedCount]?.name || 'All Complete';
+  const nextDate = addMonths(anchorDate, (MILESTONES[completedCount]?.offset || 0) + getDelayForPhase(MILESTONES[completedCount]?.phase || 'pre', delays));
+  const daysUntil = Math.round((nextDate - new Date()) / 86400000);
+  document.getElementById('kpi-days').textContent = daysUntil > 0 ? daysUntil + ' days away' : 'Past due';
+
+  const ndaDate = addMonths(anchorDate, 94 + totalDelay);
+  document.getElementById('kpi-nda').textContent = fmtDate(ndaDate);
+  const launchDate = addMonths(anchorDate, 106 + totalDelay);
+  document.getElementById('kpi-launch').textContent = fmtDate(launchDate);
+  document.getElementById('kpi-cost').textContent = fmt$M(totalCost);
+  document.getElementById('kpi-burn').textContent = fmt$(burnRate) + '/mo burn rate';
+  document.getElementById('kpi-pct').textContent = Math.round(completedCount / MILESTONES.length * 100) + '%';
+  document.getElementById('kpi-done').textContent = completedCount + '/' + MILESTONES.length + ' milestones';
+
+  // Gantt
+  const colors = {pre:'#718096',ind:'#63b3ed',ph1:'#68d391',ph2:'#f6ad55',ph3:'#fc8181',nda:'#b794f4'};
+  const traces = MILESTONES.map((m, i) => {
+    const delay = getDelayForPhase(m.phase, delays);
+    const start = addMonths(anchorDate, m.offset + delay);
+    const end = addMonths(start, m.duration);
+    return {
+      type: 'bar', orientation: 'h',
+      y: [m.name], x: [m.duration],
+      base: [m.offset + delay],
+      marker: { color: i < completedCount ? '#2d3748' : colors[m.phase] },
+      text: [fmtDate(start) + ' → ' + fmtDate(end)],
+      textposition: 'inside', textfont: { color: '#fff', size: 10 },
+      hovertemplate: m.name + '<br>' + fmtDate(start) + ' → ' + fmtDate(end) + '<br>%{x} months<extra></extra>',
+      showlegend: false,
+    };
+  }).reverse();
+
+  Plotly.react('chart-gantt', traces, {
+    paper_bgcolor: '#1a1f2e', plot_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0', size: 10 },
+    margin: { t: 10, r: 20, b: 40, l: 140 },
+    xaxis: { title: 'Months from Pre-IND', gridcolor: '#2d3748', range: [0, totalMonths + 5] },
+    yaxis: { gridcolor: '#2d3748' },
+    barmode: 'overlay',
+  }, { responsive: true, displayModeBar: false });
+
+  // Burn chart
+  const baseMonths = 106;
+  const scenarios = [
+    { name: 'Base (No Delay)', months: baseMonths, color: '#68d391' },
+    { name: 'With Delays', months: totalMonths, color: '#fc8181' },
+  ];
+  Plotly.react('chart-burn', scenarios.map(s => ({
+    type: 'bar', x: [s.name], y: [s.months * burnRate],
+    marker: { color: s.color },
+    text: [fmt$M(s.months * burnRate) + ' (' + s.months + ' mo)'],
+    textposition: 'outside', textfont: { color: '#e2e8f0', size: 13 },
+  })), {
+    paper_bgcolor: '#1a1f2e', plot_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0' }, margin: { t: 20, r: 20, b: 40, l: 80 },
+    yaxis: { gridcolor: '#2d3748', tickprefix: '$', tickformat: ',.0f' },
+    showlegend: false,
+  }, { responsive: true, displayModeBar: false });
+}
+
+// Sliders
+['sl-ph1','sl-ph2','sl-ph3'].forEach(id => {
+  document.getElementById(id).addEventListener('input', e => {
+    document.getElementById(id.replace('sl-','sv-')).textContent = e.target.value;
+    update();
+  });
+});
+
+// File loader
+function loadFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, {type:'array'});
+      const sh = wb.Sheets['_dashboard_data'];
+      if (!sh) { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">No _dashboard_data tab</span>'; return; }
+      if (sh['B3']?.v !== 'reg_timeline') { document.getElementById('loader-msg').innerHTML = '<span class="error-msg">Wrong template</span>'; return; }
+      const p = {}; let r = 5;
+      while (sh[`A${r}`]) { p[sh[`A${r}`].v] = sh[`B${r}`]?.v; r++; }
+      if (p.burn_rate) burnRate = p.burn_rate;
+      if (p.milestones_complete) completedCount = p.milestones_complete;
+      if (p.anchor_date) {
+        const d = p.anchor_date;
+        if (typeof d === 'number') anchorDate = new Date((d - 25569) * 86400000);
+        else if (typeof d === 'string') anchorDate = new Date(d);
+      }
+      document.getElementById('drop-zone').classList.add('loaded');
+      document.getElementById('loader-msg').innerHTML = `<span class="loaded-msg">Loaded ${file.name}</span>`;
+      update();
+    } catch(err) { document.getElementById('loader-msg').innerHTML = `<span class="error-msg">${err.message}</span>`; }
+  };
+  reader.readAsArrayBuffer(file);
+}
+const dz = document.getElementById('drop-zone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag-over'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag-over'));
+dz.addEventListener('drop', e => { e.preventDefault(); dz.classList.remove('drag-over'); if(e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]); });
+document.getElementById('file-input').addEventListener('change', e => { if(e.target.files[0]) loadFile(e.target.files[0]); });
+
+update();
+</script>
+</body>
+</html>

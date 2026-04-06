@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharma Financial Template Dashboards — Live Demos | Lucky Duck Group</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #f5f7f5;
+            color: #222;
+            line-height: 1.6;
+        }
+        header {
+            background: #1C6834;
+            color: #fff;
+            padding: 2.5rem 1.5rem 2rem;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .notice {
+            background: #e8f5e9;
+            border-left: 4px solid #1C6834;
+            max-width: 900px;
+            margin: 1.5rem auto;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            color: #2e5a3a;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+            max-width: 1100px;
+            margin: 1.5rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.14); }
+        .card h3 {
+            font-size: 1.1rem;
+            color: #1C6834;
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            font-size: 0.92rem;
+            color: #555;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+        .card .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .btn-demo {
+            background: #1C6834;
+            color: #fff;
+        }
+        .btn-demo:hover { background: #155228; }
+        .btn-buy {
+            background: #fff;
+            color: #1C6834;
+            border: 2px solid #1C6834;
+        }
+        .btn-buy:hover { background: #e8f5e9; }
+        footer {
+            background: #222;
+            color: #aaa;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        footer a { color: #8fd4a4; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .section-label {
+            max-width: 1100px;
+            margin: 2rem auto 0.25rem;
+            padding: 0 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Pharma Financial Template Dashboards</h1>
+    <p>Live interactive demos powered by Plotly.js. Drag-and-drop your Excel file to visualize KPIs instantly.</p>
+</header>
+
+<div class="notice">
+    These dashboards load with sample data so you can explore the visualizations. Purchase the full Excel template to load your own numbers and customize every assumption.
+</div>
+
+<div class="section-label">Pharma Operational Models</div>
+<div class="grid">
+
+    <div class="card">
+        <h3>Drug Development Model &mdash; Pharma Asset</h3>
+        <p>Full-lifecycle drug P&amp;L: Phase I-IV costs, probability-adjusted NPV, launch curves, and scenario toggles for a standard pharma asset.</p>
+        <div class="actions">
+            <a href="drug-dev-pharmaasset/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/drug-development-pharma-asset" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Drug Development Model &mdash; Rare Disease</h3>
+        <p>Orphan-drug economics: accelerated timelines, patient-pool sizing, pricing premiums, and regulatory milestone tracking for rare-disease programs.</p>
+        <div class="actions">
+            <a href="drug-dev-raredisease/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/drug-development-rare-disease" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Drug Development Model &mdash; Oncology ADC</h3>
+        <p>Antibody-drug conjugate financials: CMC costs, companion diagnostics, competitive positioning, and probability-weighted revenue for ADC programs.</p>
+        <div class="actions">
+            <a href="drug-dev-oncologyadc/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/drug-development-oncology-adc" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>CMO Cost Model</h3>
+        <p>Contract manufacturing cost buildup: batch economics, scale-up scenarios, tech-transfer fees, and make-vs-buy analysis for API and drug product.</p>
+        <div class="actions">
+            <a href="cmo-cost-model/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/cmo-cost-model" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>GTN Waterfall</h3>
+        <p>Gross-to-net revenue waterfall: rebates, chargebacks, copay assistance, 340B, and channel mix to bridge from gross sales to net revenue.</p>
+        <div class="actions">
+            <a href="gtn-waterfall/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/gtn-waterfall" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Transfer Pricing Model</h3>
+        <p>Intercompany pricing analysis: OECD-aligned methods, functional analysis, benchmarking, and tax-impact modeling across jurisdictions.</p>
+        <div class="actions">
+            <a href="transfer-pricing/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/transfer-pricing" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Clinical Trial Budget</h3>
+        <p>Trial cost forecasting: per-patient costs, site activation, CRO fees, enrollment curves, and budget-vs-actual tracking by study phase.</p>
+        <div class="actions">
+            <a href="clinical-trial-budget/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/clinical-trial-budget" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>R&amp;D Portfolio Tracker</h3>
+        <p>Pipeline portfolio view: risk-adjusted NPV by program, stage-gate progression, resource allocation, and portfolio-level scenario analysis.</p>
+        <div class="actions">
+            <a href="rd-portfolio/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/rd-portfolio-tracker" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Regulatory Timeline Tracker</h3>
+        <p>Submission planning: IND/NDA/BLA timelines, health-authority milestones, PDUFA dates, and cross-program Gantt visualization.</p>
+        <div class="actions">
+            <a href="regulatory-timeline/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/regulatory-timeline" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Licensing &amp; Royalty Tracker</h3>
+        <p>Deal economics: upfront/milestone payments, tiered royalties, co-promote splits, and cumulative cash-flow projections for in/out-licensing.</p>
+        <div class="actions">
+            <a href="licensing-royalty/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/licensing-royalty-tracker" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Headcount Planner</h3>
+        <p>Workforce planning: FTE forecasting by function, loaded-cost calculations, hiring timelines, and department-level budget rollups.</p>
+        <div class="actions">
+            <a href="headcount-planner/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/headcount-planner" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+</div>
+
+<div class="section-label">FP&amp;A Suite</div>
+<div class="grid">
+
+    <div class="card">
+        <h3>Corporate Dashboard (FP&amp;A Suite)</h3>
+        <p>Executive-level KPI dashboard: consolidated P&amp;L, cash runway, department spend, headcount trends, and board-ready visualizations from the full FP&amp;A Suite.</p>
+        <div class="actions">
+            <a href="corporate-dashboard/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://www.efinancialmodels.com/downloads/pharma-fpa-suite" class="btn btn-buy">Get Full Suite</a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Lucky Duck Group &nbsp;|&nbsp; <a href="https://luckyduckgroup.com">luckyduckgroup.com</a>
+</footer>
+
+</body>
+</html>

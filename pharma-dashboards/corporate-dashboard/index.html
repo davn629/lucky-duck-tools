@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LDG Pharma | Corporate Finance Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{background:#0f1117;color:#e2e8f0;font-family:'Segoe UI',system-ui,-apple-system,BlinkMacSystemFont,sans-serif;padding:20px;min-height:100vh}
+
+  /* Header */
+  .header{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-bottom:20px;padding-bottom:16px;border-bottom:1px solid #2d3748}
+  .header-left h1{font-size:1.7rem;color:#e2e8f0;font-weight:700}
+  .header-left h1 span.brand{color:#1C6834}
+  .header-left .subtitle{color:#94a3b8;font-size:0.9rem;margin-top:4px}
+  .header-right{display:flex;gap:10px;align-items:center}
+  .btn{border:none;padding:10px 22px;border-radius:8px;font-size:0.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+  .btn-primary{background:#1C6834;color:#fff}
+  .btn-primary:hover{background:#155427}
+  .btn-outline{background:transparent;color:#94a3b8;border:1px solid #2d3748}
+  .btn-outline:hover{border-color:#1C6834;color:#1C6834}
+  .timestamp{color:#64748b;font-size:0.75rem;text-align:right}
+
+  /* File Loader */
+  .file-loader{background:#1a1f2e;border:2px dashed #2d3748;border-radius:12px;padding:30px;text-align:center;margin-bottom:24px;transition:all .3s;position:relative}
+  .file-loader.dragover{border-color:#1C6834;background:#111827}
+  .file-loader input[type=file]{display:none}
+  .file-loader .drop-icon{font-size:2.5rem;margin-bottom:8px}
+  .file-loader p{color:#94a3b8;margin-bottom:8px;font-size:0.95rem}
+  .file-loader p.hint{font-size:0.8rem;color:#64748b}
+  .file-loader label{cursor:pointer;background:#1C6834;color:#fff;padding:10px 24px;border-radius:8px;font-weight:600;display:inline-block;margin-top:10px;transition:background .2s}
+  .file-loader label:hover{background:#155427}
+
+  /* File Badges */
+  .file-badges{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px;justify-content:center}
+  .file-badge{background:#162415;border:1px solid #1C6834;color:#68d391;padding:4px 12px;border-radius:20px;font-size:0.78rem;font-weight:500;display:flex;align-items:center;gap:5px}
+  .file-badge .remove{cursor:pointer;color:#fc8181;font-weight:700;margin-left:4px}
+  .file-badge .remove:hover{color:#f56565}
+  .load-count{color:#94a3b8;font-size:0.82rem;margin-top:10px}
+
+  /* KPI Row */
+  .kpi-row{display:grid;grid-template-columns:repeat(6,1fr);gap:14px;margin-bottom:24px}
+  @media(max-width:1200px){.kpi-row{grid-template-columns:repeat(3,1fr)}}
+  @media(max-width:768px){.kpi-row{grid-template-columns:repeat(2,1fr)}}
+  .kpi-card{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:18px 14px;text-align:center;transition:border-color .2s}
+  .kpi-card:hover{border-color:#1C6834}
+  .kpi-card .label{font-size:0.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:1px;margin-bottom:6px}
+  .kpi-card .value{font-size:1.6rem;font-weight:700;color:#68d391;margin-bottom:4px}
+  .kpi-card .value.warn{color:#f6ad55}
+  .kpi-card .value.danger{color:#fc8181}
+  .kpi-card .value.info{color:#63b3ed}
+  .kpi-card .sub{font-size:0.72rem;color:#64748b}
+  .kpi-card .no-data{color:#4a5568;font-style:italic;font-size:0.85rem}
+
+  /* Chart Grid */
+  .chart-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:20px;margin-bottom:24px}
+  @media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+  .chart-card{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;padding:16px}
+  .chart-card h3{color:#e2e8f0;font-size:0.95rem;margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid #2d3748}
+  .chart-placeholder{color:#4a5568;text-align:center;padding:60px 20px;font-style:italic}
+
+  /* Tables */
+  .table-section{margin-bottom:24px}
+  .table-section h3{color:#e2e8f0;font-size:1rem;margin-bottom:12px;padding-left:4px}
+  .data-table-wrap{background:#1a1f2e;border:1px solid #2d3748;border-radius:12px;overflow:hidden;margin-bottom:20px}
+  .data-table-wrap h3{padding:14px 16px 0;margin-bottom:0}
+  table.data-table{width:100%;border-collapse:collapse}
+  table.data-table thead th{background:#141824;color:#94a3b8;font-size:0.75rem;text-transform:uppercase;letter-spacing:.5px;padding:10px 14px;text-align:left;border-bottom:1px solid #2d3748}
+  table.data-table tbody td{padding:10px 14px;font-size:0.85rem;border-bottom:1px solid #1e2536;color:#e2e8f0}
+  table.data-table tbody tr:hover{background:#141824}
+  table.data-table tbody tr:last-child td{border-bottom:none}
+  .tag{display:inline-block;padding:2px 10px;border-radius:12px;font-size:0.72rem;font-weight:600}
+  .tag-green{background:#162415;color:#68d391;border:1px solid #22543d}
+  .tag-yellow{background:#2d2214;color:#f6ad55;border:1px solid #744210}
+  .tag-red{background:#2d1414;color:#fc8181;border:1px solid #742a2a}
+  .tag-blue{background:#142030;color:#63b3ed;border:1px solid #2b6cb0}
+
+  /* Footer */
+  footer{text-align:center;color:#64748b;font-size:0.78rem;margin-top:30px;padding:20px 16px;border-top:1px solid #2d3748}
+  footer a{color:#1C6834;text-decoration:none;font-weight:500}
+  footer a:hover{text-decoration:underline}
+  footer .consult{margin-top:8px;font-size:0.82rem}
+  footer .consult a{color:#68d391}
+
+  /* Print */
+  @media print{
+    body{background:#fff!important;color:#1a1a1a!important;-webkit-print-color-adjust:exact;print-color-adjust:exact;padding:10px}
+    .file-loader,.header-right,.btn{display:none!important}
+    .header{border-color:#d0d0d0!important}
+    .header-left h1{color:#1a1a1a!important}
+    .header-left h1 span.brand{color:#1C6834!important}
+    .header-left .subtitle{color:#555!important}
+    .kpi-card{background:#f8fafc!important;border-color:#d0d0d0!important;page-break-inside:avoid}
+    .kpi-card .label{color:#555!important}
+    .kpi-card .value{color:#1C6834!important}
+    .kpi-card .value.warn{color:#b45309!important}
+    .kpi-card .value.danger{color:#c53030!important}
+    .kpi-card .value.info{color:#2b6cb0!important}
+    .kpi-card .sub{color:#666!important}
+    .chart-card{background:#fff!important;border-color:#d0d0d0!important;page-break-inside:avoid}
+    .chart-card h3{color:#1a1a1a!important;border-color:#d0d0d0!important}
+    .data-table-wrap{background:#fff!important;border-color:#d0d0d0!important}
+    table.data-table thead th{background:#f2f2f2!important;color:#333!important;border-color:#d0d0d0!important}
+    table.data-table tbody td{color:#1a1a1a!important;border-color:#e2e8f0!important}
+    table.data-table tbody tr:hover{background:transparent!important}
+    .tag-green{background:#e6f4ea!important;color:#1B7A3D!important;border-color:#1B7A3D!important}
+    .tag-yellow{background:#fef3c7!important;color:#92400e!important;border-color:#92400e!important}
+    .tag-red{background:#fee2e2!important;color:#c53030!important;border-color:#c53030!important}
+    .tag-blue{background:#dbeafe!important;color:#2b6cb0!important;border-color:#2b6cb0!important}
+    footer{color:#666!important;border-color:#d0d0d0!important}
+    footer a{color:#1C6834!important}
+    .file-badges,.load-count{display:none!important}
+  }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <div class="header-left">
+    <h1><span class="brand">LDG Pharma</span> | Corporate Finance Dashboard</h1>
+    <div class="subtitle">Unified FP&amp;A Suite &mdash; Consolidated Executive View</div>
+  </div>
+  <div class="header-right">
+    <div class="timestamp" id="lastUpdated"></div>
+    <button class="btn btn-outline" onclick="resetAll()">Reset</button>
+    <button class="btn btn-primary" onclick="window.print()">Export PDF</button>
+  </div>
+</div>
+
+<!-- File Loader -->
+<div class="file-loader" id="dropZone">
+  <div class="drop-icon">&#128202;</div>
+  <p>Drop your LDG Pharma <strong>.xlsx</strong> files here (load multiple)</p>
+  <p class="hint">Supports: Dept Expense, Cash Burn, Headcount, R&amp;D Portfolio, GTN Waterfall, Clinical Trial, HC Request, Fundraising, Board Report, BvA, and Corporate Dashboard templates</p>
+  <label for="fileInput">Choose Files</label>
+  <input type="file" id="fileInput" accept=".xlsx,.xls" multiple>
+  <div class="file-badges" id="fileBadges"></div>
+  <div class="load-count" id="loadCount"></div>
+</div>
+
+<!-- Status Banner -->
+<div id="statusBanner" style="display:none;padding:10px 16px;border-radius:8px;margin-bottom:16px;font-size:0.85rem;font-weight:500"></div>
+
+<!-- KPI Row -->
+<div class="kpi-row">
+  <div class="kpi-card">
+    <div class="label">Total Cash</div>
+    <div class="value" id="kpiCash">--</div>
+    <div class="sub" id="kpiCashSub">Load cash burn model</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Runway</div>
+    <div class="value" id="kpiRunway">--</div>
+    <div class="sub" id="kpiRunwaySub">Months remaining</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Headcount</div>
+    <div class="value info" id="kpiHC">--</div>
+    <div class="sub" id="kpiHCSub">Full-time equivalents</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Pipeline</div>
+    <div class="value info" id="kpiPipeline">--</div>
+    <div class="sub" id="kpiPipelineSub">Assets / rNPV</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Burn Rate</div>
+    <div class="value" id="kpiBurn">--</div>
+    <div class="sub" id="kpiBurnSub">Monthly spend</div>
+  </div>
+  <div class="kpi-card">
+    <div class="label">Budget Variance</div>
+    <div class="value" id="kpiVariance">--</div>
+    <div class="sub" id="kpiVarianceSub">YTD actual vs budget</div>
+  </div>
+</div>
+
+<!-- Charts Row -->
+<div class="chart-grid">
+  <div class="chart-card">
+    <h3>Department Expense Breakdown</h3>
+    <div id="chartDeptExpense"><div class="chart-placeholder">Load department expense templates to see breakdown</div></div>
+  </div>
+  <div class="chart-card">
+    <h3>Cash Runway Projection (24 Months)</h3>
+    <div id="chartCashRunway"><div class="chart-placeholder">Load cash burn model to see projection</div></div>
+  </div>
+</div>
+
+<!-- Department Summary Table -->
+<div class="data-table-wrap" id="deptTableWrap">
+  <h3 style="padding:14px 16px 10px">Department Summary</h3>
+  <table class="data-table" id="deptTable">
+    <thead>
+      <tr>
+        <th>Department</th>
+        <th>Annual Expense</th>
+        <th>Headcount</th>
+        <th>Avg FTEs</th>
+        <th>Cost / FTE</th>
+      </tr>
+    </thead>
+    <tbody id="deptTableBody">
+      <tr><td colspan="5" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">No department data loaded</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Pipeline Summary Table -->
+<div class="data-table-wrap" id="pipelineTableWrap">
+  <h3 style="padding:14px 16px 10px">Pipeline Summary</h3>
+  <table class="data-table" id="pipelineTable">
+    <thead>
+      <tr>
+        <th>Asset / Program</th>
+        <th>Phase</th>
+        <th>Indication</th>
+        <th>rNPV ($M)</th>
+        <th>PoS</th>
+      </tr>
+    </thead>
+    <tbody id="pipelineTableBody">
+      <tr><td colspan="5" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">No R&amp;D portfolio data loaded</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Key Metrics Table -->
+<div class="data-table-wrap" id="metricsTableWrap">
+  <h3 style="padding:14px 16px 10px">Consolidated Key Metrics</h3>
+  <table class="data-table" id="metricsTable">
+    <thead>
+      <tr>
+        <th>Metric</th>
+        <th>Value</th>
+        <th>Source</th>
+        <th>Status</th>
+      </tr>
+    </thead>
+    <tbody id="metricsTableBody">
+      <tr><td colspan="4" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">Load templates to populate metrics</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- Footer -->
+<footer>
+  <div>Powered by <a href="https://luckyduckgroup.com" target="_blank">Lucky Duck Group</a> &middot; luckyduckgroup.com</div>
+  <div class="consult">Need this automated? <a href="https://calendly.com/david-luckyduckgroup/lucky-duck-group" target="_blank">Book a consultation</a></div>
+</footer>
+
+<script>
+/* ======================================================================
+   LDG Pharma Corporate Dashboard — Data Engine
+   ====================================================================== */
+
+// Global data store — accumulates from all loaded files
+const store = {
+  files: {},           // filename -> { template_type, data, raw_kv }
+  departments: [],     // array of { name, expense, headcount, ftes }
+  pipeline_assets: [], // array of { name, phase, indication, rnpv, pos }
+  kpis: {}             // merged KPIs from all sources
+};
+
+const TEMPLATE_LABELS = {
+  dept_expense:          'Dept Expense',
+  cash_burn:             'Cash Burn Model',
+  headcount:             'Headcount Planner',
+  rd_portfolio:          'R&D Portfolio',
+  gtn_waterfall:         'GTN Waterfall',
+  clinical_trial:        'Clinical Trial Budget',
+  hc_request:            'HC Request',
+  fundraising:           'Fundraising Model',
+  board_report:          'Board Report',
+  company_bva:           'Company BvA',
+  corporate_dashboard:   'Corporate Dashboard'
+};
+const TOTAL_TEMPLATES = Object.keys(TEMPLATE_LABELS).length;
+
+// ---- Sample / default data for initial render ----
+const SAMPLE = {
+  cash: { total_cash: 48500000, monthly_burn_current: 3200000, runway_months: 15.2, runway_status: 'Yellow', cash_zero_date: '2027-07-15' },
+  headcount: { total_headcount: 342, total_loaded_cost: 57600000, burden_rate: 1.38 },
+  pipeline: { total_rnpv: 285000000, asset_count: 6 },
+  burn: { monthly_burn: 3200000 },
+  bva: { total_annual_budget: 42000000, total_ytd_actual: 11200000, total_ytd_variance: -320000, variance_pct: -2.9 },
+  departments: [
+    { name: 'R&D / Clinical',   expense: 18200000, headcount: 124, ftes: 118.5 },
+    { name: 'Commercial',       expense: 8600000,  headcount: 72,  ftes: 68.0 },
+    { name: 'G&A',              expense: 5400000,  headcount: 48,  ftes: 46.0 },
+    { name: 'Manufacturing',    expense: 6200000,  headcount: 56,  ftes: 54.5 },
+    { name: 'Medical Affairs',  expense: 3600000,  headcount: 42,  ftes: 39.0 }
+  ],
+  pipeline_assets: [
+    { name: 'LDG-101',  phase: 'Phase III', indication: 'NSCLC',               rnpv: 125.0, pos: '62%' },
+    { name: 'LDG-205',  phase: 'Phase II',  indication: 'Triple-Neg Breast',   rnpv: 68.0,  pos: '34%' },
+    { name: 'LDG-310',  phase: 'Phase I',   indication: 'AML',                 rnpv: 42.0,  pos: '18%' },
+    { name: 'LDG-412',  phase: 'Preclinical',indication: 'Solid Tumors',       rnpv: 28.0,  pos: '8%'  },
+    { name: 'LDG-508',  phase: 'Phase II',  indication: 'CLL',                 rnpv: 15.0,  pos: '29%' },
+    { name: 'LDG-601',  phase: 'Phase I',   indication: 'Rare Pediatric',      rnpv: 7.0,   pos: '12%' }
+  ]
+};
+
+let usingSampleData = true;
+
+// ---- Initialize with sample data ----
+function initSample() {
+  renderKPIs(SAMPLE);
+  renderDeptTable(SAMPLE.departments);
+  renderPipelineTable(SAMPLE.pipeline_assets);
+  renderMetricsTable(buildSampleMetrics());
+  renderDeptChart(SAMPLE.departments);
+  renderCashRunwayChart(SAMPLE.cash);
+  showBanner('info', 'Showing sample data. Drop your .xlsx files above to see your actual numbers.');
+}
+
+// ---- File Loading ----
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  handleFiles(e.dataTransfer.files);
+});
+fileInput.addEventListener('change', e => handleFiles(e.target.files));
+
+function handleFiles(fileList) {
+  for (const file of fileList) {
+    if (!file.name.match(/\.xlsx?$/i)) {
+      showBanner('warn', `Skipped "${file.name}" — not an Excel file.`);
+      continue;
+    }
+    const reader = new FileReader();
+    reader.onload = function(e) {
+      try {
+        processWorkbook(file.name, e.target.result);
+      } catch (err) {
+        showBanner('error', `Error reading "${file.name}": ${err.message}`);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+}
+
+function processWorkbook(filename, data) {
+  const wb = XLSX.read(data, { type: 'array' });
+  const sheetName = wb.SheetNames.find(s => s.toLowerCase().replace(/\s/g,'') === '_dashboard_data');
+  if (!sheetName) {
+    showBanner('warn', `"${filename}" has no _dashboard_data sheet — skipped.`);
+    return;
+  }
+  const ws = wb.Sheets[sheetName];
+  const rows = XLSX.utils.sheet_to_json(ws, { header: 1 });
+
+  // Parse key-value pairs
+  const kv = {};
+  for (let i = 1; i < rows.length; i++) {
+    const row = rows[i];
+    if (!row || !row[0]) continue;
+    const key = String(row[0]).trim().toLowerCase();
+    kv[key] = row[1];
+  }
+
+  const templateType = kv['template_type'] || kv['type'] || 'unknown';
+  if (!TEMPLATE_LABELS[templateType]) {
+    showBanner('warn', `"${filename}" has unrecognized template_type "${templateType}" — loaded raw data.`);
+  }
+
+  // Store
+  store.files[filename] = { template_type: templateType, raw_kv: kv };
+
+  // Extract type-specific data
+  extractTemplateData(templateType, kv, filename, wb);
+
+  // Mark real data mode
+  usingSampleData = false;
+
+  // Rebuild all views
+  rebuildDashboard();
+  updateFileBadges();
+  document.getElementById('lastUpdated').textContent = 'Updated: ' + new Date().toLocaleTimeString();
+}
+
+function extractTemplateData(type, kv, filename, wb) {
+  const n = v => typeof v === 'number' ? v : parseFloat(String(v).replace(/[$,%]/g, '')) || 0;
+
+  switch (type) {
+    case 'dept_expense':
+      store.departments.push({
+        name: kv['department_name'] || filename.replace(/\.xlsx?$/i, ''),
+        expense: n(kv['total_annual_expense']),
+        headcount: n(kv['total_personnel']),
+        ftes: n(kv['planned_ftes_avg'])
+      });
+      break;
+
+    case 'cash_burn':
+      store.kpis.total_cash = n(kv['total_cash']);
+      store.kpis.monthly_burn_current = n(kv['monthly_burn_current']);
+      store.kpis.runway_months = n(kv['runway_months']);
+      store.kpis.runway_status = kv['runway_status'] || '';
+      store.kpis.cash_zero_date = kv['cash_zero_date'] || '';
+      break;
+
+    case 'headcount':
+      store.kpis.total_headcount = n(kv['total_headcount']);
+      store.kpis.total_loaded_cost = n(kv['total_loaded_cost']);
+      store.kpis.burden_rate = n(kv['burden_rate']);
+      break;
+
+    case 'rd_portfolio':
+      store.kpis.total_rnpv = n(kv['total_portfolio_rnpv'] || kv['total_rnpv']);
+      // Try to read asset table from the dashboard data or a known sheet
+      const assetCount = n(kv['asset_count'] || kv['total_assets']);
+      store.kpis.asset_count = assetCount;
+      // Try to extract pipeline rows from dept_table or asset rows
+      extractPipelineAssets(kv, wb);
+      break;
+
+    case 'gtn_waterfall':
+      store.kpis.gross_sales = n(kv['gross_sales']);
+      store.kpis.net_revenue = n(kv['net_revenue']);
+      store.kpis.gtn_pct = n(kv['gtn_pct']);
+      break;
+
+    case 'clinical_trial':
+      store.kpis.grand_total_budget = n(kv['grand_total_budget']);
+      store.kpis.cost_per_patient = n(kv['cost_per_patient']);
+      break;
+
+    case 'hc_request':
+      store.kpis.total_requests = n(kv['total_requests']);
+      store.kpis.new_hires = n(kv['new_hires']);
+      store.kpis.terminations = n(kv['terminations']);
+      store.kpis.net_hc_change = n(kv['net_hc_change']);
+      break;
+
+    case 'fundraising':
+      store.kpis.total_raised = n(kv['total_raised']);
+      store.kpis.latest_valuation = n(kv['latest_valuation']);
+      store.kpis.founder_ownership_current = n(kv['founder_ownership_current']);
+      break;
+
+    case 'board_report':
+      store.kpis.beginning_cash = n(kv['beginning_cash']);
+      store.kpis.ending_cash = n(kv['ending_cash']);
+      if (!store.kpis.monthly_burn_current) store.kpis.monthly_burn_current = n(kv['monthly_burn']);
+      if (!store.kpis.runway_months) store.kpis.runway_months = n(kv['runway_months']);
+      break;
+
+    case 'company_bva':
+      store.kpis.total_annual_budget = n(kv['total_annual_budget']);
+      store.kpis.total_ytd_actual = n(kv['total_ytd_actual']);
+      store.kpis.total_ytd_variance = n(kv['total_ytd_variance']);
+      store.kpis.variance_pct = n(kv['variance_pct']);
+      break;
+
+    case 'corporate_dashboard':
+      // Master template — override all KPIs
+      for (const [k, v] of Object.entries(kv)) {
+        if (k !== 'template_type' && k !== 'template_version') {
+          store.kpis[k] = typeof v === 'number' ? v : v;
+        }
+      }
+      break;
+  }
+}
+
+function extractPipelineAssets(kv, wb) {
+  // Look for asset rows in _dashboard_data keyed as asset_1_name, asset_1_phase, etc.
+  store.pipeline_assets = [];
+  for (let i = 1; i <= 30; i++) {
+    const name = kv[`asset_${i}_name`] || kv[`asset_${i}`];
+    if (!name) break;
+    store.pipeline_assets.push({
+      name: name,
+      phase: kv[`asset_${i}_phase`] || '--',
+      indication: kv[`asset_${i}_indication`] || '--',
+      rnpv: parseFloat(kv[`asset_${i}_rnpv`]) || 0,
+      pos: kv[`asset_${i}_pos`] || '--'
+    });
+  }
+  if (store.pipeline_assets.length === 0) {
+    // Try reading from a Portfolio sheet
+    const portfolioSheet = wb.SheetNames.find(s => /portfolio|pipeline|assets/i.test(s));
+    if (portfolioSheet) {
+      const rows = XLSX.utils.sheet_to_json(wb.Sheets[portfolioSheet]);
+      rows.forEach(r => {
+        const name = r['Asset'] || r['Program'] || r['Name'] || r['asset_name'];
+        if (name) {
+          store.pipeline_assets.push({
+            name: name,
+            phase: r['Phase'] || r['Stage'] || '--',
+            indication: r['Indication'] || r['Therapeutic Area'] || '--',
+            rnpv: parseFloat(r['rNPV'] || r['rNPV ($M)'] || r['NPV'] || 0),
+            pos: r['PoS'] || r['Probability'] || '--'
+          });
+        }
+      });
+    }
+  }
+}
+
+// ---- Rebuild everything from store ----
+function rebuildDashboard() {
+  const k = store.kpis;
+  const n = v => typeof v === 'number' ? v : parseFloat(String(v).replace(/[$,%]/g, '')) || 0;
+
+  // Build merged data object for KPIs
+  const data = {
+    cash: {
+      total_cash: k.total_cash || k.ending_cash || 0,
+      monthly_burn_current: k.monthly_burn_current || 0,
+      runway_months: k.runway_months || 0,
+      runway_status: k.runway_status || '',
+      cash_zero_date: k.cash_zero_date || ''
+    },
+    headcount: {
+      total_headcount: k.total_headcount || 0,
+      total_loaded_cost: k.total_loaded_cost || 0,
+      burden_rate: k.burden_rate || 0
+    },
+    pipeline: {
+      total_rnpv: k.total_rnpv || 0,
+      asset_count: k.asset_count || store.pipeline_assets.length || 0
+    },
+    burn: { monthly_burn: k.monthly_burn_current || 0 },
+    bva: {
+      total_annual_budget: k.total_annual_budget || 0,
+      total_ytd_actual: k.total_ytd_actual || 0,
+      total_ytd_variance: k.total_ytd_variance || 0,
+      variance_pct: k.variance_pct || 0
+    }
+  };
+
+  renderKPIs(data);
+  renderDeptTable(store.departments.length ? store.departments : null);
+  renderPipelineTable(store.pipeline_assets.length ? store.pipeline_assets : null);
+  renderMetricsTable(buildLiveMetrics());
+  renderDeptChart(store.departments.length ? store.departments : null);
+  renderCashRunwayChart(data.cash.total_cash ? data.cash : null);
+
+  showBanner('success', `Loaded ${Object.keys(store.files).length} file(s). Showing consolidated data from: ${Object.values(store.files).map(f => TEMPLATE_LABELS[f.template_type] || f.template_type).join(', ')}.`);
+}
+
+// ---- Render KPIs ----
+function renderKPIs(data) {
+  const fmt = (v, prefix='$', suffix='', div=1) => {
+    if (!v && v !== 0) return '--';
+    const n = typeof v === 'number' ? v : parseFloat(v);
+    if (isNaN(n)) return '--';
+    const scaled = n / div;
+    if (Math.abs(scaled) >= 1000) return prefix + (scaled/1000).toFixed(1) + 'B' + suffix;
+    if (Math.abs(scaled) >= 1) return prefix + scaled.toFixed(1) + 'M' + suffix;
+    return prefix + (scaled*1000).toFixed(0) + 'K' + suffix;
+  };
+
+  // Cash
+  const cashEl = document.getElementById('kpiCash');
+  const cashVal = data.cash.total_cash;
+  if (cashVal) {
+    cashEl.textContent = fmt(cashVal, '$', '', 1000000);
+    cashEl.className = 'value';
+    document.getElementById('kpiCashSub').textContent = 'Total cash on hand';
+  } else {
+    cashEl.textContent = '--';
+    cashEl.className = 'value';
+    document.getElementById('kpiCashSub').textContent = 'Load cash burn model';
+  }
+
+  // Runway
+  const runwayEl = document.getElementById('kpiRunway');
+  const rwMonths = data.cash.runway_months;
+  if (rwMonths) {
+    runwayEl.textContent = parseFloat(rwMonths).toFixed(1) + ' mo';
+    const rwStatus = String(data.cash.runway_status || '').toLowerCase();
+    if (rwMonths >= 18 || rwStatus === 'green') {
+      runwayEl.className = 'value';
+    } else if (rwMonths >= 12 || rwStatus === 'yellow') {
+      runwayEl.className = 'value warn';
+    } else {
+      runwayEl.className = 'value danger';
+    }
+    document.getElementById('kpiRunwaySub').textContent = data.cash.cash_zero_date ? 'Cash zero: ' + data.cash.cash_zero_date : 'Months remaining';
+  } else {
+    runwayEl.textContent = '--';
+    runwayEl.className = 'value';
+    document.getElementById('kpiRunwaySub').textContent = 'Months remaining';
+  }
+
+  // Headcount
+  const hcEl = document.getElementById('kpiHC');
+  if (data.headcount.total_headcount) {
+    hcEl.textContent = Math.round(data.headcount.total_headcount).toLocaleString();
+    document.getElementById('kpiHCSub').textContent = data.headcount.burden_rate ? `Burden rate: ${parseFloat(data.headcount.burden_rate).toFixed(2)}x` : 'Full-time equivalents';
+  } else {
+    hcEl.textContent = '--';
+    document.getElementById('kpiHCSub').textContent = 'Load headcount planner';
+  }
+
+  // Pipeline
+  const pipEl = document.getElementById('kpiPipeline');
+  if (data.pipeline.total_rnpv || data.pipeline.asset_count) {
+    const assets = data.pipeline.asset_count || 0;
+    const rnpv = data.pipeline.total_rnpv ? '$' + (data.pipeline.total_rnpv / 1000000).toFixed(0) + 'M' : '--';
+    pipEl.textContent = assets + ' / ' + rnpv;
+    document.getElementById('kpiPipelineSub').textContent = 'Assets / total rNPV';
+  } else {
+    pipEl.textContent = '--';
+    document.getElementById('kpiPipelineSub').textContent = 'Load R&D portfolio';
+  }
+
+  // Burn Rate
+  const burnEl = document.getElementById('kpiBurn');
+  if (data.burn.monthly_burn) {
+    burnEl.textContent = '$' + (data.burn.monthly_burn / 1000000).toFixed(1) + 'M/mo';
+    burnEl.className = 'value warn';
+    document.getElementById('kpiBurnSub').textContent = 'Monthly cash burn';
+  } else {
+    burnEl.textContent = '--';
+    burnEl.className = 'value';
+    document.getElementById('kpiBurnSub').textContent = 'Load cash burn model';
+  }
+
+  // Budget Variance
+  const varEl = document.getElementById('kpiVariance');
+  if (data.bva.variance_pct) {
+    const vp = parseFloat(data.bva.variance_pct);
+    varEl.textContent = (vp >= 0 ? '+' : '') + vp.toFixed(1) + '%';
+    varEl.className = 'value ' + (Math.abs(vp) <= 5 ? '' : vp < 0 ? 'warn' : 'danger');
+    document.getElementById('kpiVarianceSub').textContent = 'YTD: $' + (Math.abs(data.bva.total_ytd_variance) / 1000000).toFixed(2) + 'M ' + (data.bva.total_ytd_variance >= 0 ? 'favorable' : 'unfavorable');
+  } else {
+    varEl.textContent = '--';
+    varEl.className = 'value';
+    document.getElementById('kpiVarianceSub').textContent = 'Load Company BvA';
+  }
+}
+
+// ---- Department Chart ----
+function renderDeptChart(depts) {
+  const container = document.getElementById('chartDeptExpense');
+  if (!depts || depts.length === 0) {
+    container.innerHTML = '<div class="chart-placeholder">Load department expense templates to see breakdown</div>';
+    return;
+  }
+  container.innerHTML = '';
+  const trace = {
+    labels: depts.map(d => d.name),
+    values: depts.map(d => d.expense),
+    type: 'pie',
+    hole: 0.45,
+    marker: { colors: ['#1C6834','#68d391','#63b3ed','#f6ad55','#b794f4','#fc8181','#38b2ac','#ed8936'] },
+    textinfo: 'label+percent',
+    textfont: { color: '#e2e8f0', size: 12 },
+    hovertemplate: '%{label}<br>$%{value:,.0f}<br>%{percent}<extra></extra>'
+  };
+  const layout = {
+    paper_bgcolor: '#1a1f2e',
+    plot_bgcolor: '#1a1f2e',
+    font: { color: '#e2e8f0', family: 'Segoe UI, system-ui, sans-serif' },
+    margin: { t: 10, b: 10, l: 10, r: 10 },
+    showlegend: true,
+    legend: { font: { size: 11, color: '#94a3b8' }, orientation: 'h', y: -0.1 },
+    height: 340
+  };
+  Plotly.newPlot(container, [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+// ---- Cash Runway Chart ----
+function renderCashRunwayChart(cashData) {
+  const container = document.getElementById('chartCashRunway');
+  if (!cashData || !cashData.total_cash) {
+    container.innerHTML = '<div class="chart-placeholder">Load cash burn model to see projection</div>';
+    return;
+  }
+  container.innerHTML = '';
+  const months = [];
+  const balances = [];
+  let bal = cashData.total_cash;
+  const burn = cashData.monthly_burn_current || 0;
+  const now = new Date();
+
+  for (let i = 0; i <= 24; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() + i, 1);
+    months.push(d.toLocaleDateString('en-US', { year: '2-digit', month: 'short' }));
+    balances.push(Math.max(bal, 0));
+    bal -= burn;
+  }
+
+  const cashTrace = {
+    x: months, y: balances, type: 'scatter', mode: 'lines+markers',
+    name: 'Cash Balance',
+    line: { color: '#1C6834', width: 3 },
+    marker: { size: 5, color: '#68d391' },
+    hovertemplate: '%{x}<br>$%{y:,.0f}<extra></extra>',
+    fill: 'tozeroy',
+    fillcolor: 'rgba(28,104,52,0.1)'
+  };
+
+  // Cash zero line
+  const zeroLine = {
+    x: months, y: months.map(() => 0), type: 'scatter', mode: 'lines',
+    name: 'Cash Zero',
+    line: { color: '#fc8181', width: 2, dash: 'dash' },
+    hoverinfo: 'skip'
+  };
+
+  // 12-month marker
+  const twelveMonthLine = {
+    x: [months[12], months[12]], y: [0, Math.max(...balances)],
+    type: 'scatter', mode: 'lines',
+    name: '12-Month Mark',
+    line: { color: '#f6ad55', width: 1, dash: 'dot' },
+    hoverinfo: 'skip'
+  };
+
+  const layout = {
+    paper_bgcolor: '#1a1f2e',
+    plot_bgcolor: '#1a1f2e',
+    font: { color: '#e2e8f0', family: 'Segoe UI, system-ui, sans-serif', size: 11 },
+    margin: { t: 10, b: 40, l: 70, r: 20 },
+    xaxis: { gridcolor: '#2d3748', tickangle: -45, tickfont: { size: 10 } },
+    yaxis: { gridcolor: '#2d3748', tickprefix: '$', tickformat: ',.0f', title: { text: 'Cash Balance', font: { size: 11 } } },
+    showlegend: true,
+    legend: { font: { size: 10, color: '#94a3b8' }, orientation: 'h', y: 1.08 },
+    height: 340
+  };
+
+  Plotly.newPlot(container, [cashTrace, zeroLine, twelveMonthLine], layout, { responsive: true, displayModeBar: false });
+}
+
+// ---- Department Table ----
+function renderDeptTable(depts) {
+  const tbody = document.getElementById('deptTableBody');
+  if (!depts || depts.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">No department data loaded</td></tr>';
+    return;
+  }
+  tbody.innerHTML = depts.map(d => {
+    const costPerFte = d.ftes > 0 ? d.expense / d.ftes : 0;
+    return `<tr>
+      <td><strong>${esc(d.name)}</strong></td>
+      <td>$${(d.expense/1000000).toFixed(2)}M</td>
+      <td>${Math.round(d.headcount)}</td>
+      <td>${d.ftes.toFixed(1)}</td>
+      <td>$${(costPerFte/1000).toFixed(0)}K</td>
+    </tr>`;
+  }).join('');
+
+  // Totals row
+  const totExp = depts.reduce((s,d) => s + d.expense, 0);
+  const totHC = depts.reduce((s,d) => s + d.headcount, 0);
+  const totFTE = depts.reduce((s,d) => s + d.ftes, 0);
+  const avgCost = totFTE > 0 ? totExp / totFTE : 0;
+  tbody.innerHTML += `<tr style="font-weight:700;border-top:2px solid #2d3748">
+    <td>TOTAL</td>
+    <td>$${(totExp/1000000).toFixed(2)}M</td>
+    <td>${Math.round(totHC)}</td>
+    <td>${totFTE.toFixed(1)}</td>
+    <td>$${(avgCost/1000).toFixed(0)}K</td>
+  </tr>`;
+}
+
+// ---- Pipeline Table ----
+function renderPipelineTable(assets) {
+  const tbody = document.getElementById('pipelineTableBody');
+  if (!assets || assets.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">No R&D portfolio data loaded</td></tr>';
+    return;
+  }
+  tbody.innerHTML = assets.map(a => {
+    const phaseTag = getPhaseTag(a.phase);
+    return `<tr>
+      <td><strong>${esc(String(a.name))}</strong></td>
+      <td>${phaseTag}</td>
+      <td>${esc(String(a.indication))}</td>
+      <td>$${parseFloat(a.rnpv).toFixed(1)}M</td>
+      <td>${esc(String(a.pos))}</td>
+    </tr>`;
+  }).join('');
+}
+
+function getPhaseTag(phase) {
+  const p = String(phase).toLowerCase();
+  if (p.includes('iii') || p.includes('3')) return `<span class="tag tag-green">${esc(phase)}</span>`;
+  if (p.includes('ii') || p.includes('2'))  return `<span class="tag tag-blue">${esc(phase)}</span>`;
+  if (p.includes('i') || p.includes('1'))   return `<span class="tag tag-yellow">${esc(phase)}</span>`;
+  return `<span class="tag tag-red">${esc(phase)}</span>`;
+}
+
+// ---- Metrics Table ----
+function buildSampleMetrics() {
+  return [
+    { metric: 'Total Cash',           value: '$48.5M',     source: 'Cash Burn Model',     status: 'ok' },
+    { metric: 'Monthly Burn',         value: '$3.2M/mo',   source: 'Cash Burn Model',     status: 'warn' },
+    { metric: 'Cash Runway',          value: '15.2 months',source: 'Cash Burn Model',     status: 'warn' },
+    { metric: 'Total Headcount',      value: '342 FTEs',   source: 'Headcount Planner',   status: 'ok' },
+    { metric: 'Loaded Cost',          value: '$57.6M/yr',  source: 'Headcount Planner',   status: 'ok' },
+    { metric: 'Pipeline rNPV',        value: '$285M',      source: 'R&D Portfolio',       status: 'ok' },
+    { metric: 'Pipeline Assets',      value: '6',          source: 'R&D Portfolio',       status: 'ok' },
+    { metric: 'YTD Budget Variance',  value: '-2.9%',      source: 'Company BvA',         status: 'warn' },
+    { metric: 'Annual Budget',        value: '$42.0M',     source: 'Company BvA',         status: 'ok' }
+  ];
+}
+
+function buildLiveMetrics() {
+  const k = store.kpis;
+  const metrics = [];
+  const fmtM = v => v ? '$' + (v / 1000000).toFixed(1) + 'M' : '--';
+  const fmtK = v => v ? '$' + (v / 1000).toFixed(0) + 'K' : '--';
+
+  if (k.total_cash || k.ending_cash) metrics.push({ metric: 'Total Cash', value: fmtM(k.total_cash || k.ending_cash), source: k.ending_cash && !k.total_cash ? 'Board Report' : 'Cash Burn Model', status: 'ok' });
+  if (k.monthly_burn_current) metrics.push({ metric: 'Monthly Burn', value: fmtM(k.monthly_burn_current) + '/mo', source: 'Cash Burn Model', status: 'warn' });
+  if (k.runway_months) metrics.push({ metric: 'Cash Runway', value: parseFloat(k.runway_months).toFixed(1) + ' months', source: 'Cash Burn Model', status: k.runway_months >= 18 ? 'ok' : k.runway_months >= 12 ? 'warn' : 'danger' });
+  if (k.cash_zero_date) metrics.push({ metric: 'Cash Zero Date', value: k.cash_zero_date, source: 'Cash Burn Model', status: 'danger' });
+  if (k.total_headcount) metrics.push({ metric: 'Total Headcount', value: Math.round(k.total_headcount) + ' FTEs', source: 'Headcount Planner', status: 'ok' });
+  if (k.total_loaded_cost) metrics.push({ metric: 'Total Loaded Cost', value: fmtM(k.total_loaded_cost) + '/yr', source: 'Headcount Planner', status: 'ok' });
+  if (k.burden_rate) metrics.push({ metric: 'Burden Rate', value: parseFloat(k.burden_rate).toFixed(2) + 'x', source: 'Headcount Planner', status: 'ok' });
+  if (k.total_rnpv) metrics.push({ metric: 'Pipeline rNPV', value: fmtM(k.total_rnpv), source: 'R&D Portfolio', status: 'ok' });
+  if (k.asset_count) metrics.push({ metric: 'Pipeline Assets', value: String(k.asset_count), source: 'R&D Portfolio', status: 'ok' });
+  if (k.gross_sales) metrics.push({ metric: 'Gross Sales', value: fmtM(k.gross_sales), source: 'GTN Waterfall', status: 'ok' });
+  if (k.net_revenue) metrics.push({ metric: 'Net Revenue', value: fmtM(k.net_revenue), source: 'GTN Waterfall', status: 'ok' });
+  if (k.gtn_pct) metrics.push({ metric: 'GTN %', value: parseFloat(k.gtn_pct).toFixed(1) + '%', source: 'GTN Waterfall', status: k.gtn_pct > 50 ? 'warn' : 'ok' });
+  if (k.grand_total_budget) metrics.push({ metric: 'Clinical Trial Budget', value: fmtM(k.grand_total_budget), source: 'Clinical Trial', status: 'ok' });
+  if (k.cost_per_patient) metrics.push({ metric: 'Cost / Patient', value: fmtK(k.cost_per_patient), source: 'Clinical Trial', status: 'ok' });
+  if (k.total_requests) metrics.push({ metric: 'HC Requests', value: String(Math.round(k.total_requests)), source: 'HC Request', status: 'ok' });
+  if (k.net_hc_change) metrics.push({ metric: 'Net HC Change', value: (k.net_hc_change >= 0 ? '+' : '') + Math.round(k.net_hc_change), source: 'HC Request', status: k.net_hc_change >= 0 ? 'ok' : 'warn' });
+  if (k.total_raised) metrics.push({ metric: 'Total Raised', value: fmtM(k.total_raised), source: 'Fundraising', status: 'ok' });
+  if (k.latest_valuation) metrics.push({ metric: 'Latest Valuation', value: fmtM(k.latest_valuation), source: 'Fundraising', status: 'ok' });
+  if (k.founder_ownership_current) metrics.push({ metric: 'Founder Ownership', value: parseFloat(k.founder_ownership_current).toFixed(1) + '%', source: 'Fundraising', status: k.founder_ownership_current >= 20 ? 'ok' : 'warn' });
+  if (k.total_annual_budget) metrics.push({ metric: 'Annual Budget', value: fmtM(k.total_annual_budget), source: 'Company BvA', status: 'ok' });
+  if (k.variance_pct) metrics.push({ metric: 'YTD Budget Variance', value: (k.variance_pct >= 0 ? '+' : '') + parseFloat(k.variance_pct).toFixed(1) + '%', source: 'Company BvA', status: Math.abs(k.variance_pct) <= 5 ? 'ok' : 'warn' });
+  if (k.beginning_cash) metrics.push({ metric: 'Beginning Cash', value: fmtM(k.beginning_cash), source: 'Board Report', status: 'ok' });
+
+  return metrics.length ? metrics : buildSampleMetrics();
+}
+
+function renderMetricsTable(metrics) {
+  const tbody = document.getElementById('metricsTableBody');
+  if (!metrics || metrics.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#4a5568;font-style:italic;padding:20px">Load templates to populate metrics</td></tr>';
+    return;
+  }
+  tbody.innerHTML = metrics.map(m => {
+    const tagClass = m.status === 'ok' ? 'tag-green' : m.status === 'warn' ? 'tag-yellow' : m.status === 'danger' ? 'tag-red' : 'tag-blue';
+    const tagLabel = m.status === 'ok' ? 'OK' : m.status === 'warn' ? 'Watch' : m.status === 'danger' ? 'Alert' : 'Info';
+    return `<tr>
+      <td>${esc(m.metric)}</td>
+      <td><strong>${esc(m.value)}</strong></td>
+      <td style="color:#94a3b8">${esc(m.source)}</td>
+      <td><span class="tag ${tagClass}">${tagLabel}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+// ---- File Badges ----
+function updateFileBadges() {
+  const badgesEl = document.getElementById('fileBadges');
+  const countEl = document.getElementById('loadCount');
+  const files = Object.entries(store.files);
+
+  badgesEl.innerHTML = files.map(([fname, info]) => {
+    const label = TEMPLATE_LABELS[info.template_type] || info.template_type;
+    return `<span class="file-badge">&#10003; ${esc(label)} <span class="remove" onclick="removeFile('${esc(fname)}')">&times;</span></span>`;
+  }).join('');
+
+  // Count unique template types loaded
+  const uniqueTypes = new Set(files.map(([,info]) => info.template_type));
+  countEl.textContent = `${uniqueTypes.size} of ${TOTAL_TEMPLATES} template types loaded`;
+}
+
+function removeFile(filename) {
+  const info = store.files[filename];
+  if (!info) return;
+
+  // Remove department entries added by this file
+  if (info.template_type === 'dept_expense') {
+    store.departments = store.departments.filter(d => d.name !== (info.raw_kv['department_name'] || filename.replace(/\.xlsx?$/i, '')));
+  }
+
+  delete store.files[filename];
+
+  if (Object.keys(store.files).length === 0) {
+    usingSampleData = true;
+    // Re-derive kpis from remaining files
+    store.kpis = {};
+    initSample();
+  } else {
+    // Re-derive kpis from remaining files
+    store.kpis = {};
+    store.departments = [];
+    store.pipeline_assets = [];
+    for (const [fn, fi] of Object.entries(store.files)) {
+      extractTemplateData(fi.template_type, fi.raw_kv, fn, { SheetNames: [] });
+    }
+    rebuildDashboard();
+  }
+  updateFileBadges();
+}
+
+// ---- Status Banner ----
+function showBanner(type, msg) {
+  const banner = document.getElementById('statusBanner');
+  const colors = {
+    info: { bg: '#1a2332', border: '#2b6cb0', color: '#63b3ed' },
+    success: { bg: '#162415', border: '#22543d', color: '#68d391' },
+    warn: { bg: '#2d2214', border: '#744210', color: '#f6ad55' },
+    error: { bg: '#2d1414', border: '#742a2a', color: '#fc8181' }
+  };
+  const c = colors[type] || colors.info;
+  banner.style.display = 'block';
+  banner.style.background = c.bg;
+  banner.style.border = `1px solid ${c.border}`;
+  banner.style.color = c.color;
+  banner.textContent = msg;
+}
+
+// ---- Reset ----
+function resetAll() {
+  store.files = {};
+  store.departments = [];
+  store.pipeline_assets = [];
+  store.kpis = {};
+  usingSampleData = true;
+  document.getElementById('fileBadges').innerHTML = '';
+  document.getElementById('loadCount').textContent = '';
+  document.getElementById('lastUpdated').textContent = '';
+  fileInput.value = '';
+  initSample();
+}
+
+// ---- Utility ----
+function esc(s) {
+  const d = document.createElement('div');
+  d.textContent = s;
+  return d.innerHTML;
+}
+
+// ---- Boot ----
+initSample();
+</script>
+</body>
+</html>
