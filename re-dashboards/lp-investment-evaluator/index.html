@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LP Investment Evaluator — Powered by Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); padding: 20px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; letter-spacing: 0.5px; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* File loader */
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; text-align: center; transition: border-color 0.2s; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; background: #1e293b; }
+  .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+  .file-loader button:hover { background: #3182ce; }
+
+  /* KPI cards */
+  .kpi-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .kpi-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px 22px; flex: 1; min-width: 150px; }
+  .kpi-card .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 1.6rem; font-weight: 700; }
+  .kpi-card .value.green { color: #68d391; }
+  .kpi-card .value.blue { color: #63b3ed; }
+  .kpi-card .value.orange { color: #f6ad55; }
+  .kpi-card .value.red { color: #fc8181; }
+  .kpi-card .value.purple { color: #b794f4; }
+  .kpi-card .delta { font-size: 0.72rem; color: #718096; margin-top: 4px; }
+
+  /* Controls */
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .slider-item label { font-size: 0.78rem; color: #a0aec0; display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; font-size: 0.85rem; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 5px; border-radius: 3px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+  input[type=range]::-moz-range-thumb { width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+
+  /* Charts */
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .chart-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
+  .chart-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+  /* Fair deal section */
+  .fair-deal { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 20px; }
+  .fair-deal h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .check-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .check-item { background: #0f1117; border: 1px solid #2d3748; border-radius: 8px; padding: 12px 16px; text-align: center; }
+  .check-item .status { font-size: 1.2rem; margin-bottom: 4px; }
+  .check-item .check-label { font-size: 0.72rem; color: #a0aec0; }
+  .check-item.pass { border-color: #68d391; }
+  .check-item.fail { border-color: #fc8181; }
+
+  /* Table */
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .data-table th { background: #2b6cb0; color: #fff; padding: 8px 12px; text-align: right; font-weight: 600; }
+  .data-table th:first-child { text-align: left; }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid #2d3748; text-align: right; color: #e2e8f0; }
+  .data-table td:first-child { text-align: left; color: #a0aec0; }
+  .data-table tr:hover { background: #1e293b; }
+
+  footer { text-align: center; padding: 20px; color: #4a5568; font-size: 0.72rem; border-top: 1px solid #2d3748; margin-top: 40px; }
+  footer a { color: #63b3ed; text-decoration: none; }
+
+  @media (max-width: 900px) {
+    .slider-grid { grid-template-columns: 1fr; }
+    .charts-grid { grid-template-columns: 1fr; }
+    .check-grid { grid-template-columns: repeat(2, 1fr); }
+    .main { padding: 16px; }
+  }
+
+  /* ═══ PRINT STYLESHEET ═══ */
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; padding: 10px 20px !important; }
+    header h1 { color: #1C6834 !important; font-size: 14pt !important; }
+    header .subtitle { color: #666 !important; }
+    .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .main { padding: 10px 20px !important; }
+
+    .file-loader, .controls, #drop-zone, .export-btn { display: none !important; }
+
+    .kpi-card { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .kpi-card .label { color: #666 !important; }
+    .kpi-card .value.green { color: #1B7A3D !important; }
+    .kpi-card .value.blue { color: #1C6834 !important; }
+    .kpi-card .value.orange { color: #B7791F !important; }
+    .kpi-card .value.red { color: #C53030 !important; }
+    .kpi-card .value.purple { color: #553C9A !important; }
+    .kpi-card .delta { color: #666 !important; }
+
+    .chart-card, .chart-full { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .chart-card h3, .chart-full h3 { color: #333 !important; }
+
+    .fair-deal { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .fair-deal h3 { color: #333 !important; }
+    .check-item { background: #fff !important; border: 1px solid #d0d0d0 !important; }
+    .check-item.pass { border-color: #1B7A3D !important; }
+    .check-item.fail { border-color: #C53030 !important; }
+    .check-item .status { color: #1a1a1a !important; }
+    .check-item .check-label { color: #666 !important; }
+
+    .data-table th { background: #f2f2f2 !important; color: #1a1a1a !important; border: 1px solid #d0d0d0 !important; }
+    .data-table td { color: #1a1a1a !important; border: 1px solid #d0d0d0 !important; }
+
+    footer { color: #999 !important; border-top: 1px solid #d0d0d0 !important; }
+    footer a { color: #1C6834 !important; }
+
+    .kpi-row { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>LP Investment Evaluator</h1>
+    <div class="subtitle">Powered by Lucky Duck Group Methodology &middot; Waterfall Distribution Analysis</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <div class="badge">LP WATERFALL</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <!-- File Loader -->
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag and drop your LP Investment Evaluator .xlsx file here, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+  <!-- KPI Row -->
+  <div class="kpi-row">
+    <div class="kpi-card">
+      <div class="label">LP IRR</div>
+      <div class="value green" id="kpi-irr">—</div>
+      <div class="delta" id="kpi-irr-delta">Internal rate of return</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">LP Equity Multiple</div>
+      <div class="value blue" id="kpi-multiple">—</div>
+      <div class="delta">Total returned / invested</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Year 1 Cash-on-Cash</div>
+      <div class="value orange" id="kpi-coc">—</div>
+      <div class="delta">Annual cash yield</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">GP Total Compensation</div>
+      <div class="value red" id="kpi-gp-comp">—</div>
+      <div class="delta">Fees + promote</div>
+    </div>
+    <div class="kpi-card">
+      <div class="label">Your Return (Check Size)</div>
+      <div class="value purple" id="kpi-check-return">—</div>
+      <div class="delta" id="kpi-check-delta">On your investment</div>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <h3>What-If Scenario Adjustments</h3>
+    <div class="slider-grid">
+      <div class="slider-item">
+        <label>Preferred Return <span id="sl-pref-val">7.0%</span></label>
+        <input type="range" id="sl-pref" min="4" max="12" step="0.5" value="7">
+      </div>
+      <div class="slider-item">
+        <label>Exit Cap Rate <span id="sl-cap-val">5.5%</span></label>
+        <input type="range" id="sl-cap" min="3" max="10" step="0.25" value="5.5">
+      </div>
+      <div class="slider-item">
+        <label>Rent/NOI Growth <span id="sl-growth-val">3.0%</span></label>
+        <input type="range" id="sl-growth" min="0" max="8" step="0.5" value="3">
+      </div>
+      <div class="slider-item">
+        <label>Hold Period (Years) <span id="sl-hold-val">5</span></label>
+        <input type="range" id="sl-hold" min="1" max="10" step="1" value="5">
+      </div>
+      <div class="slider-item">
+        <label>GP Promote (Tier 1 GP%) <span id="sl-promote-val">20%</span></label>
+        <input type="range" id="sl-promote" min="5" max="50" step="5" value="20">
+      </div>
+      <div class="slider-item">
+        <label>Check Size <span id="sl-check-val">$100K</span></label>
+        <input type="range" id="sl-check" min="25000" max="1000000" step="25000" value="100000">
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts Row 1: Waterfall + GP Fees -->
+  <div class="charts-grid">
+    <div class="chart-card">
+      <h3>Annual Distribution Waterfall</h3>
+      <div id="chart-waterfall" style="height: 360px;"></div>
+    </div>
+    <div class="chart-card">
+      <h3>GP Fee Breakdown</h3>
+      <div id="chart-fees" style="height: 360px;"></div>
+    </div>
+  </div>
+
+  <!-- Charts Row 2: Sensitivity Heatmap -->
+  <div class="chart-full">
+    <h3>LP IRR Sensitivity — Rent Growth vs Exit Cap Rate</h3>
+    <div id="chart-sensitivity" style="height: 380px;"></div>
+  </div>
+
+  <!-- Fair Deal Assessment -->
+  <div class="fair-deal">
+    <h3>Is This a Fair Deal?</h3>
+    <div class="check-grid" id="fair-checks">
+      <div class="check-item" id="check-pref"><div class="status">—</div><div class="check-label">Pref Return &ge; 7%</div></div>
+      <div class="check-item" id="check-promote"><div class="status">—</div><div class="check-label">GP Promote &le; 30%</div></div>
+      <div class="check-item" id="check-fees"><div class="status">—</div><div class="check-label">Total Fees &lt; 5% of Equity</div></div>
+      <div class="check-item" id="check-mult"><div class="status">—</div><div class="check-label">LP Multiple &gt; 1.5x</div></div>
+    </div>
+  </div>
+
+  <!-- Waterfall Distribution Table -->
+  <div class="chart-full">
+    <h3>Year-by-Year Distribution Schedule</h3>
+    <div style="overflow-x: auto;">
+      <table class="data-table" id="waterfall-table">
+        <thead><tr id="wf-header"></tr></thead>
+        <tbody id="wf-body"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  Built by Lucky Duck Group &middot; <a href="https://davenova3.gumroad.com" target="_blank">davenova3.gumroad.com</a> &middot;
+  Evaluate unlimited deals with AI-powered analysis &rarr; Start your free trial
+</footer>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+// SAMPLE DATA — dashboard works immediately on purchase
+// ═══════════════════════════════════════════════════════════════════
+const SAMPLE = {
+  equity_raise: 5000000,
+  purchase_price: 10000000,
+  lp_equity_pct: 0.80,
+  gp_equity_pct: 0.20,
+  preferred_return: 0.07,
+  hold_period_years: 5,
+  exit_cap_rate: 0.055,
+  going_in_cap_rate: 0.055,
+  rent_growth_pct: 0.03,
+  expense_growth_pct: 0.02,
+  year_1_noi: 550000,
+  loan_amount: 5000000,
+  loan_rate: 0.065,
+  loan_term_years: 10,
+  loan_io_years: 2,
+  annual_debt_service: 325000,
+  acq_fee_pct: 0.01,
+  asset_mgmt_fee_pct: 0.02,
+  disposition_fee_pct: 0.01,
+  acq_fee_amt: 100000,
+  annual_asset_mgmt_fee: 100000,
+  disposition_fee_amt: 100000,
+  promote_tier_count: 3,
+  promote_t1_irr_floor: 0.00, promote_t1_lp_split: 0.80, promote_t1_gp_split: 0.20,
+  promote_t2_irr_floor: 0.08, promote_t2_lp_split: 0.70, promote_t2_gp_split: 0.30,
+  promote_t3_irr_floor: 0.12, promote_t3_lp_split: 0.60, promote_t3_gp_split: 0.40,
+  check_size: 100000,
+};
+
+let data = { ...SAMPLE };
+let fileLoaded = false;
+
+// ═══════════════════════════════════════════════════════════════════
+// WATERFALL COMPUTATION ENGINE
+// ═══════════════════════════════════════════════════════════════════
+
+function computeDebtService(loanAmt, rate, termYears, ioYears, year) {
+  if (year <= ioYears) return loanAmt * rate;
+  const monthlyRate = rate / 12;
+  const nPayments = (termYears - ioYears) * 12;
+  if (monthlyRate === 0) return loanAmt / (termYears - ioYears);
+  const monthlyPmt = loanAmt * (monthlyRate * Math.pow(1 + monthlyRate, nPayments)) / (Math.pow(1 + monthlyRate, nPayments) - 1);
+  return monthlyPmt * 12;
+}
+
+function computeWaterfall(d) {
+  const lpEquity = d.equity_raise * d.lp_equity_pct;
+  const gpEquity = d.equity_raise * d.gp_equity_pct;
+  const holdYears = d.hold_period_years;
+  const mgmtFee = d.equity_raise * d.asset_mgmt_fee_pct;
+  const acqFee = d.purchase_price * d.acq_fee_pct;
+
+  const years = [];
+  let cumLpDist = 0;
+
+  for (let yr = 1; yr <= holdYears; yr++) {
+    const noi = d.year_1_noi * Math.pow(1 + d.rent_growth_pct, yr - 1);
+    const ds = computeDebtService(d.loan_amount, d.loan_rate, d.loan_term_years, d.loan_io_years, yr);
+    const cashFlow = noi - ds;
+    const distributable = Math.max(0, cashFlow - mgmtFee);
+
+    const lpPref = Math.min(lpEquity * d.preferred_return, distributable);
+    const remaining = distributable - lpPref;
+
+    // Use base tier split for annual distributions
+    const lpProfit = remaining * d.promote_t1_lp_split;
+    const gpProfit = remaining * d.promote_t1_gp_split;
+    const lpTotal = lpPref + lpProfit;
+    const gpTotal = gpProfit + mgmtFee;
+
+    cumLpDist += lpTotal;
+
+    years.push({ yr, noi, ds, cashFlow, distributable, lpPref, lpProfit, gpProfit, lpTotal, gpTotal, cumLpDist, mgmtFee });
+  }
+
+  // Exit
+  const exitNoi = d.year_1_noi * Math.pow(1 + d.rent_growth_pct, holdYears);
+  const grossSale = exitNoi / d.exit_cap_rate;
+  const sellingCosts = grossSale * 0.02;
+  const dispFee = grossSale * d.disposition_fee_pct;
+  const netProceeds = grossSale - sellingCosts - d.loan_amount - dispFee;
+
+  const lpReturnOfCap = lpEquity;
+  const gpReturnOfCap = gpEquity;
+  const lpRemaining = Math.max(0, netProceeds - lpReturnOfCap - gpReturnOfCap);
+
+  // Exit uses tier 2 split
+  const lpExitProfit = lpRemaining * d.promote_t2_lp_split;
+  const gpExitProfit = lpRemaining * d.promote_t2_gp_split;
+  const lpExitTotal = lpReturnOfCap + lpExitProfit;
+  const gpExitTotal = gpReturnOfCap + gpExitProfit + dispFee;
+
+  // IRR computation (Newton's method)
+  const cashFlows = [-lpEquity];
+  for (const y of years) cashFlows.push(y.lpTotal);
+  cashFlows[cashFlows.length - 1] += lpExitTotal; // add exit to last year
+
+  const irr = computeIRR(cashFlows);
+  const totalLpReceived = cumLpDist + lpExitTotal;
+  const equityMultiple = totalLpReceived / lpEquity;
+  const yr1Coc = years.length > 0 ? years[0].lpTotal / lpEquity : 0;
+  const avgCoc = years.length > 0 ? (cumLpDist / holdYears) / lpEquity : 0;
+
+  // GP totals
+  const totalGpFees = acqFee + mgmtFee * holdYears + dispFee;
+  let totalGpPromote = gpExitProfit;
+  for (const y of years) totalGpPromote += y.gpProfit;
+  const totalGpComp = totalGpFees + totalGpPromote;
+
+  // Check size analysis
+  const checkPct = d.check_size / lpEquity;
+  const checkReturn = totalLpReceived * checkPct;
+  const checkProfit = checkReturn - d.check_size;
+
+  return {
+    years, irr, equityMultiple, yr1Coc, avgCoc,
+    lpEquity, gpEquity, totalLpReceived, cumLpDist,
+    exitNoi, grossSale, sellingCosts, dispFee, netProceeds,
+    lpReturnOfCap, lpExitProfit, gpExitProfit, lpExitTotal, gpExitTotal,
+    totalGpFees, totalGpPromote, totalGpComp,
+    acqFee, mgmtFeeAnnual: mgmtFee, dispFeeAmt: dispFee,
+    checkPct, checkReturn, checkProfit,
+  };
+}
+
+function computeIRR(cashFlows, guess = 0.1) {
+  let rate = guess;
+  for (let iter = 0; iter < 200; iter++) {
+    let npv = 0, dnpv = 0;
+    for (let i = 0; i < cashFlows.length; i++) {
+      const pv = cashFlows[i] / Math.pow(1 + rate, i);
+      npv += pv;
+      if (i > 0) dnpv -= i * cashFlows[i] / Math.pow(1 + rate, i + 1);
+    }
+    if (Math.abs(dnpv) < 1e-12) break;
+    const newRate = rate - npv / dnpv;
+    if (Math.abs(newRate - rate) < 1e-7) { rate = newRate; break; }
+    rate = newRate;
+  }
+  return rate;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// FORMATTING HELPERS
+// ═══════════════════════════════════════════════════════════════════
+const fmtCurrency = (v) => '$' + Math.round(v).toLocaleString('en-US');
+const fmtCurrencyK = (v) => v >= 1e6 ? '$' + (v / 1e6).toFixed(1) + 'M' : '$' + Math.round(v / 1000) + 'K';
+const fmtPct = (v) => (v * 100).toFixed(1) + '%';
+const fmtMult = (v) => v.toFixed(2) + 'x';
+
+// ═══════════════════════════════════════════════════════════════════
+// EFFECTIVE DATA (applies slider adjustments)
+// ═══════════════════════════════════════════════════════════════════
+function getEffectiveData() {
+  const d = { ...data };
+  d.preferred_return = parseFloat(document.getElementById('sl-pref').value) / 100;
+  d.exit_cap_rate = parseFloat(document.getElementById('sl-cap').value) / 100;
+  d.rent_growth_pct = parseFloat(document.getElementById('sl-growth').value) / 100;
+  d.hold_period_years = parseInt(document.getElementById('sl-hold').value);
+  d.promote_t1_gp_split = parseFloat(document.getElementById('sl-promote').value) / 100;
+  d.promote_t1_lp_split = 1 - d.promote_t1_gp_split;
+  d.check_size = parseFloat(document.getElementById('sl-check').value);
+  return d;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// UPDATE DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function updateDashboard() {
+  const d = getEffectiveData();
+  const w = computeWaterfall(d);
+
+  // KPIs
+  document.getElementById('kpi-irr').textContent = isFinite(w.irr) ? fmtPct(w.irr) : 'N/A';
+  document.getElementById('kpi-multiple').textContent = fmtMult(w.equityMultiple);
+  document.getElementById('kpi-coc').textContent = fmtPct(w.yr1Coc);
+  document.getElementById('kpi-gp-comp').textContent = fmtCurrencyK(w.totalGpComp);
+  document.getElementById('kpi-check-return').textContent = fmtCurrencyK(w.checkReturn);
+  document.getElementById('kpi-check-delta').textContent = `${fmtCurrencyK(d.check_size)} invested → ${fmtCurrencyK(w.checkProfit)} profit`;
+  document.getElementById('kpi-irr-delta').textContent = `${d.hold_period_years}yr hold, ${fmtPct(d.exit_cap_rate)} exit cap`;
+
+  // Waterfall chart
+  updateWaterfallChart(w, d);
+
+  // GP fee pie
+  updateFeeChart(w);
+
+  // Sensitivity heatmap
+  updateSensitivityChart(d);
+
+  // Fair deal checks
+  updateFairDeal(d, w);
+
+  // Distribution table
+  updateTable(w, d);
+}
+
+function updateWaterfallChart(w, d) {
+  const years = w.years.map(y => `Year ${y.yr}`);
+  const lpPref = w.years.map(y => y.lpPref);
+  const lpProfit = w.years.map(y => y.lpProfit);
+  const gpProfit = w.years.map(y => y.gpProfit);
+  const mgmtFee = w.years.map(y => y.mgmtFee);
+
+  // Add exit year
+  years.push('Exit');
+  lpPref.push(0);
+  lpProfit.push(w.lpExitTotal);
+  gpProfit.push(w.gpExitProfit);
+  mgmtFee.push(w.dispFeeAmt);
+
+  const traces = [
+    { name: 'LP Preferred', x: years, y: lpPref, type: 'bar', marker: { color: '#63b3ed' } },
+    { name: 'LP Profit Split', x: years, y: lpProfit, type: 'bar', marker: { color: '#68d391' } },
+    { name: 'GP Profit Split', x: years, y: gpProfit, type: 'bar', marker: { color: '#f6ad55' } },
+    { name: 'GP Fees', x: years, y: mgmtFee, type: 'bar', marker: { color: '#fc8181' } },
+  ];
+
+  const layout = {
+    barmode: 'stack',
+    paper_bgcolor: '#1a1f2e', plot_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0', size: 11 },
+    margin: { t: 10, r: 20, b: 40, l: 60 },
+    legend: { orientation: 'h', y: -0.15, font: { size: 10 } },
+    xaxis: { gridcolor: '#2d3748' },
+    yaxis: { gridcolor: '#2d3748', tickprefix: '$', tickformat: ',.0f' },
+  };
+
+  Plotly.react('chart-waterfall', traces, layout, { responsive: true, displayModeBar: false });
+}
+
+function updateFeeChart(w) {
+  const labels = ['Acquisition Fee', 'Asset Mgmt (Total)', 'Disposition Fee', 'GP Promote'];
+  const values = [w.acqFee, w.mgmtFeeAnnual * w.years.length, w.dispFeeAmt, w.totalGpPromote];
+  const colors = ['#63b3ed', '#f6ad55', '#fc8181', '#b794f4'];
+
+  const trace = {
+    labels, values,
+    type: 'pie',
+    hole: 0.45,
+    marker: { colors },
+    textinfo: 'label+percent',
+    textfont: { color: '#e2e8f0', size: 11 },
+    hovertemplate: '%{label}: $%{value:,.0f}<extra></extra>',
+  };
+
+  const layout = {
+    paper_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0', size: 10 },
+    margin: { t: 10, r: 10, b: 10, l: 10 },
+    showlegend: false,
+    annotations: [{
+      text: fmtCurrencyK(w.totalGpComp), font: { size: 16, color: '#e2e8f0', weight: 700 },
+      showarrow: false, x: 0.5, y: 0.5,
+    }],
+  };
+
+  Plotly.react('chart-fees', [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+function updateSensitivityChart(d) {
+  const rentSteps = [-2, -1, 0, 1, 2];
+  const capSteps = [-1, -0.5, 0, 0.5, 1];
+  const rentLabels = rentSteps.map(s => (d.rent_growth_pct * 100 + s).toFixed(1) + '%');
+  const capLabels = capSteps.map(s => (d.exit_cap_rate * 100 + s).toFixed(1) + '%');
+
+  const z = [];
+  for (const capDelta of capSteps) {
+    const row = [];
+    for (const rentDelta of rentSteps) {
+      const dd = { ...d };
+      dd.rent_growth_pct = d.rent_growth_pct + rentDelta / 100;
+      dd.exit_cap_rate = d.exit_cap_rate + capDelta / 100;
+      if (dd.exit_cap_rate <= 0.01) dd.exit_cap_rate = 0.01;
+      const ww = computeWaterfall(dd);
+      row.push(isFinite(ww.irr) ? Math.round(ww.irr * 1000) / 10 : 0);
+    }
+    z.push(row);
+  }
+
+  const trace = {
+    x: rentLabels, y: capLabels, z,
+    type: 'heatmap',
+    colorscale: [
+      [0, '#fc8181'], [0.3, '#f6ad55'], [0.5, '#e2e8f0'], [0.7, '#68d391'], [1, '#38a169']
+    ],
+    hovertemplate: 'Rent Growth: %{x}<br>Exit Cap: %{y}<br>LP IRR: %{z:.1f}%<extra></extra>',
+    text: z.map(row => row.map(v => v.toFixed(1) + '%')),
+    texttemplate: '%{text}',
+    textfont: { size: 12, color: '#1a1f2e' },
+  };
+
+  const layout = {
+    paper_bgcolor: '#1a1f2e', plot_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0', size: 11 },
+    margin: { t: 10, r: 60, b: 50, l: 80 },
+    xaxis: { title: 'Annual Rent/NOI Growth', gridcolor: '#2d3748' },
+    yaxis: { title: 'Exit Cap Rate', gridcolor: '#2d3748' },
+  };
+
+  Plotly.react('chart-sensitivity', [trace], layout, { responsive: true, displayModeBar: false });
+}
+
+function updateFairDeal(d, w) {
+  const checks = [
+    { id: 'check-pref', pass: d.preferred_return >= 0.07 },
+    { id: 'check-promote', pass: d.promote_t1_gp_split <= 0.30 },
+    { id: 'check-fees', pass: w.totalGpFees / d.equity_raise < 0.05 },
+    { id: 'check-mult', pass: w.equityMultiple > 1.5 },
+  ];
+  for (const c of checks) {
+    const el = document.getElementById(c.id);
+    el.querySelector('.status').textContent = c.pass ? '✓ PASS' : '✗ FAIL';
+    el.className = 'check-item ' + (c.pass ? 'pass' : 'fail');
+    el.querySelector('.status').style.color = c.pass ? '#68d391' : '#fc8181';
+  }
+}
+
+function updateTable(w, d) {
+  const header = document.getElementById('wf-header');
+  const body = document.getElementById('wf-body');
+  header.innerHTML = '<th>Metric</th>';
+  for (let yr = 1; yr <= d.hold_period_years; yr++) header.innerHTML += `<th>Year ${yr}</th>`;
+  header.innerHTML += '<th>Exit</th><th>Total</th>';
+
+  const rows = [
+    { label: 'NOI', data: w.years.map(y => y.noi), exit: w.exitNoi, total: null },
+    { label: 'Debt Service', data: w.years.map(y => y.ds), exit: 0, total: null },
+    { label: 'Cash Flow', data: w.years.map(y => y.cashFlow), exit: 0, total: null },
+    { label: 'LP Preferred', data: w.years.map(y => y.lpPref), exit: 0, total: w.years.reduce((s,y) => s + y.lpPref, 0) },
+    { label: 'LP Profit Split', data: w.years.map(y => y.lpProfit), exit: w.lpExitTotal, total: w.years.reduce((s,y) => s + y.lpProfit, 0) + w.lpExitTotal },
+    { label: 'GP Profit Split', data: w.years.map(y => y.gpProfit), exit: w.gpExitProfit, total: w.totalGpPromote },
+    { label: 'LP Total', data: w.years.map(y => y.lpTotal), exit: w.lpExitTotal, total: w.totalLpReceived, highlight: true },
+    { label: 'GP Total', data: w.years.map(y => y.gpTotal), exit: w.gpExitTotal, total: w.totalGpComp },
+  ];
+
+  body.innerHTML = '';
+  for (const row of rows) {
+    let tr = '<tr' + (row.highlight ? ' style="font-weight:700;color:#68d391"' : '') + '>';
+    tr += `<td>${row.label}</td>`;
+    for (const v of row.data) tr += `<td>${fmtCurrency(v)}</td>`;
+    tr += `<td>${fmtCurrency(row.exit)}</td>`;
+    tr += `<td>${row.total !== null ? fmtCurrency(row.total) : '—'}</td>`;
+    tr += '</tr>';
+    body.innerHTML += tr;
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SLIDER EVENT HANDLERS
+// ═══════════════════════════════════════════════════════════════════
+function setupSliders() {
+  const sliders = [
+    { id: 'sl-pref', valId: 'sl-pref-val', fmt: v => v + '%' },
+    { id: 'sl-cap', valId: 'sl-cap-val', fmt: v => v + '%' },
+    { id: 'sl-growth', valId: 'sl-growth-val', fmt: v => v + '%' },
+    { id: 'sl-hold', valId: 'sl-hold-val', fmt: v => v + ' yrs' },
+    { id: 'sl-promote', valId: 'sl-promote-val', fmt: v => v + '%' },
+    { id: 'sl-check', valId: 'sl-check-val', fmt: v => '$' + Math.round(v / 1000) + 'K' },
+  ];
+  for (const s of sliders) {
+    const el = document.getElementById(s.id);
+    const valEl = document.getElementById(s.valId);
+    el.addEventListener('input', () => {
+      valEl.textContent = s.fmt(parseFloat(el.value));
+      updateDashboard();
+    });
+  }
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// SHEETJS FILE LOADER
+// ═══════════════════════════════════════════════════════════════════
+function loadExcelFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const workbook = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = workbook.Sheets['_dashboard_data'];
+      if (!sheet) {
+        showLoaderError('No _dashboard_data tab found. Is this the right file?');
+        return;
+      }
+
+      const version = sheet['B2']?.v;
+      const type = sheet['B3']?.v;
+      if (type !== 'lp_eval') {
+        showLoaderError(`Wrong template type. Expected "lp_eval", got "${type}".`);
+        return;
+      }
+
+      // Parse key-value pairs
+      const parsed = {};
+      let row = 5;
+      while (sheet[`A${row}`]) {
+        const key = sheet[`A${row}`].v;
+        const val = sheet[`B${row}`]?.v;
+        if (key && val !== undefined && val !== null) {
+          parsed[key] = typeof val === 'number' ? val : parseFloat(val) || val;
+        }
+        row++;
+      }
+
+      // Merge parsed data
+      for (const [k, v] of Object.entries(parsed)) {
+        if (k in data && typeof v === 'number') data[k] = v;
+      }
+      fileLoaded = true;
+
+      // Update sliders to match loaded data
+      document.getElementById('sl-pref').value = data.preferred_return * 100;
+      document.getElementById('sl-pref-val').textContent = (data.preferred_return * 100).toFixed(1) + '%';
+      document.getElementById('sl-cap').value = data.exit_cap_rate * 100;
+      document.getElementById('sl-cap-val').textContent = (data.exit_cap_rate * 100).toFixed(1) + '%';
+      document.getElementById('sl-growth').value = data.rent_growth_pct * 100;
+      document.getElementById('sl-growth-val').textContent = (data.rent_growth_pct * 100).toFixed(1) + '%';
+      document.getElementById('sl-hold').value = data.hold_period_years;
+      document.getElementById('sl-hold-val').textContent = data.hold_period_years + ' yrs';
+      document.getElementById('sl-promote').value = data.promote_t1_gp_split * 100;
+      document.getElementById('sl-promote-val').textContent = (data.promote_t1_gp_split * 100) + '%';
+      document.getElementById('sl-check').value = data.check_size;
+      document.getElementById('sl-check-val').textContent = '$' + Math.round(data.check_size / 1000) + 'K';
+
+      showLoaderSuccess(file.name);
+      updateDashboard();
+    } catch (err) {
+      showLoaderError('Error reading file: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showLoaderSuccess(filename) {
+  const zone = document.getElementById('drop-zone');
+  zone.classList.add('loaded');
+  const now = new Date().toLocaleString();
+  document.getElementById('loader-msg').innerHTML =
+    `<span class="loaded-msg">Showing data from ${filename} — loaded ${now}</span>`;
+}
+
+function showLoaderError(msg) {
+  document.getElementById('loader-msg').innerHTML = `<span class="error-msg">${msg}</span>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+// DRAG AND DROP
+// ═══════════════════════════════════════════════════════════════════
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('drag-over');
+  const file = e.dataTransfer.files[0];
+  if (file && (file.name.endsWith('.xlsx') || file.name.endsWith('.xls'))) loadExcelFile(file);
+  else showLoaderError('Please drop an .xlsx file.');
+});
+
+document.getElementById('file-input').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (file) loadExcelFile(file);
+});
+
+// ═══════════════════════════════════════════════════════════════════
+// INIT
+// ═══════════════════════════════════════════════════════════════════
+setupSliders();
+updateDashboard();
+</script>
+</body>
+</html>

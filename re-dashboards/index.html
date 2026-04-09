@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Real Estate Template Dashboards &mdash; Live Demos | Lucky Duck Group</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #f5f7f5;
+            color: #222;
+            line-height: 1.6;
+        }
+        header {
+            background: #1C6834;
+            color: #fff;
+            padding: 2.5rem 1.5rem 2rem;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .notice {
+            background: #e8f5e9;
+            border-left: 4px solid #1C6834;
+            max-width: 900px;
+            margin: 1.5rem auto;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            color: #2e5a3a;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+            max-width: 1100px;
+            margin: 1.5rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.14); }
+        .card h3 {
+            font-size: 1.1rem;
+            color: #1C6834;
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            font-size: 0.92rem;
+            color: #555;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+        .card .price {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #1563DF;
+            margin-bottom: 0.75rem;
+        }
+        .card .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .btn-demo {
+            background: #1C6834;
+            color: #fff;
+        }
+        .btn-demo:hover { background: #155228; }
+        .btn-buy {
+            background: #fff;
+            color: #1563DF;
+            border: 2px solid #1563DF;
+        }
+        .btn-buy:hover { background: #eaf1fd; }
+        .section-label {
+            max-width: 1100px;
+            margin: 2rem auto 0.25rem;
+            padding: 0 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+        }
+        footer {
+            background: #222;
+            color: #aaa;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        footer a { color: #8fd4a4; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Real Estate Template Dashboards</h1>
+    <p>Live interactive demos powered by Plotly.js. Explore deal analysis, portfolio tracking, and capital raise visualizations for real estate investors.</p>
+</header>
+
+<div class="notice">
+    These dashboards load with sample data so you can explore the visualizations. Purchase the full Excel template to load your own numbers and customize every assumption.
+</div>
+
+<div class="section-label">Deal Analysis</div>
+<div class="grid">
+
+    <div class="card">
+        <h3>Multifamily Deal Analyzer</h3>
+        <p>Full underwriting model for multifamily acquisitions. Cash flow projections, sensitivity analysis, and returns.</p>
+        <div class="price">$49</div>
+        <div class="actions">
+            <a href="multifamily-deal-analyzer/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>BRRRR Calculator with Rehab Budget</h3>
+        <p>Buy-Rehab-Rent-Refinance-Repeat analysis with a 116-item rehab budget builder and Monte Carlo simulation.</p>
+        <div class="price">$49</div>
+        <div class="actions">
+            <a href="brrrr-calculator/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com/l/brrrr-calculator" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Broker NOI Inflation Checker</h3>
+        <p>12 red flags, 15 expense categories, and a valuation matrix to verify broker-provided NOI before you buy.</p>
+        <div class="price">$29</div>
+        <div class="actions">
+            <a href="broker-noi-checker/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com/l/noi-checker" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>1031 Exchange Tracker</h3>
+        <p>Deadline tracking and tax deferral calculator for 1031 like-kind exchanges. Never miss a critical date.</p>
+        <div class="price">$15</div>
+        <div class="actions">
+            <a href="exchange-1031/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+</div>
+
+<div class="section-label">Investor &amp; Portfolio Tools</div>
+<div class="grid">
+
+    <div class="card">
+        <h3>LP Investment Evaluator</h3>
+        <p>Waterfall distribution modeling for LP investors. Evaluate GP terms, preferred returns, and promote structures.</p>
+        <div class="price">$39</div>
+        <div class="actions">
+            <a href="lp-investment-evaluator/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com/l/udlxl" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Capital Raise Tracker</h3>
+        <p>Investor pipeline management with 6-stage tracking, waterfall engine, and compliance tracking for syndicators.</p>
+        <div class="price">From $39</div>
+        <div class="actions">
+            <a href="capital-raise-tracker/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com/l/capital-raise-starter" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Portfolio Tracker</h3>
+        <p>Multi-property portfolio dashboard. Track performance, equity, and cash flow across your entire portfolio.</p>
+        <div class="price">$29</div>
+        <div class="actions">
+            <a href="portfolio-tracker/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davenova3.gumroad.com" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Lucky Duck Group &nbsp;|&nbsp; <a href="https://luckyduckgroup.com">luckyduckgroup.com</a> &nbsp;|&nbsp; <a href="../pharma-dashboards/">Pharma Dashboards</a>
+</footer>
+
+</body>
+</html>

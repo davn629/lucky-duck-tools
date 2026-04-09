@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Acquisition Due Diligence Model — Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); padding: 20px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px; margin-bottom: 24px; text-align: center; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; } .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+  .kpi-row { display: flex; gap: 16px; margin-bottom: 24px; flex-wrap: wrap; }
+  .kpi-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px 22px; flex: 1; min-width: 150px; }
+  .kpi-card .label { font-size: 0.72rem; color: #718096; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 1.6rem; font-weight: 700; }
+  .kpi-card .value.green { color: #68d391; } .kpi-card .value.blue { color: #63b3ed; }
+  .kpi-card .value.orange { color: #f6ad55; } .kpi-card .value.red { color: #fc8181; }
+  .kpi-card .delta { font-size: 0.72rem; color: #718096; margin-top: 4px; }
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+  .slider-item label { font-size: 0.78rem; color: #a0aec0; display: flex; justify-content: space-between; margin-bottom: 8px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 5px; border-radius: 3px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+  .charts-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+  .chart-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
+  .chart-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+  .data-table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+  .data-table th { background: #2b6cb0; color: #fff; padding: 8px 12px; text-align: right; font-weight: 600; }
+  .data-table th:first-child { text-align: left; }
+  .data-table td { padding: 8px 12px; border-bottom: 1px solid #2d3748; text-align: right; }
+  .data-table td:first-child { text-align: left; color: #a0aec0; }
+  footer { text-align: center; padding: 20px; color: #4a5568; font-size: 0.72rem; border-top: 1px solid #2d3748; margin-top: 40px; }
+  footer a { color: #63b3ed; text-decoration: none; }
+  @media (max-width: 900px) { .slider-grid, .charts-grid { grid-template-columns: 1fr; } }
+
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; }
+    header h1 { color: #1C6834 !important; } header .subtitle { color: #666 !important; }
+    .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .file-loader, .controls, .export-btn { display: none !important; }
+    .kpi-card, .chart-card, .chart-full { background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid; }
+    .kpi-card .label { color: #666 !important; } .kpi-card .delta { color: #666 !important; }
+    .kpi-card .value.green { color: #1B7A3D !important; } .kpi-card .value.blue { color: #1C6834 !important; }
+    .kpi-card .value.orange { color: #B7791F !important; } .kpi-card .value.red { color: #C53030 !important; }
+    .chart-card h3, .chart-full h3 { color: #333 !important; }
+    .data-table th { background: #f2f2f2 !important; color: #1a1a1a !important; border: 1px solid #d0d0d0 !important; }
+    .data-table td { color: #1a1a1a !important; border: 1px solid #d0d0d0 !important; }
+    footer { color: #999 !important; } footer a { color: #1C6834 !important; }
+    .kpi-row { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <div><h1>Acquisition Due Diligence Model</h1><div class="subtitle">Lucky Duck Group &middot; SBA-Ready Financial Model + DD Tracker</div></div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <div class="badge">ACQ MODEL</div>
+  </div>
+</header>
+<div class="main">
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag your Acquisition DD .xlsx here, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+  <div class="kpi-row">
+    <div class="kpi-card"><div class="label">Purchase Price</div><div class="value blue" id="kpi-price">—</div><div class="delta" id="kpi-mult-delta">—</div></div>
+    <div class="kpi-card"><div class="label">Buyer Equity Required</div><div class="value orange" id="kpi-equity">—</div><div class="delta">Down payment + working capital</div></div>
+    <div class="kpi-card"><div class="label">Year 1 Free Cash Flow</div><div class="value green" id="kpi-fcf">—</div><div class="delta" id="kpi-coc-delta">—</div></div>
+    <div class="kpi-card"><div class="label">Payback Period</div><div class="value blue" id="kpi-payback">—</div><div class="delta">Years to recoup equity</div></div>
+    <div class="kpi-card"><div class="label">5-Year ROI</div><div class="value green" id="kpi-roi">—</div><div class="delta">Total return on equity</div></div>
+  </div>
+
+  <div class="controls">
+    <h3>What-If Scenarios</h3>
+    <div class="slider-grid">
+      <div class="slider-item"><label>Purchase Price Multiple <span id="sv-mult">3.0x</span></label><input type="range" id="sl-mult" min="1.5" max="6" step="0.25" value="3"></div>
+      <div class="slider-item"><label>SBA Rate <span id="sv-rate">10.5%</span></label><input type="range" id="sl-rate" min="7" max="14" step="0.25" value="10.5"></div>
+      <div class="slider-item"><label>Revenue Growth <span id="sv-growth">5.0%</span></label><input type="range" id="sl-growth" min="0" max="15" step="0.5" value="5"></div>
+      <div class="slider-item"><label>Down Payment % <span id="sv-down">15%</span></label><input type="range" id="sl-down" min="5" max="30" step="5" value="15"></div>
+      <div class="slider-item"><label>Seller Note % <span id="sv-seller">13%</span></label><input type="range" id="sl-seller" min="0" max="30" step="5" value="13"></div>
+      <div class="slider-item"><label>Owner Salary <span id="sv-salary">$120K</span></label><input type="range" id="sl-salary" min="60000" max="250000" step="10000" value="120000"></div>
+    </div>
+  </div>
+
+  <div class="charts-grid">
+    <div class="chart-card"><h3>Annual Cash Flow Waterfall</h3><div id="chart-waterfall" style="height:360px;"></div></div>
+    <div class="chart-card"><h3>Financing Structure</h3><div id="chart-financing" style="height:360px;"></div></div>
+  </div>
+
+  <div class="chart-full">
+    <h3>Pro-Forma Income Statement</h3>
+    <div style="overflow-x:auto;"><table class="data-table" id="pf-table"><thead><tr id="pf-header"></tr></thead><tbody id="pf-body"></tbody></table></div>
+  </div>
+
+  <div class="chart-full">
+    <h3>DD Progress</h3>
+    <div id="chart-dd" style="height:200px;"></div>
+  </div>
+</div>
+<footer>Built by Lucky Duck Group &middot; <a href="https://davenova3.gumroad.com">davenova3.gumroad.com</a></footer>
+
+<script>
+const SAMPLE = {
+  purchase_price: 1500000, asking_multiple: 3.0, annual_revenue: 2000000,
+  sde: 500000, ebitda: 400000, down_payment: 225000, sba_loan: 1075000,
+  seller_note: 200000, total_equity: 275000, sba_rate: 0.105, rev_growth: 0.05,
+  owner_salary: 120000, cogs_pct: 0.45, sga_pct: 0.20, salary_growth: 0.03,
+  seller_rate: 0.06, seller_term: 5, sba_term: 10, working_cap: 50000, down_pct: 0.15,
+  dd_total_items: 64, dd_complete: 0,
+};
+let data = {...SAMPLE};
+
+const fmt$ = v => '$' + Math.round(v).toLocaleString();
+const fmt$K = v => v >= 1e6 ? '$'+(v/1e6).toFixed(1)+'M' : '$'+Math.round(v/1000)+'K';
+const fmtP = v => (v*100).toFixed(1)+'%';
+
+function pmt(rate,nper,pv) {
+  if(rate===0) return pv/nper;
+  const mr=rate/12; const n=nper*12;
+  return (pv*mr*Math.pow(1+mr,n))/(Math.pow(1+mr,n)-1)*12;
+}
+
+function compute(d) {
+  const sbaDS = pmt(d.sba_rate, d.sba_term, d.sba_loan);
+  const sellerDS = pmt(d.seller_rate, d.seller_term, d.seller_note);
+  const years = [];
+  for(let yr=1;yr<=5;yr++){
+    const rev = d.annual_revenue * Math.pow(1+d.rev_growth,yr-1);
+    const cogs = rev * d.cogs_pct;
+    const gp = rev - cogs;
+    const sga = rev * d.sga_pct;
+    const salary = d.owner_salary * Math.pow(1+d.salary_growth,yr-1);
+    const ebitda = gp - sga - salary;
+    const sDS = yr <= d.seller_term ? sellerDS : 0;
+    const totalDS = sbaDS + sDS;
+    const fcf = ebitda - totalDS;
+    years.push({yr,rev,cogs,gp,sga,salary,ebitda,sbaDS,sellerDS:sDS,totalDS,fcf});
+  }
+  const yr1coc = years[0].fcf / d.total_equity;
+  const total5 = years.reduce((s,y)=>s+y.fcf,0);
+  const payback = d.total_equity / years[0].fcf;
+  const roi5 = (total5 - d.total_equity) / d.total_equity;
+  return {years,yr1coc,total5,payback,roi5,sbaDS,sellerDS};
+}
+
+function getEffective() {
+  const d = {...data};
+  const mult = parseFloat(document.getElementById('sl-mult').value);
+  d.purchase_price = d.sde * mult;
+  d.sba_rate = parseFloat(document.getElementById('sl-rate').value)/100;
+  d.rev_growth = parseFloat(document.getElementById('sl-growth').value)/100;
+  d.down_pct = parseFloat(document.getElementById('sl-down').value)/100;
+  d.down_payment = d.purchase_price * d.down_pct;
+  const sellerPct = parseFloat(document.getElementById('sl-seller').value)/100;
+  d.seller_note = d.purchase_price * sellerPct;
+  d.sba_loan = d.purchase_price - d.down_payment - d.seller_note;
+  d.total_equity = d.down_payment + d.working_cap;
+  d.owner_salary = parseFloat(document.getElementById('sl-salary').value);
+  d.asking_multiple = mult;
+  return d;
+}
+
+function update() {
+  const d = getEffective();
+  const c = compute(d);
+
+  document.getElementById('kpi-price').textContent = fmt$K(d.purchase_price);
+  document.getElementById('kpi-mult-delta').textContent = d.asking_multiple.toFixed(1)+'x SDE';
+  document.getElementById('kpi-equity').textContent = fmt$K(d.total_equity);
+  document.getElementById('kpi-fcf').textContent = fmt$K(c.years[0].fcf);
+  document.getElementById('kpi-coc-delta').textContent = fmtP(c.yr1coc)+' cash-on-cash';
+  document.getElementById('kpi-payback').textContent = c.payback.toFixed(1)+' yrs';
+  document.getElementById('kpi-roi').textContent = fmtP(c.roi5);
+
+  // Waterfall
+  const yrs = c.years.map(y=>'Year '+y.yr);
+  Plotly.react('chart-waterfall',[
+    {name:'Revenue',x:yrs,y:c.years.map(y=>y.rev),type:'bar',marker:{color:'#63b3ed'}},
+    {name:'Expenses',x:yrs,y:c.years.map(y=>-(y.cogs+y.sga+y.salary)),type:'bar',marker:{color:'#f6ad55'}},
+    {name:'Debt Service',x:yrs,y:c.years.map(y=>-y.totalDS),type:'bar',marker:{color:'#fc8181'}},
+    {name:'Free Cash Flow',x:yrs,y:c.years.map(y=>y.fcf),type:'bar',marker:{color:'#68d391'}},
+  ],{barmode:'group',paper_bgcolor:'#1a1f2e',plot_bgcolor:'#1a1f2e',font:{color:'#a0aec0',size:10},
+    margin:{t:10,r:20,b:40,l:60},legend:{orientation:'h',y:-0.15,font:{size:10}},
+    yaxis:{gridcolor:'#2d3748',tickprefix:'$',tickformat:',.0f'},xaxis:{gridcolor:'#2d3748'}
+  },{responsive:true,displayModeBar:false});
+
+  // Financing pie
+  Plotly.react('chart-financing',[{
+    labels:['SBA 7(a)','Seller Note','Down Payment','Working Capital'],
+    values:[d.sba_loan,d.seller_note,d.down_payment,d.working_cap],
+    type:'pie',hole:0.45,marker:{colors:['#63b3ed','#f6ad55','#68d391','#b794f4']},
+    textinfo:'label+percent',textfont:{color:'#e2e8f0',size:10},
+  }],{paper_bgcolor:'#1a1f2e',font:{color:'#a0aec0',size:10},margin:{t:10,r:10,b:10,l:10},showlegend:false,
+    annotations:[{text:fmt$K(d.purchase_price),font:{size:14,color:'#e2e8f0'},showarrow:false}]
+  },{responsive:true,displayModeBar:false});
+
+  // Table
+  const hdr = document.getElementById('pf-header');
+  hdr.innerHTML = '<th>Line Item</th>' + c.years.map(y=>`<th>Year ${y.yr}</th>`).join('');
+  const body = document.getElementById('pf-body');
+  const rows = [
+    {l:'Revenue',d:c.years.map(y=>y.rev)},{l:'COGS',d:c.years.map(y=>y.cogs)},
+    {l:'Gross Profit',d:c.years.map(y=>y.gp),b:true},{l:'SGA',d:c.years.map(y=>y.sga)},
+    {l:'Owner Salary',d:c.years.map(y=>y.salary)},{l:'EBITDA',d:c.years.map(y=>y.ebitda),b:true},
+    {l:'SBA Debt Service',d:c.years.map(y=>y.sbaDS)},{l:'Seller Note DS',d:c.years.map(y=>y.sellerDS)},
+    {l:'Free Cash Flow',d:c.years.map(y=>y.fcf),b:true,g:true},
+  ];
+  body.innerHTML = rows.map(r=>{
+    const style = r.g?'font-weight:700;color:#68d391':r.b?'font-weight:700':'';
+    return `<tr style="${style}"><td>${r.l}</td>${r.d.map(v=>`<td>${fmt$(v)}</td>`).join('')}</tr>`;
+  }).join('');
+
+  // DD Progress
+  const pct = d.dd_complete/d.dd_total_items;
+  Plotly.react('chart-dd',[{
+    type:'bar',x:[pct*100],y:['DD Progress'],orientation:'h',
+    marker:{color:pct>=0.8?'#68d391':pct>=0.5?'#f6ad55':'#fc8181'},
+    text:[Math.round(pct*100)+'% ('+d.dd_complete+'/'+d.dd_total_items+')'],textposition:'inside',
+  }],{paper_bgcolor:'#1a1f2e',plot_bgcolor:'#1a1f2e',font:{color:'#a0aec0'},
+    margin:{t:10,r:20,b:20,l:100},xaxis:{range:[0,100],gridcolor:'#2d3748',title:'%'},
+    yaxis:{gridcolor:'#2d3748'},showlegend:false
+  },{responsive:true,displayModeBar:false});
+}
+
+// Sliders
+const sliders=[
+  {id:'sl-mult',vid:'sv-mult',f:v=>v+'x'},{id:'sl-rate',vid:'sv-rate',f:v=>v+'%'},
+  {id:'sl-growth',vid:'sv-growth',f:v=>v+'%'},{id:'sl-down',vid:'sv-down',f:v=>v+'%'},
+  {id:'sl-seller',vid:'sv-seller',f:v=>v+'%'},{id:'sl-salary',vid:'sv-salary',f:v=>'$'+Math.round(v/1000)+'K'},
+];
+sliders.forEach(s=>{
+  document.getElementById(s.id).addEventListener('input',e=>{
+    document.getElementById(s.vid).textContent=s.f(parseFloat(e.target.value));
+    update();
+  });
+});
+
+// File loader
+function loadFile(file){
+  const reader=new FileReader();
+  reader.onload=function(e){
+    try{
+      const wb=XLSX.read(e.target.result,{type:'array'});
+      const sh=wb.Sheets['_dashboard_data'];
+      if(!sh){document.getElementById('loader-msg').innerHTML='<span class="error-msg">No _dashboard_data tab</span>';return;}
+      if(sh['B3']?.v!=='acq_dd'){document.getElementById('loader-msg').innerHTML='<span class="error-msg">Wrong template type</span>';return;}
+      const p={};let r=5;while(sh[`A${r}`]){p[sh[`A${r}`].v]=sh[`B${r}`]?.v;r++;}
+      for(const[k,v] of Object.entries(p)){if(k in data&&typeof v==='number')data[k]=v;}
+      document.getElementById('drop-zone').classList.add('loaded');
+      document.getElementById('loader-msg').innerHTML=`<span class="loaded-msg">Loaded ${file.name}</span>`;
+      update();
+    }catch(err){document.getElementById('loader-msg').innerHTML=`<span class="error-msg">${err.message}</span>`;}
+  };
+  reader.readAsArrayBuffer(file);
+}
+const dz=document.getElementById('drop-zone');
+dz.addEventListener('dragover',e=>{e.preventDefault();dz.classList.add('drag-over');});
+dz.addEventListener('dragleave',()=>dz.classList.remove('drag-over'));
+dz.addEventListener('drop',e=>{e.preventDefault();dz.classList.remove('drag-over');const f=e.dataTransfer.files[0];if(f)loadFile(f);});
+document.getElementById('file-input').addEventListener('change',e=>{if(e.target.files[0])loadFile(e.target.files[0]);});
+
+update();
+</script>
+</body>
+</html>

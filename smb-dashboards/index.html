@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Small Business Financial Template Dashboards — Live Demos | Lucky Duck Group</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, sans-serif;
+            background: #f5f7f5;
+            color: #222;
+            line-height: 1.6;
+        }
+        header {
+            background: #1563DF;
+            color: #fff;
+            padding: 2.5rem 1.5rem 2rem;
+            text-align: center;
+        }
+        header h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+        header p {
+            font-size: 1.05rem;
+            opacity: 0.9;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+        .notice {
+            background: #e3f0ff;
+            border-left: 4px solid #1563DF;
+            max-width: 900px;
+            margin: 1.5rem auto;
+            padding: 1rem 1.25rem;
+            font-size: 0.95rem;
+            color: #1a3a6b;
+            border-radius: 4px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.25rem;
+            max-width: 1100px;
+            margin: 1.5rem auto 3rem;
+            padding: 0 1.5rem;
+        }
+        .card {
+            background: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            transition: box-shadow 0.2s;
+        }
+        .card:hover { box-shadow: 0 4px 16px rgba(0,0,0,0.14); }
+        .card h3 {
+            font-size: 1.1rem;
+            color: #1563DF;
+            margin-bottom: 0.5rem;
+        }
+        .card p {
+            font-size: 0.92rem;
+            color: #555;
+            flex: 1;
+            margin-bottom: 1rem;
+        }
+        .card .actions {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+        .btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 5px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            text-decoration: none;
+            text-align: center;
+            transition: background 0.2s;
+        }
+        .btn-demo {
+            background: #1563DF;
+            color: #fff;
+        }
+        .btn-demo:hover { background: #1050b5; }
+        .btn-buy {
+            background: #fff;
+            color: #1563DF;
+            border: 2px solid #1563DF;
+        }
+        .btn-buy:hover { background: #e3f0ff; }
+        footer {
+            background: #222;
+            color: #aaa;
+            text-align: center;
+            padding: 1.5rem 1rem;
+            font-size: 0.9rem;
+        }
+        footer a { color: #7ab8ff; text-decoration: none; }
+        footer a:hover { text-decoration: underline; }
+        .section-label {
+            max-width: 1100px;
+            margin: 2rem auto 0.25rem;
+            padding: 0 1.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #888;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Small Business Financial Template Dashboards</h1>
+    <p>Live interactive demos powered by Plotly.js. Drag-and-drop your Excel file to visualize KPIs instantly.</p>
+</header>
+
+<div class="notice">
+    These dashboards load with sample data so you can explore the visualizations. Purchase the full Excel template to load your own numbers and customize every assumption.
+</div>
+
+<div class="section-label">Small Business Templates</div>
+<div class="grid">
+
+    <div class="card">
+        <h3>Business Valuation Toolkit</h3>
+        <p>Complete valuation analysis: DCF, comparable multiples, asset-based approaches, scenario toggles, and executive summary for small business owners and advisors.</p>
+        <div class="actions">
+            <a href="business-valuation-toolkit/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davn629.gumroad.com/l/business-valuation-toolkit" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Business Sale Readiness</h3>
+        <p>Exit-planning scorecard: readiness assessment, value driver analysis, gap identification, action plan, and timeline to prepare your business for a successful sale.</p>
+        <div class="actions">
+            <a href="business-sale-readiness/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davn629.gumroad.com/l/business-sale-readiness" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3>Acquisition Due Diligence</h3>
+        <p>Buyer-side analysis: financial health checks, risk scoring, deal structure modeling, integration cost estimates, and go/no-go recommendation framework.</p>
+        <div class="actions">
+            <a href="acquisition-due-diligence/" class="btn btn-demo">Try Demo &rarr;</a>
+            <a href="https://davn629.gumroad.com/l/acquisition-due-diligence" class="btn btn-buy">Get Template</a>
+        </div>
+    </div>
+
+</div>
+
+<footer>
+    Lucky Duck Group &nbsp;|&nbsp; <a href="https://luckyduckgroup.com">luckyduckgroup.com</a>
+</footer>
+
+</body>
+</html>

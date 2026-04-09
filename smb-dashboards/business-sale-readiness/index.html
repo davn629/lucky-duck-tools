@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Business Sale Readiness Scorecard — Lucky Duck Group</title>
+<script src="https://cdn.plot.ly/plotly-2.27.0.min.js"></script>
+<script src="https://cdn.sheetjs.com/xlsx-0.20.0/package/dist/xlsx.full.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; min-height: 100vh; }
+  header { background: linear-gradient(135deg, #1a1f2e 0%, #16213e 100%); padding: 20px 32px; border-bottom: 1px solid #2d3748; display: flex; align-items: center; justify-content: space-between; }
+  header h1 { font-size: 1.4rem; font-weight: 700; color: #63b3ed; }
+  header .subtitle { font-size: 0.78rem; color: #718096; margin-top: 3px; }
+  .badge { background: #2b6cb0; color: #bee3f8; font-size: 0.7rem; padding: 3px 10px; border-radius: 12px; font-weight: 600; }
+  .main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+  .file-loader { background: #1a1f2e; border: 2px dashed #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; text-align: center; transition: border-color 0.2s; cursor: pointer; }
+  .file-loader.drag-over { border-color: #63b3ed; background: #1e293b; }
+  .file-loader.loaded { border-color: #68d391; border-style: solid; }
+  .file-loader p { font-size: 0.85rem; color: #a0aec0; }
+  .file-loader .loaded-msg { color: #68d391; font-weight: 600; }
+  .file-loader .error-msg { color: #fc8181; font-weight: 600; }
+  .file-loader input[type=file] { display: none; }
+  .file-loader button { background: #2b6cb0; color: #bee3f8; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 600; margin-top: 8px; }
+
+  /* Score hero */
+  .score-hero { display: flex; gap: 24px; margin-bottom: 24px; align-items: stretch; }
+  .gauge-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px; flex: 0 0 320px; text-align: center; }
+  .grade-badge { font-size: 4rem; font-weight: 800; margin: 10px 0; }
+  .grade-badge.a { color: #68d391; } .grade-badge.b { color: #63b3ed; }
+  .grade-badge.c { color: #f6ad55; } .grade-badge.d { color: #fc8181; } .grade-badge.f { color: #fc8181; }
+  .score-number { font-size: 1.8rem; font-weight: 700; color: #e2e8f0; }
+  .score-label { font-size: 0.78rem; color: #718096; margin-top: 4px; }
+  .verdict-text { font-size: 0.9rem; color: #a0aec0; margin-top: 12px; padding: 12px; background: #0f1117; border-radius: 8px; }
+
+  .radar-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; flex: 1; }
+  .radar-card h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 8px; }
+
+  /* Dimension cards */
+  .dim-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 24px; }
+  .dim-card { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; }
+  .dim-card .dim-name { font-size: 0.78rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; }
+  .dim-card .dim-score { font-size: 2rem; font-weight: 700; }
+  .dim-card .dim-bar { height: 6px; border-radius: 3px; background: #2d3748; margin-top: 8px; }
+  .dim-card .dim-bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s; }
+  .dim-card .dim-verdict { font-size: 0.72rem; color: #718096; margin-top: 6px; }
+
+  /* Value leakage */
+  .leakage-section { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .leakage-section h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .leakage-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+  .leakage-item { background: #0f1117; border-radius: 8px; padding: 12px; text-align: center; }
+  .leakage-item .amount { font-size: 1.3rem; font-weight: 700; color: #fc8181; }
+  .leakage-item .reason { font-size: 0.72rem; color: #a0aec0; margin-top: 4px; }
+
+  .chart-full { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 16px; margin-bottom: 20px; }
+  .chart-full h3 { font-size: 0.8rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 12px; }
+
+  /* Controls */
+  .controls { background: #1a1f2e; border: 1px solid #2d3748; border-radius: 10px; padding: 20px 24px; margin-bottom: 24px; }
+  .controls h3 { font-size: 0.85rem; color: #a0aec0; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 16px; }
+  .slider-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+  .slider-item label { font-size: 0.72rem; color: #a0aec0; display: flex; justify-content: space-between; margin-bottom: 6px; }
+  .slider-item label span { color: #63b3ed; font-weight: 700; }
+  input[type=range] { width: 100%; -webkit-appearance: none; height: 5px; border-radius: 3px; background: #2d3748; outline: none; cursor: pointer; }
+  input[type=range]::-webkit-slider-thumb { -webkit-appearance: none; width: 16px; height: 16px; border-radius: 50%; background: #63b3ed; cursor: pointer; border: 2px solid #1a1f2e; }
+
+  footer { text-align: center; padding: 20px; color: #4a5568; font-size: 0.72rem; border-top: 1px solid #2d3748; margin-top: 40px; }
+  footer a { color: #63b3ed; text-decoration: none; }
+
+  @media (max-width: 900px) {
+    .score-hero { flex-direction: column; }
+    .gauge-card { flex: none; }
+    .dim-grid { grid-template-columns: repeat(2, 1fr); }
+    .slider-grid { grid-template-columns: repeat(2, 1fr); }
+    .leakage-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media print {
+    body { background: #fff !important; color: #1a1a1a !important; font-size: 9pt; }
+    header { background: #fff !important; border-bottom: 2px solid #1C6834 !important; padding: 10px 20px !important; }
+    header h1 { color: #1C6834 !important; }
+    header .subtitle { color: #666 !important; }
+    .badge { background: #E8EDF3 !important; color: #1C6834 !important; }
+    .main { padding: 10px 20px !important; }
+
+    .file-loader, .controls, #drop-zone, .export-btn { display: none !important; }
+
+    .gauge-card, .radar-card, .dim-card, .leakage-section, .chart-full {
+      background: #fff !important; border: 1px solid #d0d0d0 !important; page-break-inside: avoid;
+    }
+    .gauge-card .score-label, .dim-card .dim-name, .dim-card .dim-verdict { color: #666 !important; }
+    .gauge-card .score-number { color: #1a1a1a !important; }
+    .grade-badge.a { color: #1B7A3D !important; }
+    .grade-badge.b { color: #1C6834 !important; }
+    .grade-badge.c { color: #B7791F !important; }
+    .grade-badge.d, .grade-badge.f { color: #C53030 !important; }
+    .verdict-text { background: #f2f2f2 !important; color: #333 !important; }
+    .leakage-item { background: #f2f2f2 !important; }
+    .leakage-item .amount { color: #C53030 !important; }
+    .leakage-item .reason { color: #666 !important; }
+    .leakage-section h3, .chart-full h3, .radar-card h3 { color: #333 !important; }
+    .dim-card .dim-bar { background: #e0e0e0 !important; }
+
+    footer { color: #999 !important; border-top: 1px solid #d0d0d0 !important; }
+    footer a { color: #1C6834 !important; }
+
+    .score-hero, .dim-grid { page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>Business Sale Readiness Scorecard</h1>
+    <div class="subtitle">Lucky Duck Group &middot; 8-Dimension Sellability Assessment</div>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <button class="export-btn" onclick="window.print()" style="background:#2b6cb0;color:#bee3f8;border:none;padding:6px 16px;border-radius:6px;cursor:pointer;font-size:0.78rem;font-weight:600;">Export PDF</button>
+    <div class="badge">SCORECARD</div>
+  </div>
+</header>
+
+<div class="main">
+  <div class="file-loader" id="drop-zone">
+    <p id="loader-msg">Drag and drop your Sale Readiness .xlsx file here, or click to browse</p>
+    <button onclick="document.getElementById('file-input').click()">Load My Data</button>
+    <input type="file" id="file-input" accept=".xlsx,.xls">
+  </div>
+
+  <!-- Score Hero -->
+  <div class="score-hero">
+    <div class="gauge-card">
+      <div class="score-label">YOUR SCORE</div>
+      <div class="score-number" id="score-number">—</div>
+      <div class="grade-badge" id="grade-badge">—</div>
+      <div class="score-label" id="score-out-of">out of 100</div>
+      <div class="verdict-text" id="verdict-text">Load your data or adjust scores below</div>
+    </div>
+    <div class="radar-card">
+      <h3>Dimension Profile</h3>
+      <div id="chart-radar" style="height: 380px;"></div>
+    </div>
+  </div>
+
+  <!-- Slider Controls -->
+  <div class="controls">
+    <h3>Adjust Scores (What-If Analysis)</h3>
+    <div class="slider-grid" id="slider-grid"></div>
+  </div>
+
+  <!-- Dimension Cards -->
+  <div class="dim-grid" id="dim-grid"></div>
+
+  <!-- Value Leakage -->
+  <div class="leakage-section">
+    <h3>What Low Scores Are Costing You</h3>
+    <div class="leakage-grid" id="leakage-grid"></div>
+  </div>
+
+  <!-- Benchmark Comparison -->
+  <div class="chart-full">
+    <h3>Your Score vs Market Benchmarks</h3>
+    <div id="chart-benchmark" style="height: 300px;"></div>
+  </div>
+</div>
+
+<footer>
+  Built by Lucky Duck Group &middot; <a href="https://davenova3.gumroad.com" target="_blank">davenova3.gumroad.com</a>
+</footer>
+
+<script>
+const DIMENSIONS = [
+  { key: 'financial_documentation', name: 'Financial Docs', weight: 0.15, icon: '📊' },
+  { key: 'customer_concentration', name: 'Customer Diversification', weight: 0.15, icon: '👥' },
+  { key: 'owner_dependency', name: 'Owner Independence', weight: 0.15, icon: '🏢' },
+  { key: 'recurring_revenue', name: 'Recurring Revenue', weight: 0.12, icon: '🔄' },
+  { key: 'lease_and_contract_transferability', name: 'Contract Transferability', weight: 0.10, icon: '📋' },
+  { key: 'employee_retention', name: 'Employee Stability', weight: 0.10, icon: '🤝' },
+  { key: 'growth_trajectory', name: 'Growth Trajectory', weight: 0.13, icon: '📈' },
+  { key: 'clean_books_and_tax_compliance', name: 'Tax Compliance', weight: 0.10, icon: '✅' },
+];
+
+const SAMPLE_SCORES = [6, 5, 4, 7, 8, 6, 7, 5];
+let scores = [...SAMPLE_SCORES];
+let revenue = 2500000;
+
+function getWeightedScore() {
+  let s = 0;
+  for (let i = 0; i < 8; i++) s += scores[i] * DIMENSIONS[i].weight;
+  return s;
+}
+
+function getOverallScore() { return Math.round(getWeightedScore() * 10); }
+
+function getGrade(s) {
+  if (s >= 90) return 'A'; if (s >= 80) return 'B'; if (s >= 70) return 'C'; if (s >= 60) return 'D'; return 'F';
+}
+
+function getVerdict(s) {
+  if (s >= 80) return 'Ready to sell — list now. Expect full market value.';
+  if (s >= 65) return 'Almost ready — 6-12 months of targeted prep will maximize your exit.';
+  if (s >= 50) return 'Significant work needed — 12-18 months of improvements required.';
+  return 'Not ready — 18-24+ months of fundamental changes needed before going to market.';
+}
+
+function scoreColor(s) {
+  if (s >= 8) return '#68d391'; if (s >= 6) return '#63b3ed'; if (s >= 4) return '#f6ad55'; return '#fc8181';
+}
+
+function estimateLeakage(dimIdx, score) {
+  if (score >= 8) return 0;
+  const basePct = DIMENSIONS[dimIdx].weight;
+  const deficit = (8 - score) / 8;
+  return Math.round(revenue * basePct * deficit * 0.3);
+}
+
+function fmtCurrency(v) { return '$' + v.toLocaleString('en-US'); }
+
+// ═══ BUILD SLIDERS ═══
+function buildSliders() {
+  const grid = document.getElementById('slider-grid');
+  grid.innerHTML = '';
+  DIMENSIONS.forEach((dim, i) => {
+    const div = document.createElement('div');
+    div.className = 'slider-item';
+    div.innerHTML = `
+      <label>${dim.name} <span id="sv-${i}">${scores[i]}</span></label>
+      <input type="range" id="sl-${i}" min="1" max="10" step="1" value="${scores[i]}">
+    `;
+    grid.appendChild(div);
+    div.querySelector('input').addEventListener('input', (e) => {
+      scores[i] = parseInt(e.target.value);
+      document.getElementById(`sv-${i}`).textContent = scores[i];
+      updateDashboard();
+    });
+  });
+}
+
+// ═══ UPDATE DASHBOARD ═══
+function updateDashboard() {
+  const overall = getOverallScore();
+  const grade = getGrade(overall);
+
+  // Hero
+  document.getElementById('score-number').textContent = overall;
+  const gradeBadge = document.getElementById('grade-badge');
+  gradeBadge.textContent = grade;
+  gradeBadge.className = 'grade-badge ' + grade.toLowerCase();
+  document.getElementById('verdict-text').textContent = getVerdict(overall);
+
+  // Radar chart
+  updateRadar();
+
+  // Dimension cards
+  updateDimCards();
+
+  // Leakage
+  updateLeakage();
+
+  // Benchmark
+  updateBenchmark(overall);
+}
+
+function updateRadar() {
+  const yourTrace = {
+    type: 'scatterpolar',
+    r: [...scores, scores[0]],
+    theta: [...DIMENSIONS.map(d => d.name), DIMENSIONS[0].name],
+    fill: 'toself',
+    fillcolor: 'rgba(99, 179, 237, 0.2)',
+    line: { color: '#63b3ed', width: 2 },
+    name: 'Your Scores',
+  };
+  const avgTrace = {
+    type: 'scatterpolar',
+    r: [5.4, 4.8, 4.2, 5.0, 6.0, 5.5, 5.0, 4.5, 5.4],
+    theta: [...DIMENSIONS.map(d => d.name), DIMENSIONS[0].name],
+    fill: 'toself',
+    fillcolor: 'rgba(160, 174, 192, 0.1)',
+    line: { color: '#718096', width: 1, dash: 'dot' },
+    name: 'Average Business',
+  };
+  Plotly.react('chart-radar', [avgTrace, yourTrace], {
+    polar: {
+      bgcolor: '#1a1f2e',
+      radialaxis: { visible: true, range: [0, 10], gridcolor: '#2d3748', tickfont: { color: '#718096', size: 10 } },
+      angularaxis: { gridcolor: '#2d3748', tickfont: { color: '#a0aec0', size: 10 } },
+    },
+    paper_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0', size: 10 },
+    legend: { font: { size: 10 }, x: 0, y: -0.1, orientation: 'h' },
+    margin: { t: 30, r: 40, b: 40, l: 40 },
+    showlegend: true,
+  }, { responsive: true, displayModeBar: false });
+}
+
+function updateDimCards() {
+  const grid = document.getElementById('dim-grid');
+  grid.innerHTML = '';
+  DIMENSIONS.forEach((dim, i) => {
+    const s = scores[i];
+    const color = scoreColor(s);
+    const verdict = s >= 8 ? 'Strong' : s >= 6 ? 'Adequate' : s >= 4 ? 'Needs Work' : 'Critical';
+    const card = document.createElement('div');
+    card.className = 'dim-card';
+    card.innerHTML = `
+      <div class="dim-name">${dim.icon} ${dim.name}</div>
+      <div class="dim-score" style="color:${color}">${s}/10</div>
+      <div class="dim-bar"><div class="dim-bar-fill" style="width:${s*10}%;background:${color}"></div></div>
+      <div class="dim-verdict">${verdict} &middot; Weight: ${(dim.weight*100).toFixed(0)}%</div>
+    `;
+    grid.appendChild(card);
+  });
+}
+
+function updateLeakage() {
+  const grid = document.getElementById('leakage-grid');
+  grid.innerHTML = '';
+  const items = DIMENSIONS.map((dim, i) => ({
+    name: dim.name, leakage: estimateLeakage(i, scores[i]), score: scores[i]
+  })).filter(x => x.leakage > 0).sort((a, b) => b.leakage - a.leakage).slice(0, 4);
+
+  if (items.length === 0) {
+    grid.innerHTML = '<div class="leakage-item" style="grid-column:1/-1"><div class="amount" style="color:#68d391">No value leakage detected</div><div class="reason">All dimensions scoring well</div></div>';
+    return;
+  }
+  items.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'leakage-item';
+    div.innerHTML = `<div class="amount">-${fmtCurrency(item.leakage)}</div><div class="reason">${item.name} (${item.score}/10)</div>`;
+    grid.appendChild(div);
+  });
+}
+
+function updateBenchmark(overall) {
+  const trace = {
+    type: 'bar',
+    x: ['Average Business', 'Your Score', 'Top Quartile', 'Premium (80+)'],
+    y: [54, overall, 78, 80],
+    marker: {
+      color: ['#718096', overall >= 80 ? '#68d391' : overall >= 65 ? '#63b3ed' : overall >= 50 ? '#f6ad55' : '#fc8181', '#63b3ed', '#68d391']
+    },
+    text: [54, overall, 78, 80],
+    textposition: 'outside',
+    textfont: { color: '#e2e8f0', size: 14 },
+  };
+  Plotly.react('chart-benchmark', [trace], {
+    paper_bgcolor: '#1a1f2e', plot_bgcolor: '#1a1f2e',
+    font: { color: '#a0aec0' },
+    margin: { t: 20, r: 20, b: 50, l: 50 },
+    yaxis: { range: [0, 105], gridcolor: '#2d3748', title: 'Score' },
+    xaxis: { gridcolor: '#2d3748' },
+    showlegend: false,
+  }, { responsive: true, displayModeBar: false });
+}
+
+// ═══ SHEETJS LOADER ═══
+function loadExcelFile(file) {
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const wb = XLSX.read(e.target.result, { type: 'array' });
+      const sheet = wb.Sheets['_dashboard_data'];
+      if (!sheet) { showError('No _dashboard_data tab found.'); return; }
+      if (sheet['B3']?.v !== 'sale_ready') { showError('Wrong template. Expected sale_ready.'); return; }
+      const parsed = {};
+      let row = 5;
+      while (sheet[`A${row}`]) { parsed[sheet[`A${row}`].v] = sheet[`B${row}`]?.v; row++; }
+
+      DIMENSIONS.forEach((dim, i) => {
+        const key = `score_${dim.key}`;
+        if (parsed[key] !== undefined) scores[i] = parseInt(parsed[key]) || scores[i];
+      });
+      if (parsed.annual_revenue) revenue = parsed.annual_revenue;
+
+      // Sync sliders
+      DIMENSIONS.forEach((_, i) => {
+        const sl = document.getElementById(`sl-${i}`);
+        if (sl) { sl.value = scores[i]; document.getElementById(`sv-${i}`).textContent = scores[i]; }
+      });
+
+      showSuccess(file.name);
+      updateDashboard();
+    } catch (err) { showError('Error: ' + err.message); }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+function showSuccess(name) {
+  document.getElementById('drop-zone').classList.add('loaded');
+  document.getElementById('loader-msg').innerHTML = `<span class="loaded-msg">Loaded ${name} — ${new Date().toLocaleString()}</span>`;
+}
+function showError(msg) {
+  document.getElementById('loader-msg').innerHTML = `<span class="error-msg">${msg}</span>`;
+}
+
+const dropZone = document.getElementById('drop-zone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault(); dropZone.classList.remove('drag-over');
+  const f = e.dataTransfer.files[0];
+  if (f && f.name.endsWith('.xlsx')) loadExcelFile(f);
+});
+document.getElementById('file-input').addEventListener('change', e => { if (e.target.files[0]) loadExcelFile(e.target.files[0]); });
+
+// ═══ INIT ═══
+buildSliders();
+updateDashboard();
+</script>
+</body>
+</html>
