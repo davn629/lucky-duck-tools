@@ -148,69 +148,24 @@ footer{text-align:center;padding:28px;color:#9ca3af;font-size:.78rem;border-top:
     </div>
   </div>
 
-  <!-- RIGHT: form card -->
+  <!-- RIGHT: CFP form card -->
   <div class="right-col">
     <div class="form-card">
+      <p class="form-card-hed">Your download is starting…</p>
+      <p class="form-card-sub">Fill out below to receive updates on current distressed multifamily opportunities.</p>
 
-      <div id="form-state">
-        <p class="form-card-hed">Get the Free Excel Checklist</p>
-        <p class="form-card-sub">Instant download · No spam · Accredited investors only</p>
-
-        <form id="lead-form" novalidate>
-          <div class="form-row">
-            <div class="form-group">
-              <label for="firstName">First Name</label>
-              <input type="text" id="firstName" name="firstName" placeholder="David" autocomplete="given-name" required>
-            </div>
-            <div class="form-group">
-              <label for="lastName">Last Name</label>
-              <input type="text" id="lastName" name="lastName" placeholder="Smith" autocomplete="family-name" required>
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="phone">Best Phone</label>
-            <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555" autocomplete="tel" required>
-          </div>
-
-          <div class="form-group">
-            <label for="email">Best Email</label>
-            <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" required>
-          </div>
-
-          <div class="accredited-group">
-            <label class="group-label">Are you an accredited investor?</label>
-            <div class="radio-row">
-              <label class="radio-opt">
-                <input type="radio" name="accredited" value="yes" required>
-                <span>Yes</span>
-              </label>
-              <label class="radio-opt">
-                <input type="radio" name="accredited" value="no">
-                <span>No</span>
-              </label>
-            </div>
-          </div>
-
-          <p class="sec-text">Under SEC Rule 501 of Regulation D, an accredited investor has an annual income exceeding $200,000 (or $300,000 combined with a spouse) for each of the past two years with a reasonable expectation of the same in the current year, or a net worth exceeding $1,000,000 excluding primary residence. Self-certification only — no verification is performed at this stage.</p>
-
-          <button type="submit" class="submit-btn" id="submit-btn">
-            <div class="spinner"></div>
-            <span class="btn-text">Download the Checklist →</span>
-          </button>
-        </form>
+      <div style="position:relative;width:100%;height:727px">
+        <iframe
+          id="cfp-iframe"
+          src="https://luckyduckgroup.cashflowportal.com/leads/39bfd02451174a2e965cb1154ef43441"
+          frameborder="0"
+          style="position:absolute;top:0;left:0;width:100%;height:100%"
+        ></iframe>
       </div>
 
-      <div class="success-card" id="success-state">
-        <div class="check">✓</div>
-        <h2>You're all set.</h2>
-        <p>Your checklist is downloading now. We'll be in touch about current opportunities in distressed multifamily that match your profile.</p>
-        <a class="dl-btn" href="CFO-Checklist-RE-Deal.xlsx" download>
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Download Again
-        </a>
-      </div>
-
+      <p style="font-size:.72rem;color:#9ca3af;margin-top:12px;text-align:center">
+        Didn't download? <a href="CFO-Checklist-RE-Deal.xlsx" download style="color:#1C6834;font-weight:600">Click here</a>
+      </p>
     </div>
   </div>
 
@@ -219,61 +174,22 @@ footer{text-align:center;padding:28px;color:#9ca3af;font-size:.78rem;border-top:
 <footer>© 2026 Lucky Duck Group · <a href="https://luckyduckgroup.com">luckyduckgroup.com</a></footer>
 
 <script>
-const SUBMIT_URL = 'https://formsubmit.co/ajax/david.naccarato@gmail.com';
-
-document.getElementById('lead-form').addEventListener('submit', async function(e) {
-  e.preventDefault();
-
-  const btn = document.getElementById('submit-btn');
-  const firstName  = document.getElementById('firstName').value.trim();
-  const lastName   = document.getElementById('lastName').value.trim();
-  const phone      = document.getElementById('phone').value.trim();
-  const email      = document.getElementById('email').value.trim();
-  const accredited = document.querySelector('input[name="accredited"]:checked');
-
-  let valid = true;
-  [firstName, lastName, phone, email].forEach((val, i) => {
-    const ids = ['firstName','lastName','phone','email'];
-    const el = document.getElementById(ids[i]);
-    if (!val) { el.classList.add('error'); valid = false; }
-    else el.classList.remove('error');
-  });
-  if (!accredited) {
-    valid = false;
-    document.querySelector('.radio-row').style.outline = '2px solid #ef4444';
-    document.querySelector('.radio-row').style.borderRadius = '6px';
-  } else {
-    document.querySelector('.radio-row').style.outline = '';
-  }
-  if (!valid) return;
-
-  btn.disabled = true;
-  btn.classList.add('loading');
-
-  try {
-    await fetch(SUBMIT_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-      body: JSON.stringify({
-        _subject: 'New CFO Checklist Lead — Lucky Duck Group',
-        source: 'cfo-checklist',
-        firstName, lastName, phone, email,
-        accredited: accredited.value,
-      })
-    });
-  } catch(err) {
-    console.warn('Submission error:', err);
+// Pass UTM params into CFP iframe (their standard integration)
+window.addEventListener('load', function() {
+  const iframe = document.getElementById('cfp-iframe');
+  if (window.location.search) {
+    iframe.src = iframe.src + window.location.search;
   }
 
-  document.getElementById('form-state').style.display = 'none';
-  document.getElementById('success-state').style.display = 'block';
-
-  const a = document.createElement('a');
-  a.href = 'CFO-Checklist-RE-Deal.xlsx';
-  a.download = 'CFO-Checklist-RE-Deal.xlsx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+  // Auto-trigger download after brief delay so browser allows it
+  setTimeout(function() {
+    const a = document.createElement('a');
+    a.href = 'CFO-Checklist-RE-Deal.xlsx';
+    a.download = 'CFO-Checklist-RE-Deal.xlsx';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, 800);
 });
 </script>
 
