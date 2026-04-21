@@ -9,86 +9,77 @@
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#FAFBFC;color:#1a1a2e;font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;line-height:1.6}
+body{background:#F8FAFB;color:#1a1a2e;font-family:'Inter',system-ui,-apple-system,sans-serif;min-height:100vh;line-height:1.6}
 a{color:#1C6834;text-decoration:none}
-a:hover{color:#145226}
 
 /* Nav */
-.nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:14px 40px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;position:sticky;top:0;z-index:100;box-shadow:0 1px 3px rgba(0,0,0,0.04)}
+.nav{background:#fff;border-bottom:1px solid #e5e7eb;padding:16px 40px;display:flex;align-items:center;justify-content:center}
 .nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none;color:#1a1a2e;font-weight:700;font-size:1.05rem}
-.nav-logo img{height:40px}
-.nav-links a.cta{background:#1C6834;color:#fff;font-weight:600;font-size:.875rem;padding:8px 20px;border-radius:8px;transition:all .2s}
-.nav-links a.cta:hover{background:#145226;color:#fff}
+.nav-logo img{height:38px}
 
 /* Hero */
-.hero{text-align:center;padding:80px 32px 56px;max-width:780px;margin:0 auto}
-.hero-eyebrow{display:inline-block;background:#0D1F3C;color:#9cb8d8;font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:7px 18px;border-radius:100px;margin-bottom:24px}
-.hero h1{font-size:2.8rem;font-weight:800;color:#1a1a2e;line-height:1.12;letter-spacing:-0.025em;margin-bottom:20px}
+.hero{text-align:center;padding:64px 24px 40px;max-width:680px;margin:0 auto}
+.eyebrow{display:inline-block;background:#0D1F3C;color:#9cb8d8;font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;padding:6px 16px;border-radius:100px;margin-bottom:20px}
+.hero h1{font-size:2.4rem;font-weight:800;color:#1a1a2e;line-height:1.12;letter-spacing:-0.025em;margin-bottom:16px}
 .hero h1 span{color:#1C6834}
-.hero-hook{font-size:1.15rem;color:#374151;line-height:1.75;max-width:620px;margin:0 auto 14px;font-weight:500}
-.hero-sub{font-size:.95rem;color:#6b7280;max-width:580px;margin:0 auto 40px;line-height:1.7}
-.primary-cta{display:inline-flex;align-items:center;gap:10px;background:#1C6834;color:#fff;font-weight:700;font-size:1.05rem;padding:18px 40px;border-radius:10px;transition:all .2s;box-shadow:0 4px 18px rgba(28,104,52,0.28)}
-.primary-cta:hover{background:#145226;color:#fff;transform:translateY(-2px);box-shadow:0 8px 24px rgba(28,104,52,0.36)}
-.cta-qualifier{margin-top:12px;font-size:.82rem;color:#9ca3af}
-.cta-qualifier a{color:#1C6834;font-weight:600}
+.hero-sub{font-size:1.05rem;color:#4b5563;line-height:1.75;max-width:560px;margin:0 auto}
 
 /* Proof bar */
-.proof-bar{background:#fff;border-top:1px solid #e5e7eb;border-bottom:1px solid #e5e7eb;padding:18px 32px;margin:0 0 0}
-.proof-inner{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:.78rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.09em}
+.proof-bar{max-width:680px;margin:28px auto 0;text-align:center}
+.proof-inner{font-size:.75rem;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:.09em;display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
 .proof-inner span{color:#374151}
 
-/* Outcome cluster */
-.outcomes{display:grid;grid-template-columns:repeat(3,1fr);max-width:780px;margin:0 auto;border-bottom:1px solid #e5e7eb}
-.outcome{text-align:center;padding:28px 24px;border-right:1px solid #e5e7eb}
-.outcome:last-child{border-right:none}
-.outcome-icon{font-size:1.4rem;margin-bottom:8px}
-.outcome h3{font-size:.95rem;font-weight:800;color:#1a1a2e;margin-bottom:4px}
-.outcome p{font-size:.82rem;color:#6b7280;line-height:1.5}
+/* Form card */
+.form-wrap{max-width:560px;margin:40px auto 0;padding:0 24px 80px}
+.form-card{background:#fff;border:1px solid #e5e7eb;border-radius:18px;padding:40px 40px 36px;box-shadow:0 4px 24px rgba(0,0,0,0.06)}
 
-/* What happens section */
-.call-section{background:#fff;margin:56px 0 0}
-.call-inner{max-width:920px;margin:0 auto;padding:56px 32px}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px}
+.form-group{display:flex;flex-direction:column;gap:6px;margin-bottom:16px}
+.form-group label{font-size:.82rem;font-weight:600;color:#374151}
+.form-group input{border:1.5px solid #e5e7eb;border-radius:8px;padding:11px 14px;font-size:.95rem;font-family:inherit;color:#1a1a2e;transition:border-color .2s;outline:none;background:#fafbfc}
+.form-group input:focus{border-color:#1C6834;background:#fff}
+.form-group input.error{border-color:#ef4444}
+
+/* Accredited radio */
+.accredited-group{margin-bottom:6px}
+.accredited-group label.group-label{font-size:.82rem;font-weight:600;color:#374151;display:block;margin-bottom:10px}
+.radio-row{display:flex;gap:16px}
+.radio-opt{display:flex;align-items:center;gap:8px;cursor:pointer}
+.radio-opt input[type=radio]{width:18px;height:18px;accent-color:#1C6834;cursor:pointer}
+.radio-opt span{font-size:.92rem;font-weight:600;color:#374151}
+
+.sec-text{font-size:.72rem;color:#9ca3af;line-height:1.55;margin-top:10px;margin-bottom:24px;padding:12px 14px;background:#f9fafb;border-radius:8px;border:1px solid #f0f0f0}
+
+.submit-btn{width:100%;background:#1C6834;color:#fff;font-weight:700;font-size:1rem;padding:16px;border:none;border-radius:10px;cursor:pointer;transition:all .2s;font-family:inherit;display:flex;align-items:center;justify-content:center;gap:8px}
+.submit-btn:hover{background:#145226;transform:translateY(-1px)}
+.submit-btn:disabled{background:#9ca3af;cursor:not-allowed;transform:none}
+.submit-btn .spinner{width:18px;height:18px;border:2px solid rgba(255,255,255,0.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+.submit-btn.loading .spinner{display:block}
+.submit-btn.loading .btn-text{display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Success state */
+.success-card{display:none;text-align:center;padding:40px 24px}
+.success-card .check{width:64px;height:64px;background:#f0fdf4;border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:1.8rem}
+.success-card h2{font-size:1.4rem;font-weight:800;color:#1a1a2e;margin-bottom:10px}
+.success-card p{font-size:.95rem;color:#6b7280;margin-bottom:28px;line-height:1.7}
+.dl-btn{display:inline-flex;align-items:center;gap:8px;background:#1C6834;color:#fff;font-weight:700;font-size:.95rem;padding:14px 28px;border-radius:8px;transition:all .2s}
+.dl-btn:hover{background:#145226;color:#fff}
+.dl-btn svg{width:18px;height:18px}
+
+/* Checklist preview below fold */
+.below-fold{max-width:840px;margin:0 auto;padding:0 24px 72px}
+.divider{border:none;border-top:1px solid #e5e7eb;margin:0 0 56px}
 .section-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.12em;color:#1C6834;margin-bottom:10px}
-.call-inner h2{font-size:1.7rem;font-weight:800;color:#1a1a2e;letter-spacing:-0.01em;margin-bottom:8px}
-.call-inner .sub{font-size:1rem;color:#6b7280;margin-bottom:36px;line-height:1.7}
-.call-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:20px}
-.call-card{background:#FAFBFC;border:1px solid #e5e7eb;border-radius:14px;padding:24px 28px;display:flex;gap:16px;align-items:flex-start}
-.call-num{width:32px;height:32px;background:#0D1F3C;color:#9cb8d8;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:800;flex-shrink:0;margin-top:2px}
-.call-card h3{font-size:.95rem;font-weight:700;color:#1a1a2e;margin-bottom:4px}
-.call-card p{font-size:.85rem;color:#6b7280;line-height:1.55}
+.below-fold h2{font-size:1.5rem;font-weight:800;color:#1a1a2e;margin-bottom:8px;letter-spacing:-0.01em}
+.below-fold .sub{font-size:.95rem;color:#6b7280;margin-bottom:28px;line-height:1.7}
+.clist{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+.clist-item{background:#fff;border:1px solid #e5e7eb;border-radius:12px;padding:20px 22px}
+.clist-item .num{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#1C6834;margin-bottom:5px}
+.clist-item h3{font-size:.9rem;font-weight:700;color:#1a1a2e;margin-bottom:4px}
+.clist-item p{font-size:.8rem;color:#6b7280;line-height:1.5}
 
-/* Checklist section */
-.section{max-width:920px;margin:0 auto;padding:56px 32px 0}
-.section h2{font-size:1.7rem;font-weight:800;color:#1a1a2e;letter-spacing:-0.01em;margin-bottom:8px}
-.section .sub{font-size:1rem;color:#6b7280;margin-bottom:32px;line-height:1.7}
-.checklist-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px;margin-bottom:56px}
-.check-card{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:24px;transition:border-color .2s}
-.check-card:hover{border-color:#1C6834}
-.check-card .section-num{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#1C6834;margin-bottom:7px}
-.check-card h3{font-size:.95rem;font-weight:700;color:#1a1a2e;margin-bottom:7px}
-.check-card p{font-size:.85rem;color:#6b7280;line-height:1.55}
-.check-card .count{display:inline-block;background:#f0fdf4;color:#1C6834;font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:100px;margin-top:10px}
-
-/* About */
-.about-wrap{max-width:920px;margin:0 auto;padding:0 32px 56px}
-.about-block{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:36px 40px}
-.about-text h3{font-size:1.1rem;font-weight:800;color:#1a1a2e;margin-bottom:5px}
-.about-text .title{font-size:.875rem;color:#1C6834;font-weight:600;margin-bottom:12px}
-.about-text p{font-size:.9rem;color:#6b7280;line-height:1.7}
-.about-creds{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
-.cred-tag{background:#f0fdf4;color:#166534;font-size:.75rem;font-weight:600;padding:4px 12px;border-radius:100px}
-
-/* Bottom CTA */
-.cta-wrap{max-width:920px;margin:0 auto;padding:0 32px 72px}
-.cta-block{background:linear-gradient(135deg,#0D1F3C 0%,#152d52 100%);border-radius:16px;padding:52px 48px;text-align:center}
-.cta-block h2{font-size:1.7rem;font-weight:800;color:#fff;margin-bottom:12px;letter-spacing:-0.01em}
-.cta-block .cta-sub{color:rgba(255,255,255,0.65);font-size:.95rem;margin-bottom:8px;max-width:500px;margin-left:auto;margin-right:auto;line-height:1.7}
-.cta-block .cta-audience{font-size:.82rem;color:rgba(255,255,255,0.4);margin-bottom:32px}
-.cta-btn{display:inline-block;background:#E8A020;color:#fff;font-weight:700;font-size:1rem;padding:16px 36px;border-radius:8px;transition:all .2s}
-.cta-btn:hover{background:#d18e1a;color:#fff;transform:translateY(-1px)}
-
-footer{text-align:center;padding:32px;color:#9ca3af;font-size:.82rem;border-top:1px solid #e5e7eb}
-footer a{color:#6b7280}
+footer{text-align:center;padding:28px;color:#9ca3af;font-size:.78rem;border-top:1px solid #e5e7eb}
 </style>
 </head>
 <body>
@@ -98,170 +89,165 @@ footer a{color:#6b7280}
     <img src="../LDG Logo.png" alt="Lucky Duck Group">
     Lucky Duck Group
   </a>
-  <div class="nav-links">
-    <a href="https://calendly.com/david-luckyduckgroup/lucky-duck-group" class="cta">Book a Discovery Call</a>
-  </div>
 </nav>
 
 <!-- ── Hero ──────────────────────────────────────────────────────────────── -->
 <div class="hero">
-  <div class="hero-eyebrow">For Accredited Investors · Distressed Multifamily</div>
+  <div class="eyebrow">For Accredited Investors · Distressed Multifamily</div>
   <h1>The CFO's Checklist for<br><span>Evaluating a Real Estate Deal</span></h1>
-  <p class="hero-hook">In 15 minutes, see how accredited investors are generating consistent income, building tax-deferred wealth, and getting first access to distressed multifamily deals — without running the numbers themselves.</p>
   <p class="hero-sub">20 questions investors ask before committing capital — and the institutional framework behind each one.</p>
-  <a class="primary-cta" href="https://calendly.com/david-luckyduckgroup/lucky-duck-group">
-    Book a 15-Minute Discovery Call →
-  </a>
-  <div class="cta-qualifier">For accredited investors evaluating their next real estate position. &nbsp;·&nbsp; <a href="CFO-Checklist-RE-Deal.xlsx" download>Download the checklist free</a></div>
 </div>
 
-<!-- ── Proof bar ──────────────────────────────────────────────────────────── -->
 <div class="proof-bar">
   <div class="proof-inner">
     <span>Disney</span> · <span>Capital Group</span> · <span>Astellas</span> · <span>25 Years Institutional Finance</span> · <span>MBA, USC Marshall</span>
   </div>
 </div>
 
-<!-- ── Outcome cluster ────────────────────────────────────────────────────── -->
-<div class="outcomes">
-  <div class="outcome">
-    <div class="outcome-icon">💵</div>
-    <h3>Consistent Income</h3>
-    <p>Cash distributions from stabilized multifamily — underwritten to hold up under stress</p>
-  </div>
-  <div class="outcome">
-    <div class="outcome-icon">🛡️</div>
-    <h3>Tax Deferral</h3>
-    <p>Cost segregation, bonus depreciation, and K-1 passive losses working in your favor</p>
-  </div>
-  <div class="outcome">
-    <div class="outcome-icon">📈</div>
-    <h3>Long-Term Wealth</h3>
-    <p>Equity growth through forced appreciation on distressed assets — not market speculation</p>
-  </div>
-</div>
+<!-- ── Lead capture form ──────────────────────────────────────────────────── -->
+<div class="form-wrap">
+  <div class="form-card">
 
-<!-- ── What happens on the call ──────────────────────────────────────────── -->
-<div class="call-section">
-  <div class="call-inner">
-    <div class="section-label">The Discovery Call</div>
-    <h2>What We Cover in 15 Minutes</h2>
-    <p class="sub">No pitch deck. No pressure. A direct conversation about whether the deals we're evaluating fit your situation.</p>
-    <div class="call-grid">
-      <div class="call-card">
-        <div class="call-num">01</div>
-        <div>
-          <h3>Your Investment Goals</h3>
-          <p>Income now vs. long-term appreciation, tax situation, timeline, and how much operational involvement you want.</p>
+    <div id="form-state">
+      <form id="lead-form" novalidate>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="firstName">First Name</label>
+            <input type="text" id="firstName" name="firstName" placeholder="David" autocomplete="given-name" required>
+          </div>
+          <div class="form-group">
+            <label for="lastName">Last Name</label>
+            <input type="text" id="lastName" name="lastName" placeholder="Smith" autocomplete="family-name" required>
+          </div>
         </div>
-      </div>
-      <div class="call-card">
-        <div class="call-num">02</div>
-        <div>
-          <h3>Current Deal Pipeline</h3>
-          <p>We walk through the distressed multifamily opportunities we're actively underwriting and where they stand.</p>
+
+        <div class="form-group">
+          <label for="phone">Best Phone</label>
+          <input type="tel" id="phone" name="phone" placeholder="(555) 555-5555" autocomplete="tel" required>
         </div>
-      </div>
-      <div class="call-card">
-        <div class="call-num">03</div>
-        <div>
-          <h3>The CFO Framework Applied</h3>
-          <p>We apply the checklist to a live deal so you see exactly how we evaluate risk before committing a dollar.</p>
+
+        <div class="form-group">
+          <label for="email">Best Email</label>
+          <input type="email" id="email" name="email" placeholder="you@email.com" autocomplete="email" required>
         </div>
-      </div>
-      <div class="call-card">
-        <div class="call-num">04</div>
-        <div>
-          <h3>First Access to Opportunities</h3>
-          <p>Qualified investors get early access to deals before they open to the broader investor list.</p>
+
+        <div class="accredited-group">
+          <label class="group-label">Are you an accredited investor?</label>
+          <div class="radio-row">
+            <label class="radio-opt">
+              <input type="radio" name="accredited" value="yes" required>
+              <span>Yes</span>
+            </label>
+            <label class="radio-opt">
+              <input type="radio" name="accredited" value="no">
+              <span>No</span>
+            </label>
+          </div>
         </div>
-      </div>
+
+        <p class="sec-text">Under SEC Rule 501 of Regulation D, an accredited investor has an annual income exceeding $200,000 (or $300,000 combined with a spouse) for each of the past two years with a reasonable expectation of the same in the current year, or a net worth exceeding $1,000,000 excluding primary residence. Self-certification only — no verification is performed at this stage.</p>
+
+        <button type="submit" class="submit-btn" id="submit-btn">
+          <div class="spinner"></div>
+          <span class="btn-text">Download the Checklist →</span>
+        </button>
+      </form>
     </div>
+
+    <div class="success-card" id="success-state">
+      <div class="check">✓</div>
+      <h2>You're all set.</h2>
+      <p>Your checklist is downloading now. We'll be in touch about current opportunities in distressed multifamily that match your profile.</p>
+      <a class="dl-btn" href="CFO-Checklist-RE-Deal.xlsx" download id="dl-link">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+        Download Again
+      </a>
+    </div>
+
   </div>
 </div>
 
-<!-- ── Checklist sections ─────────────────────────────────────────────────── -->
-<div class="section">
-  <div class="section-label">What's Inside the Checklist</div>
+<!-- ── Checklist preview below fold ─────────────────────────────────────── -->
+<div class="below-fold">
+  <hr class="divider">
+  <div class="section-label">What's Inside</div>
   <h2>7 Sections. 20 Deal-Killing Questions.</h2>
   <p class="sub">Each item flags what a CFO looks for — and gives you the benchmark to know if the answer is acceptable.</p>
-  <div class="checklist-grid">
-    <div class="check-card">
-      <div class="section-num">Section 1</div>
-      <h3>Market & Location Analysis</h3>
-      <p>Population trends, job base concentration, supply pipeline, and why "the market is hot" is never sufficient due diligence.</p>
-      <span class="count">3 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 2</div>
-      <h3>Property Financials & NOI</h3>
-      <p>T-12 income verification, expense ratio sanity checks, and the management fee games syndicators play.</p>
-      <span class="count">3 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 3</div>
-      <h3>Capital Structure & Debt</h3>
-      <p>Loan terms, interest rate risk, debt coverage ratios, and the refinance assumptions that blow up deals in year 3.</p>
-      <span class="count">3 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 4</div>
-      <h3>Sponsor Track Record</h3>
-      <p>How to verify sponsor experience beyond the pitch deck — and what a real track record looks like vs. a curated one.</p>
-      <span class="count">3 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 5</div>
-      <h3>Legal & Compliance</h3>
-      <p>PPM review, waterfall structure red flags, preferred return mechanics, and fee disclosure analysis.</p>
-      <span class="count">3 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 6</div>
-      <h3>Tax & Depreciation Strategy</h3>
-      <p>Cost segregation potential, bonus depreciation exposure, K-1 timing, and what passive loss rules mean for your tax bill.</p>
-      <span class="count">2 questions</span>
-    </div>
-    <div class="check-card">
-      <div class="section-num">Section 7</div>
-      <h3>Exit & Return Assumptions</h3>
-      <p>Cap rate expansion risk, hold period sensitivity, and how to stress-test the IRR against realistic exit scenarios.</p>
-      <span class="count">3 questions</span>
-    </div>
+  <div class="clist">
+    <div class="clist-item"><div class="num">Section 1</div><h3>Market & Location Analysis</h3><p>Population trends, job concentration, supply pipeline.</p></div>
+    <div class="clist-item"><div class="num">Section 2</div><h3>Property Financials & NOI</h3><p>T-12 verification, expense ratios, management fee analysis.</p></div>
+    <div class="clist-item"><div class="num">Section 3</div><h3>Capital Structure & Debt</h3><p>Loan terms, DSCR, refinance assumption risk.</p></div>
+    <div class="clist-item"><div class="num">Section 4</div><h3>Sponsor Track Record</h3><p>Verifying real experience beyond the pitch deck.</p></div>
+    <div class="clist-item"><div class="num">Section 5</div><h3>Legal & Compliance</h3><p>PPM review, waterfall structure, fee disclosure.</p></div>
+    <div class="clist-item"><div class="num">Section 6</div><h3>Tax & Depreciation Strategy</h3><p>Cost segregation, bonus depreciation, K-1 timing.</p></div>
+    <div class="clist-item"><div class="num">Section 7</div><h3>Exit & Return Assumptions</h3><p>Cap rate stress-test, hold period sensitivity, IRR validation.</p></div>
   </div>
 </div>
 
-<!-- ── About ──────────────────────────────────────────────────────────────── -->
-<div class="about-wrap">
-  <div class="section-label" style="margin-bottom:12px">About the Author</div>
-  <div class="about-block">
-    <div class="about-text">
-      <h3>David Naccarato</h3>
-      <div class="title">The CFO of Real Estate · Lucky Duck Group</div>
-      <p>David brings institutional finance discipline to real estate investing. Before building Lucky Duck Group, he spent 25 years in senior finance roles at Fortune 500 companies — running the same analytical frameworks on billion-dollar portfolios that he now applies to every distressed multifamily deal he evaluates and syndicates.</p>
-      <div class="about-creds">
-        <span class="cred-tag">MBA — USC Marshall</span>
-        <span class="cred-tag">Disney</span>
-        <span class="cred-tag">Capital Group</span>
-        <span class="cred-tag">Astellas</span>
-      </div>
-    </div>
-  </div>
-</div>
+<footer>© 2026 Lucky Duck Group · <a href="https://luckyduckgroup.com">luckyduckgroup.com</a></footer>
 
-<!-- ── Bottom CTA ─────────────────────────────────────────────────────────── -->
-<div class="cta-wrap">
-  <div class="cta-block">
-    <h2>Ready to Invest With the CFO?</h2>
-    <p class="cta-sub">We source and underwrite distressed multifamily deals using the same framework in this checklist. Accredited investors on our list get first access before opportunities open broadly.</p>
-    <p class="cta-audience">This call is for accredited investors only.</p>
-    <a class="cta-btn" href="https://calendly.com/david-luckyduckgroup/lucky-duck-group">Book a 15-Minute Discovery Call →</a>
-  </div>
-</div>
+<script>
+const SUBMIT_URL = 'https://formsubmit.co/ajax/david.naccarato@gmail.com';
 
-<footer>
-  <p>© 2026 Lucky Duck Group · <a href="https://luckyduckgroup.com">luckyduckgroup.com</a></p>
-</footer>
+document.getElementById('lead-form').addEventListener('submit', async function(e) {
+  e.preventDefault();
+
+  const btn = document.getElementById('submit-btn');
+  const firstName  = document.getElementById('firstName').value.trim();
+  const lastName   = document.getElementById('lastName').value.trim();
+  const phone      = document.getElementById('phone').value.trim();
+  const email      = document.getElementById('email').value.trim();
+  const accredited = document.querySelector('input[name="accredited"]:checked');
+
+  // Basic validation
+  let valid = true;
+  [firstName, lastName, phone, email].forEach((val, i) => {
+    const ids = ['firstName','lastName','phone','email'];
+    const el = document.getElementById(ids[i]);
+    if (!val) { el.classList.add('error'); valid = false; }
+    else el.classList.remove('error');
+  });
+  if (!accredited) {
+    valid = false;
+    document.querySelector('.radio-row').style.outline = '2px solid #ef4444';
+    document.querySelector('.radio-row').style.borderRadius = '6px';
+  } else {
+    document.querySelector('.radio-row').style.outline = '';
+  }
+  if (!valid) return;
+
+  btn.disabled = true;
+  btn.classList.add('loading');
+
+  try {
+    await fetch(SUBMIT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+      body: JSON.stringify({
+        _subject: 'New CFO Checklist Lead — Lucky Duck Group',
+        source: 'cfo-checklist',
+        firstName, lastName, phone, email,
+        accredited: accredited.value,
+      })
+    });
+  } catch(err) {
+    // Don't block download on network error — lead still captured if possible
+    console.warn('Submission error:', err);
+  }
+
+  // Show success + trigger download regardless
+  document.getElementById('form-state').style.display = 'none';
+  document.getElementById('success-state').style.display = 'block';
+
+  // Auto-trigger download
+  const a = document.createElement('a');
+  a.href = 'CFO-Checklist-RE-Deal.xlsx';
+  a.download = 'CFO-Checklist-RE-Deal.xlsx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+});
+</script>
 
 </body>
 </html>
